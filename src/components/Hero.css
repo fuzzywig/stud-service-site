@@ -1,0 +1,130 @@
+.hero {
+    background: linear-gradient(to right, #256845, #1e4e36);
+    color: #fff;
+    width: 100%;
+    padding: 80px 20px;
+    box-sizing: border-box;
+}
+
+.hero-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+
+.hero-form-container {
+    flex: 1;
+    min-width: 300px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-input {
+    padding: 24px 16px;
+    font-size: 1rem;
+    background-color: #fefef4; /* Match navbar colour */
+    color: #000;
+    border: none;
+    border-radius: 6px;
+}
+
+.form-button {
+    padding: 24px 16px;
+    background-color: #b83c56; /* Match navbar colour */
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.form-button:hover {background-color: #fff;
+    color: #000;
+    border: 1px solid #000;}
+
+.form-input::placeholder {
+    color: #fefef4; /* Softer placeholder text for visibility */
+    color: #000;
+}
+
+.hero-text {
+    flex: 1;
+    min-width: 300px;
+    text-align: left;
+}
+
+.hero-text h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #fff;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+}
+
+.hero-text p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+.hero-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    z-index: 1;
+}
+.hero {
+    position: relative;
+    background: linear-gradient(to right, #256845, #1e4e36);
+    color: #fff;
+    width: 100%;
+    padding: 80px 20px 160px; /* padding-bottom gives room for waves */
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.hero-waves {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 160px;
+    line-height: 1;
+    z-index: 1;
+}
+
+.hero-waves svg {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 200px;
+}
+
+.wave-front {
+    z-index: 1;
+    transform: translateY(-30px);
+}
+
+.wave-back {
+    z-index: 2;
+    opacity: 1;
+    transform: translateY(1px); /* gently push it down to peek out from behind */
+}
+
+.hero-container {
+    position: relative;
+    z-index: 3; /* keeps content above both waves */
+}
+
+

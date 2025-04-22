@@ -1,0 +1,99 @@
+.login-page {
+    max-width: 500px;
+    margin: 80px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-page h2 {
+    text-align: center;
+    color: #256845;
+    margin-bottom: 24px;
+}
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #333;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box; /* ✅ Fixes padding overflow */
+}
+
+.login-form button {
+    width: 100%;
+    padding: 14px;
+    background-color: #256845;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+    background-color: #1e4e36;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.resend-button {
+    background: transparent;
+    border: none;
+    color: #256845;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.resend-button:hover {
+    color: #1e4e36;
+}
+.register-link {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.register-link a {
+    color: #256845;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+.login-logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-logo img {
+    width: 120px;
+    height: auto;
+    border-radius: 8px;
+}

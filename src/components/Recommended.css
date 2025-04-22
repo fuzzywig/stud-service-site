@@ -1,0 +1,51 @@
+.recommended-section {
+    background-color: #fefef4;
+    padding: 60px 20px;
+}
+
+.recommended-section h2 {
+    text-align: center;
+    color: #256845;
+    font-size: 2rem;
+    margin-bottom: 40px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    gap: 30px;
+}
+.dog-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.dog-card:hover {
+    transform: translateY(-5px);
+}
+
+.dog-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.price {
+    font-weight: bold;
+    color: #b83c56;
+}
+@media (max-width: 1024px) {
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for tablet */
+    }
+}
+@media (max-width: 600px) {
+    .card-grid {
+        grid-template-columns: 1fr; /* 1 column for mobile */
+    }
+}

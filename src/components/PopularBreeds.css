@@ -1,0 +1,71 @@
+/* src/components/PopularBreeds.css */
+.popular-breeds-section {
+    padding: 60px 20px;
+    background-color: #fefef4;
+}
+
+.popular-breeds-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #256845;
+    margin-bottom: 40px;
+}
+
+.breed-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.breed-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.breed-card:hover {
+    transform: translateY(-5px);
+}
+
+.breed-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.breed-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #b83c56;
+}
+
+.breed-info h3 {
+    font-size: 1.3rem;
+    color: #256845;
+    margin-bottom: 8px;
+}
+
+.breed-info p {
+    color: #555;
+    font-size: 0.95rem;
+}
+@media (max-width: 1200px) {
+    .breed-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .breed-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .breed-grid {
+        grid-template-columns: 1fr;
+    }
+}

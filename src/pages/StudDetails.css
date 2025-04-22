@@ -1,0 +1,288 @@
+/* Grid Layout for 2x2 Responsive Structure */
+.stud-details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+    .stud-details-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+      "slideshow owner"
+      "description details";
+    }
+
+    .slideshow-box { grid-area: slideshow; }
+    .owner-info-box { grid-area: owner; }
+    .description-box { grid-area: description; }
+    .details-box { grid-area: details; }
+}
+
+/* Common Box Styling */
+.slideshow-box,
+.owner-info-box,
+.description-box,
+.details-box {
+    background: #FAF9F6;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Slideshow */
+.slideshow-box .main-image {
+    width: 100%;
+    height: 400px;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+}
+
+
+.slideshow-box .main-image img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Thumbnails */
+.thumbnails {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.thumbnails img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border 0.2s ease;
+}
+
+.thumbnails img:hover {
+    border-color: #256845;
+}
+
+.thumbnail-active {
+    border: 2px solid #b83c56;
+}
+
+/* Owner Info (Advert Description) */
+.owner-info-box {
+    background: #FAF9F6;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+.owner-info-box h2 {
+    font-size: 1.4rem;
+    color: #256845;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.owner-info-box p {
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+/* Owner Summary + Reviews Section */
+.description-box h2 {
+    color: #256845;
+    margin-top: 0;
+}
+
+.view-all-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #b83c56;
+    text-decoration: none;
+}
+
+/* Details */
+.details-box h2 {
+    color: #256845;
+    margin-top: 0;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.details-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.details-table .label {
+    font-weight: bold;
+    color: #333;
+    width: 150px;
+    white-space: nowrap;
+}
+
+/* Image Preview Container (optional) */
+.image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.image-preview {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+/* Error */
+.error {
+    color: #b83c56;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Header / Back Button */
+.stud-details-header {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.back-button {
+    display: inline-block;
+    background-color: #256845;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 400;
+    font-size: small;
+    transition: background-color 0.3s ease;
+    margin-left: 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.back-button:hover {
+    background-color: #1a4e35;
+    color: #fff;
+}
+
+/* Reviews */
+.reviews-preview {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.review-snippet {
+    background: #fff;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.review-rating {
+    font-weight: bold;
+    color: #256845;
+}
+
+.review-comment {
+    margin: 6px 0;
+    font-style: italic;
+    color: #333;
+}
+
+.review-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+.stud-name-heading {
+    grid-column: span 2;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    padding: 0 20px 10px;
+    color: #256845;
+}
+
+@media (min-width: 768px) {
+    .stud-name-heading {
+        grid-column: 2 / 3;
+        text-align: left;
+        margin-left: 20px;
+        font-size: 2.2rem;
+    }
+}
+.health-check-list {
+    padding-left: 20px;
+    margin: 0;
+    list-style-type: disc;
+}
+
+.health-check-list li {
+    margin-bottom: 4px;
+    color: #333;
+}
+.health-check-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.health-check-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.health-icon {
+    color: #256845;
+}
+@media (max-width: 768px) {
+    .health-check-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .health-check-row .label {
+        margin-bottom: 6px;
+    }
+}
+.owner-info-box h2 {
+    font-family: 'Akaya Kanadaka', cursive;
+    font-size: 2rem;
+    color: #256845;
+    margin-top: 0;
+}
