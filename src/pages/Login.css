@@ -97,3 +97,14 @@
     height: auto;
     border-radius: 8px;
 }
+.login-error-message {
+    text-align: center;
+    color: #d32f2f;
+    margin: 1rem 0;
+    font-weight: 500;
+}
+
+.login-error-message .email-link {
+    color: #1c5235;
+    text-decoration: underline;
+}

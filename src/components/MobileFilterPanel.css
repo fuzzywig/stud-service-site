@@ -1,0 +1,202 @@
+@media (max-width: 768px) {
+    .mobile-filter-buttons {
+        display: flex;
+        justify-content: center;
+        padding: 0.5rem 1rem 0 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-btn {
+        background: #256845;
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        padding: 0.6rem 1.2rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: #1e543b;
+    }
+
+    .mobile-filter-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 90vh;
+        background: #fff;
+        z-index: 1000;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        border-top: 2px solid #b83c56;
+        overflow-y: auto;
+        top: 60px; /* or whatever height your navbar is */
+
+    }
+
+
+    .filter-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-shrink: 0;
+    }
+
+    .filter-panel-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #256845;
+        padding-top: 15px;
+    }
+
+    .close-btns {
+        background: #256845;
+        border-radius: 10px;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #fff;
+        padding-top: 0.5rem;
+    }
+    .apply-btn {
+        background: #256845;
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+    .apply-btn:hover {
+        background: #1e543b;
+    }
+
+    .filter-panel-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .panel-section {
+        margin-bottom: 1rem;
+    }
+
+    .panel-section label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+        color: #444;
+    }
+
+    .panel-section select,
+    .panel-section input[type="number"] {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+
+    .checkbox-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: normal;
+        color: #333;
+    }
+
+    .popular-breeds {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .popular-breed {
+        background: #f0f0f0;
+        border-radius: 20px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .popular-breed:hover {
+        background: #d6e6dc;
+    }
+
+    .panel-footer {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .reset-btn {
+        background: #e0e0e0;
+        color: #333;
+        border: none;
+        border-radius: 30px;
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .reset-btn:hover {
+        background: #ccc;
+    }
+}
+
+.panel-slider {
+    width: 100%;
+    margin-top: 0.5rem;
+    appearance: none;
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    outline: none;
+}
+
+.panel-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #b83c56;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.panel-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #b83c56;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.panel-slider::-webkit-slider-runnable-track {
+    background: #ddd;
+}
+.mobile-filter-panel {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: translateY(0%);
+}
+
+.mobile-filter-panel.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+

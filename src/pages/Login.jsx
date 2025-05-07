@@ -40,6 +40,13 @@ function Login() {
 
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.data();
+
+                if (userData.blacklisted) {
+                    await signOut(auth);
+                    setError("Your account has been blocked. Please contact support at support@mypetconnect.co.uk.");
+                    return;
+                }
+
                 if (userData.isAdmin) {
                     navigate("/admin");
                 } else {
@@ -55,6 +62,7 @@ function Login() {
             setError("Login failed: " + err.message);
         }
     };
+
 
     const handleResendVerification = async () => {
         try {
@@ -76,7 +84,19 @@ function Login() {
             </div>
 
             <h2>Login</h2>
-            {error && <p className="error">{error}</p>}
+            {error && (
+                <div className="login-error-message">
+                    <p>{error.includes("support@") ? "Your account has been blocked. Please contact support" : error}</p>
+                    {error.includes("support@") && (
+                        <p>
+                            {" "}
+                            <a href="mailto:support@mypetconnect.co.uk" className="email-link">
+                                support@mypetconnect.co.uk
+                            </a>
+                        </p>
+                    )}
+                </div>
+            )}
 
             {error.includes("not verified") && (
                 <button type="button" className="resend-button" onClick={handleResendVerification}>

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+stud-service-site-backup-*.tar.gz
+serviceAccountKey.json

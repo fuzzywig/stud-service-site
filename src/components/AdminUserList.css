@@ -1,0 +1,194 @@
+.admin-users-container {
+    padding: 2rem;
+}
+
+.admin-user-search {
+    padding: 0.5rem 1rem;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* Stack cards vertically with spacing */
+.admin-user-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Card layout with left (info) and right (buttons) split */
+.admin-user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+}
+
+.admin-user-info {
+    flex-grow: 1;
+    min-width: 250px;
+}
+
+/* Avatar styling inside name block */
+.admin-user-info h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+}
+
+.admin-user-info p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.admin-avatar-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Right-aligned button group */
+.admin-user-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center; /* Center vertically */
+    gap: 8px;
+    min-width: 150px;
+    width: 20%; /* ✅ consistent width */
+}
+
+.admin-user-buttons button {
+    width: 100%;
+    height: 2.5rem; /* ✅ double height (approx 40px) */
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    background: #256845;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+
+.admin-user-buttons button.blacklist {
+    background: #b83c56;
+}
+
+.admin-user-buttons button:hover {
+    opacity: 0.9;
+}
+/* Hide text inside buttons on small screens */
+@media screen and (max-width: 768px) {
+    .button-text {
+        display: none;
+    }
+
+    .admin-user-buttons button {
+        font-size: 1.25rem;
+        padding: 0.5rem;
+        justify-content: center;
+    }
+}
+.admin-user-actions {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 60px;
+}
+
+.action-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    color: #444;
+}
+
+.admin-user-buttons {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f9f9f9;
+    padding: 0.5rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.admin-user-buttons button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    background: #256845;
+    color: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.admin-user-buttons button.blacklist {
+    background: #b83c56;
+}
+.user-status-badge {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+    text-transform: capitalize;
+}
+
+.user-status-badge.active {
+    background-color: #2e7d32; /* Green */
+}
+
+.user-status-badge.paused {
+    background-color: #f57c00; /* Orange */
+}
+
+.user-status-badge.blacklisted {
+    background-color: #c62828; /* Red */
+}
+.admin-user-buttons .restore {
+    background: #2e7d32;
+}
+.search-filter-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-user-search,
+.admin-user-filter {
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 40px;
+}
+
+.admin-user-search {
+    width: 200px;
+}
+
+.admin-user-filter {
+    width: 180px;
+}

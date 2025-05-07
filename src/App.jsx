@@ -15,7 +15,12 @@ import ApproveAdverts from "./pages/admin/ApproveAdverts";
 import ApproveReviews from "./pages/admin/ApproveReviews";
 import ManageUsers from "./pages/admin/ManageUsers";
 import AdminUserProfile from "./pages/admin/AdminUserProfile"; // ✅ NEW
-import RequireAdmin from "./components/RequireAdmin";
+import Favourites from './pages/Favourites';
+import RequireAdmin from './components/RequireAdmin'; // adjust the path if it's located elsewhere
+import EditStud from './pages/EditStud'; // adjust the path depending on your project structure
+import ManageUserProfile from './pages/admin/ManageUserProfile';
+
+
 
 function App() {
     return (
@@ -42,11 +47,8 @@ function App() {
                         <ManageUsers />
                     </RequireAdmin>
                 } />
-                <Route path="/admin/user/:uid" element={
-                    <RequireAdmin>
-                        <AdminUserProfile />
-                    </RequireAdmin>
-                } />
+                
+                <Route path="/admin/user/:userId" element={<ManageUserProfile />} />
 
                 {/* ✅ Main Site Layout */}
                 <Route path="/" element={<Layout />}>
@@ -58,6 +60,10 @@ function App() {
                     <Route path="profile/:uid" element={<UserProfile />} />
                     <Route path="logout" element={<Logout />} />
                     <Route path="messages" element={<MessagesPage />} />
+                    <Route path="/edit-stud/:id" element={<EditStud />} />
+                    <Route path="/favourites" element={<Favourites />} />
+
+
                 </Route>
 
                 {/* ✅ Auth Routes */}

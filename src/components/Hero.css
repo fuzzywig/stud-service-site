@@ -1,9 +1,13 @@
+/* Keep existing hero section styles */
 .hero {
     background: linear-gradient(to right, #256845, #1e4e36);
     color: #fff;
     width: 100%;
     padding: 80px 20px;
     box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 160px; /* padding-bottom gives room for waves */
 }
 
 .hero-container {
@@ -14,6 +18,8 @@
     align-items: center;
     gap: 60px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 3; /* keeps content above both waves */
 }
 
 .hero-form-container {
@@ -21,43 +27,210 @@
     min-width: 300px;
     position: relative;
     z-index: 2;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* New Enhanced Form Styles */
 .hero-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px; /* Reduced from 16px to bring elements closer together */
+}
+
+/* Category toggle styles with icons */
+.category-toggle {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.category-button {
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Category icon styles */
+.category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.cat-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.category-text {
+    line-height: 1;
+}
+
+/* Default styles for non-active buttons */
+.category-button:not(.active) {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #256845;
+}
+
+/* Active state for ALL buttons */
+.category-button.active {
+    background-color: #a03248 !important;
+    color: white;
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover state for all non-active buttons */
+.category-button:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5; /* Lower z-index so it doesn't overlap dropdown menu */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #256845;
+    pointer-events: none; /* Make sure icon doesn't interfere with clicks */
+    line-height: 0; /* This helps with vertical alignment */
+}
+
+.field-icon {
+    width: 22px;
+    height: 22px;
+    display: block; /* Ensures proper alignment */
+    vertical-align: middle; /* Further improves alignment */
 }
 
 .form-input {
-    padding: 24px 16px;
-    font-size: 1rem;
-    background-color: #fefef4; /* Match navbar colour */
-    color: #000;
+    width: 100%;
+    padding: 18px 16px 18px 45px;
+    font-size: 15px;
+    font-weight: 500;
+    background-color: #ffffff;
+    color: #333;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(184, 60, 86, 0.2);
+    transform: translateY(-2px);
+}
+
+.form-input::placeholder {
+    color: #888;
+    font-weight: 500;
+}
+
+/* Style the React Select component to match our form design */
+.form-select {
+    width: 100%;
+    position: relative; /* Add position relative */
 }
 
 .form-button {
-    padding: 24px 16px;
-    background-color: #b83c56; /* Match navbar colour */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 20px;
+    background-color: #b83c56;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.form-button:hover {background-color: #fff;
-    color: #000;
-    border: 1px solid #000;}
-
-.form-input::placeholder {
-    color: #fefef4; /* Softer placeholder text for visibility */
-    color: #000;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(184, 60, 86, 0.3);
+    margin-top: 10px;
+    overflow: hidden;
+    position: relative;
 }
 
+.form-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.form-button:hover {
+    background-color: #a03248;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(184, 60, 86, 0.4);
+}
+
+.form-button:hover::after {
+    transform: translateX(100%);
+}
+
+.form-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 10px rgba(184, 60, 86, 0.3);
+}
+
+.button-text {
+    z-index: 1;
+}
+
+.button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.button-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Existing hero text styles */
 .hero-text {
     flex: 1;
     min-width: 300px;
@@ -76,24 +249,8 @@
     font-size: 1.2rem;
     line-height: 1.6;
 }
-.hero-wave {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 90px;
-    z-index: 1;
-}
-.hero {
-    position: relative;
-    background: linear-gradient(to right, #256845, #1e4e36);
-    color: #fff;
-    width: 100%;
-    padding: 80px 20px 160px; /* padding-bottom gives room for waves */
-    box-sizing: border-box;
-    overflow: hidden;
-}
 
+/* Existing wave styles */
 .hero-waves {
     position: absolute;
     bottom: 0;
@@ -122,9 +279,132 @@
     transform: translateY(1px); /* gently push it down to peek out from behind */
 }
 
-.hero-container {
-    position: relative;
-    z-index: 3; /* keeps content above both waves */
+/* Fix for dropdown menu z-index and layering */
+.react-select__menu {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    z-index: 20 !important; /* Much higher z-index to ensure it appears above all other elements */
+    position: relative; /* Add position relative */
+    background: white !important; /* Ensure background is solid */
+    width: 100% !important; /* Ensure menu is constrained to width of parent */
 }
 
+/* Make sure the input icon doesn't show through dropdown */
+.react-select__menu-list {
+    background: white !important; /* Solid background color */
+    opacity: 1 !important;
+    overflow-x: hidden !important; /* Prevent horizontal scrolling */
+}
 
+/* Fix text wrapping in select options */
+.react-select__option {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+    cursor: pointer !important;
+    padding: 10px !important;
+}
+
+/* React-Select Custom Styles */
+.react-select__control {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07) !important;
+}
+
+.react-select__control:hover {
+    border: none !important;
+}
+
+.react-select__control--is-focused {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(184, 60, 86, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+.react-select__placeholder {
+    color: #888 !important;
+}
+
+.react-select__indicator-separator {
+    display: none !important;
+}
+
+/* Change selected option color to match toggle */
+.react-select__option--is-selected {
+    background-color: #a03248 !important;
+}
+
+.react-select__option--is-focused:not(.react-select__option--is-selected) {
+    background-color: #f8e7ea !important;
+    color: #333 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-form-container {
+        padding: 20px;
+    }
+
+    .category-button {
+        font-size: 0.8rem;
+        padding: 12px 8px;
+    }
+
+    .form-input, .form-button {
+        padding: 16px 14px;
+    }
+
+    .form-button {
+        font-size: 1rem;
+    }
+
+    .hero-text h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-text p {
+        font-size: 1.1rem;
+    }
+
+    /* Make icons slightly smaller on mobile */
+    .cat-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Ensure the postcode input on mobile keeps proper padding */
+    .form-input {
+        padding-left: 40px; /* Ensure text doesn't overlap the icon */
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .category-button {
+        font-size: 0.7rem;
+        padding: 10px 4px;
+    }
+
+    .cat-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Adjust form container padding on very small screens */
+    .hero-form-container {
+        padding: 15px;
+    }
+
+    /* Smaller input fields on tiny screens */
+    .form-input {
+        padding: 14px 14px 14px 36px;
+        font-size: 14px;
+    }
+
+    /* Ensure the postcode icon stays properly positioned */
+    .input-icon {
+        left: 10px;
+    }
+}

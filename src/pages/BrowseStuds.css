@@ -1,209 +1,402 @@
-.browse-container {
-    display: flex;
-    gap: 20px;
-    padding: 40px;
+/* ─── Layout ─── */
+.browse-studs-page {
     max-width: 1440px;
     margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
 }
 
-.studs-column {
-    flex: 3;
+@media (max-width: 1024px) {
+    .browse-studs-page {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─── Sidebar ─── */
+.browse-studs-sidebar {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.browse-studs-filter-block {
+    margin-bottom: 30px;
+}
+
+.browse-studs-filter-title {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    color: #256845;
+}
+
+.browse-studs-filter-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ─── Top Breeds List ─── */
+.browse-studs-top-breeds-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.browse-studs-top-breed {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.browse-studs-top-breed-count {
+    color: #666;
+}
+
+/* ─── Results Column ─── */
+.browse-studs-content {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.stud-card {
+/* ─── Each Advert Card ─── */
+.browse-studs-card {
     display: flex;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    padding: 20px;
-    align-items: flex-start;
-}
-
-.stud-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
+    flex-direction: row; /* ➔ Make sure it's row, not column */
+    flex-wrap: nowrap;   /* ➔ Prevent wrapping */
+    background: #fff;
     border-radius: 8px;
-    margin-right: 20px;
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    will-change: transform;
+    z-index: 0;
+    position: relative;
+
+}
+.browse-studs-card:hover {
+    /* lift up */
+    transform: translateY(-4px);
+    /* deeper, softer shadow */
+    box-shadow:
+            0 12px 24px rgba(0,0,0,0.15) !important,
+0 6px 12px rgba(0,0,0,0.10) !important;
+    z-index: 1;
+}
+/* Image side (twice as tall) */
+.browse-studs-card-image {
+    flex: 0 0 300px;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+
 }
 
-.stud-details {
+.browse-studs-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;;
+}
+
+/* Details side */
+.browse-studs-card-details {
     flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* ✅ push footer down */
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.stud-top {
+
+.browse-studs-card-name {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #213547;
+}
+
+.browse-studs-card-breed,
+.browse-studs-card-age,
+.browse-studs-card-fee {
+    margin: 2px 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+/* 2) Force long description text to wrap inside its box */
+.browse-studs-card-description {
+    /* allow wrapping anywhere (even inside long words) */
+    white-space: pre-wrap;       /* respect newlines, but wrap long lines */
+    overflow-wrap: anywhere;     /* break words if needed */
+    word-break: break-word;      /* legacy */
+}
+.browse-studs-card-divider {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 16px 0;
+}
+.browse-studs-card-title {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #213547;
+    margin-bottom: 8px;
+    white-space: normal;  /* allow wrapping if needed */
+}
+.browse-studs-card-dogname {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: #666;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: normal; /* allow wrapping */
+}
+/* pill container under title */
+.browse-studs-card-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 16px;
+}
+
+/* each pill */
+.browse-studs-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    background-color: #f1f5f9;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #256845;
+    font-weight: 500;
+    white-space: nowrap;
+}
+/* 0. “X ago” styling */
+.browse-studs-card-post-age {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: #666;
+}
+/* Fee pill */
+.browse-studs-card-fee-pill {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #256845;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.25rem;
+    white-space: nowrap;
+    z-index: 1;
+}
+.browse-studs-card {
+    display: flex;
+    flex-wrap: wrap; /* ✅ Add wrap */
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    will-change: transform;
+    z-index: 0;
+    position: relative;
+}
+
+/* ── Card footer: owner + favourite icon ── */
+.browse-studs-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.live-days {
-    font-weight: bold;
-    color: #256845;
-}
-
-.fav-icon {
-    color: #b83c56;
+.browse-studs-card-fav-btn {
+    background: none;
+    border: none;
     cursor: pointer;
+    font-size: 1.4rem;
+    color: #b83c56;           /* or your accent color */
+    transition: transform 0.2s ease, color 0.2s ease;
+    padding: 4px;
 }
 
-.description-preview {
-    margin: 10px 0;
-    color: #555;
+.browse-studs-card-fav-btn:hover {
+    transform: scale(1.2);
+    color: #e63946;           /* darker on hover if desired */
+}
+@media (max-width: 768px) {
+    .browse-studs-card {
+        flex-direction: column;
+    }
+
+    .browse-studs-card-image,
+    .browse-studs-card-details {
+        width: 100%;
+    }
+
+    .browse-studs-card-image {
+        /* let height grow naturally */
+        height: auto;
+    }
+    .browse-studs-card-image {
+        width: 100%;
+        height: 120px; /* ✅ half of desktop (320px) */
+    }
+    .browse-studs-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+.browse-studs-card-owner-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.breeder-info {
+.browse-studs-owner-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.browse-studs-owner-text {
+    display: flex;
+    flex-direction: column;
     font-size: 0.9rem;
+    color: #333;
+}
+
+.browse-studs-owner-name {
+    font-weight: 600;
+    color: #213547;
+}
+
+.browse-studs-owner-location {
+    font-size: 0.8rem;
     color: #777;
 }
-
-/* Filters Column */
-.filters-column {
-    flex: 1;
-    background-color: #fefef4;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    height: fit-content;
+/* Show only on mobile/tablet */
+.mobile-only {
+    display: block;
 }
-
-.filters-column h2 {
-    font-size: 1.2rem;
-    margin-top: 0;
-    color: #256845;
-}
-
-.filters-column select,
-.filters-column input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-.filter-button {
-    background-color: #b83c56;
-    color: #fff;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.filter-button:hover {
-    background-color: #9e3047;
-}
-/* Mobile inline filters */
-.mobile-filter-bar {
+.desktop-only {
     display: none;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px 0;
-    margin-bottom: 20px;
 }
 
-.mobile-filter-bar select,
-.mobile-filter-bar input {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
+@media (min-width: 1024px) {
+    .mobile-only {
+        display: none;
+    }
+    .desktop-only {
+        display: block;
+    }
 }
-
-.mobile-filter-bar .filter-button {
-    padding: 10px;
-    background-color: #b83c56;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.mobile-filter-bar .filter-button:hover {
-    background-color: #9e3047;
-}
-
-/* Show/hide logic */
 .desktop-only {
     display: block;
 }
 
-.mobile-only {
-    display: none;
-}
-
-/* Mobile breakpoint */
-@media screen and (max-width: 768px) {
-    .browse-container {
-        flex-direction: column;
-    }
-
-    .filters-column {
-        display: none;
-    }
-
-    .mobile-only {
-        display: flex;
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
     }
 }
-.link-wrapper {
-    text-decoration: none;
-    color: inherit;
-}
-/* Heart Pop Animation */
-.fav-icon {
-    transition: transform 0.2s ease, color 0.2s ease;
-    font-size: 1.2rem;
-    color: #ccc;
+
+.browse-studs-sidebar {
+    width: 250px;
+    padding: 1rem;
+    background: #fafafa;
+    border-right: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
-.fav-icon.faved {
-    color: #b83c56;
+.browse-studs-filter-block {
+    margin-bottom: 1.5rem;
 }
 
-.fav-icon.pop {
-    animation: pop 0.3s ease;
+.browse-studs-filter-block select,
+.browse-studs-filter-block input[type="range"] {
+    width: 100%;
 }
 
-@keyframes pop {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.4);
-    }
-    100% {
-        transform: scale(1);
-    }
+.popular-breeds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
 }
-/* Heart Icon Styling */
-.fav-icon {
-    color: #ccc;
+
+.popular-breed {
+    background: #ccc;
+    padding: 0.4rem 0.7rem;
+    border-radius: 16px;
     cursor: pointer;
-    transition: transform 0.2s ease, color 0.2s ease;
+    font-size: 0.9rem;
+    color: #1b5e20;
 }
 
-.fav-icon.active {
-    color: #b83c56;
-    animation: pop 0.3s ease;
+.popular-breed:hover {
+    background: #256845;
+    color: #fff;
+}
+.panel-select,
+.panel-section select,
+.panel-section input[type="number"],
+.browse-studs-filter-select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background: #fff;
+    color: #888888;
+}
+.reset-btn {
+    background: #b83c56;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
 }
 
-@keyframes pop {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.3);
-    }
-    100% {
-        transform: scale(1);
-    }
+.reset-btn:hover {
+    background: #962e45;
+}
+.browse-studs-filter-block.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
 }
 
+.browse-studs-filter-block.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #333;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.browse-studs-filter-block.checkbox-group input[type="checkbox"] {
+    accent-color: #b83c56; /* your brand accent */
+    transform: scale(1.2);
+}

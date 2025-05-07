@@ -1,7 +1,10 @@
+// src/pages/admin/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 import AdminSidebar from '../../components/AdminSidebar';
+import { Link } from 'react-router-dom';
+import { FaChartLine, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
@@ -12,14 +15,23 @@ export default function AdminDashboard() {
         totalUsers: 0,
     });
     const [recentAds, setRecentAds] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                setIsLoading(true);
+
                 const allAdsSnap = await getDocs(collection(db, 'studAds'));
-                const pendingAdsSnap = await getDocs(query(collection(db, 'studAds'), where('approved', '==', false)));
+                const pendingAdsQuery = query(
+                    collection(db, 'studAds'),
+                    where('approved', '==', false),
+                    orderBy('createdAt', 'desc'),
+                    limit(5)
+                );
+                const pendingAdsSnap = await getDocs(pendingAdsQuery);
                 const usersSnap = await getDocs(collection(db, 'users'));
-                const reviewsSnap = await getDocs(query(collection(db, 'users'), where('reviews', '!=', null)));
+                const reviewsSnap = await getDocs(query(collection(db, 'reviews'), where('approved', '==', false)));
 
                 setStats({
                     totalAds: allAdsSnap.size,
@@ -28,13 +40,15 @@ export default function AdminDashboard() {
                     pendingReviews: reviewsSnap.size,
                 });
 
-                const recentUnapproved = pendingAdsSnap.docs.slice(0, 3).map(doc => ({
+                const recentUnapproved = pendingAdsSnap.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
                 setRecentAds(recentUnapproved);
             } catch (err) {
                 console.error('🔥 Failed to load stats:', err.message);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -42,39 +56,154 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <>
+        <div className="admin-dashboard-page">
             <AdminSidebar />
-            <div className="admin-dashboard-wrapper">
-                <div className="admin-dashboard">
-                    <h1 style={{ marginTop: '40px' }}>Admin Overview</h1>
 
-                    <div className="stats-grid">
-                        <div className="stat-card"><h3>Total Stud Adverts</h3><p>{stats.totalAds}</p></div>
-                        <div className="stat-card"><h3>Pending Approvals</h3><p>{stats.pendingAds}</p></div>
-                        <div className="stat-card"><h3>Total Users</h3><p>{stats.totalUsers}</p></div>
-                        <div className="stat-card"><h3>Pending Reviews</h3><p>{stats.pendingReviews}</p></div>
-                    </div>
+            <div className="content-area">
+                <h1 className="page-title">Admin Dashboard</h1>
 
-                    <div className="quick-approvals-wrapper">
-                        <div className="quick-approvals">
-                            <h2>Quick Approvals</h2>
-                            {recentAds.length === 0 ? (
-                                <p>No pending adverts to approve.</p>
-                            ) : (
-                                <ul>
-                                    {recentAds.map(ad => (
-                                        <li key={ad.id}>
-                                            <strong>{ad.breed}</strong> — {ad.name || 'Unnamed'}
-                                            <span> • {ad.description?.substring(0, 60)}...</span>
-                                            <a href={`/admin/approve-adverts`} style={{ marginLeft: '1rem' }}>Approve</a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                {isLoading ? (
+                    <div className="loading-container">
+                        <div className="loading-animation">
+                            <div className="loading-circle"></div>
+                            <div className="loading-lines">
+                                <div className="loading-line"></div>
+                                <div className="loading-line"></div>
+                                <div className="loading-line"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <>
+                        {/* Stats Cards */}
+                        <div className="stats-grid">
+                            <div className="stat-card total-ads">
+                                <div className="stat-icon">
+                                    <FaChartLine />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Total Adverts</h3>
+                                    <p className="stat-value">{stats.totalAds}</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card pending-ads">
+                                <div className="stat-icon">
+                                    <FaClipboardCheck />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Pending Approvals</h3>
+                                    <p className="stat-value">{stats.pendingAds}</p>
+                                </div>
+                                {stats.pendingAds > 0 && (
+                                    <div className="stat-action">
+                                        <Link to="/admin/approve-adverts" className="action-link">
+                                            Review
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="stat-card total-users">
+                                <div className="stat-icon">
+                                    <FaUsers />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Total Users</h3>
+                                    <p className="stat-value">{stats.totalUsers}</p>
+                                </div>
+                                <div className="stat-action">
+                                    <Link to="/admin/manage-users" className="action-link">
+                                        Manage
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="stat-card pending-reviews">
+                                <div className="stat-icon">
+                                    <FaStar />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Pending Reviews</h3>
+                                    <p className="stat-value">{stats.pendingReviews}</p>
+                                </div>
+                                {stats.pendingReviews > 0 && (
+                                    <div className="stat-action">
+                                        <Link to="/admin/approve-reviews" className="action-link">
+                                            Review
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Pending Approvals Section */}
+                        <div className="dashboard-section">
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <FaExclamationTriangle className="section-icon" />
+                                    Pending Approvals
+                                </h2>
+                                {stats.pendingAds > 0 && (
+                                    <Link to="/admin/approve-adverts" className="view-all-link">
+                                        View All
+                                    </Link>
+                                )}
+                            </div>
+
+                            {recentAds.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>No pending adverts to approve.</p>
+                                </div>
+                            ) : (
+                                <div className="approval-list">
+                                    {recentAds.map(ad => (
+                                        <div key={ad.id} className="approval-item">
+                                            <div className="item-content">
+                                                <h3 className="item-title">
+                                                    {ad.breed || 'Unknown Breed'}
+                                                    {ad.name && <span className="item-subtitle"> — {ad.name}</span>}
+                                                </h3>
+                                                <p className="item-description">
+                                                    {ad.description
+                                                        ? ad.description.length > 100
+                                                            ? `${ad.description.substring(0, 100)}...`
+                                                            : ad.description
+                                                        : 'No description provided.'
+                                                    }
+                                                </p>
+                                                <div className="item-meta">
+                                                    <span className="meta-item">
+                                                        {ad.createdAt
+                                                            ? new Date(ad.createdAt.seconds * 1000).toLocaleDateString()
+                                                            : 'Unknown date'
+                                                        }
+                                                    </span>
+                                                    <span className="meta-item">
+                                                        Owner: {ad.ownerName || 'Unknown'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="item-actions">
+                                                <Link to={`/stud-details/${ad.id}`} className="action-button view">
+                                                    <FaEye /> View
+                                                </Link>
+                                                <button className="action-button approve" onClick={() => handleApprove(ad.id)}>
+                                                    <FaCheck /> Approve
+                                                </button>
+                                                <button className="action-button reject" disabled title="Reject functionality coming soon">
+                                                    <FaTimes /> Reject
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
-        </>
+        </div>
     );
 }

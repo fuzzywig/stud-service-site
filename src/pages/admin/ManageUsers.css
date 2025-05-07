@@ -1,0 +1,473 @@
+/* src/pages/admin/ManageUsers.css */
+
+/* Main container - works with AdminSidebar */
+.admin-manage-users-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.admin-manage-users-page *,
+.admin-manage-users-page *::before,
+.admin-manage-users-page *::after {
+    box-sizing: border-box;
+}
+
+.admin-manage-users-page .content-area {
+    flex: 1;
+    padding: 1rem;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin-left: 0; /* Default for mobile when sidebar is collapsed */
+    transition: margin-left 0.3s ease;
+}
+
+/* When sidebar is open on larger screens */
+@media (min-width: 1024px) {
+    .admin-manage-users-page .content-area {
+        margin-left: 250px; /* Width of the sidebar */
+        width: calc(100% - 250px);
+    }
+}
+
+/* Page header */
+.admin-manage-users-page .page-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .page-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.admin-manage-users-page .page-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .page-title {
+        margin-bottom: 0;
+    }
+}
+
+.admin-manage-users-page .page-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-manage-users-page .filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.admin-manage-users-page .filter-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-manage-users-page .filter-button:hover {
+    border-color: #d1d5db;
+    color: #1f2937;
+}
+
+.admin-manage-users-page .filter-button.active {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+/* Search section */
+.admin-manage-users-page .search-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .search-section {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.admin-manage-users-page .search-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .search-container {
+        width: 400px;
+        margin-bottom: 0;
+    }
+}
+
+.admin-manage-users-page .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+.admin-manage-users-page .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: #1f2937;
+    background-color: white;
+    transition: border-color 0.2s;
+}
+
+.admin-manage-users-page .search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-manage-users-page .search-results-count {
+    font-size: 0.875rem;
+    color: #6b7280;
+    white-space: nowrap;
+    padding-left: 0.5rem;
+}
+
+/* Loading state */
+.admin-manage-users-page .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 16rem;
+    width: 100%;
+}
+
+.admin-manage-users-page .loading-animation {
+    display: flex;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+.admin-manage-users-page .loading-circle {
+    border-radius: 9999px;
+    background-color: #e5e7eb;
+    height: 3rem;
+    width: 3rem;
+}
+
+.admin-manage-users-page .loading-lines {
+    margin-left: 1rem;
+    flex: 1 1 0%;
+}
+
+.admin-manage-users-page .loading-line {
+    height: 1rem;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Users grid */
+.admin-manage-users-page .users-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .admin-manage-users-page .users-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .admin-manage-users-page .users-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .admin-manage-users-page .users-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* User card */
+.admin-manage-users-page .user-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.admin-manage-users-page .user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.admin-manage-users-page .user-card-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    background-color: #f9fafb;
+    width: 100%;
+}
+
+.admin-manage-users-page .user-avatar-wrapper {
+    position: relative;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.admin-manage-users-page .user-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.admin-manage-users-page .status-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 9999px;
+    border: 2px solid white;
+}
+
+.admin-manage-users-page .status-active {
+    background-color: #10b981;
+}
+
+.admin-manage-users-page .status-blacklisted {
+    background-color: #ef4444;
+}
+
+.admin-manage-users-page .user-header-info {
+    flex: 1;
+    min-width: 0; /* To handle text overflow */
+    overflow: hidden;
+}
+
+.admin-manage-users-page .user-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-manage-users-page .user-status-badge {
+    display: inline-block;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+}
+
+.admin-manage-users-page .status-badge-active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.admin-manage-users-page .status-badge-blacklisted {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* User card body */
+.admin-manage-users-page .user-card-body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.admin-manage-users-page .user-detail {
+    display: flex;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    overflow: hidden;
+}
+
+.admin-manage-users-page .detail-label {
+    font-weight: 500;
+    color: #6b7280;
+    width: 4rem;
+    flex-shrink: 0;
+}
+
+.admin-manage-users-page .detail-value {
+    color: #1f2937;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* User stats */
+.admin-manage-users-page .user-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f3f4f6;
+    width: 100%;
+}
+
+.admin-manage-users-page .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.admin-manage-users-page .stat-value {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.admin-manage-users-page .stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* User card footer */
+.admin-manage-users-page .user-card-footer {
+    display: flex;
+    padding: 1rem;
+    border-top: 1px solid #f3f4f6;
+    background-color: #f9fafb;
+    width: 100%;
+}
+
+.admin-manage-users-page .view-profile-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: #2563eb;
+    color: white;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin-right: 0.5rem;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.admin-manage-users-page .view-profile-button:hover {
+    background-color: #1d4ed8;
+}
+
+.admin-manage-users-page .view-profile-button svg {
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.admin-manage-users-page .blacklist-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.admin-manage-users-page .blacklist-button.blacklist {
+    background-color: #dc2626;
+    color: white;
+}
+
+.admin-manage-users-page .blacklist-button.blacklist:hover {
+    background-color: #b91c1c;
+}
+
+.admin-manage-users-page .blacklist-button.unblacklist {
+    background-color: #9ca3af;
+    color: white;
+}
+
+.admin-manage-users-page .blacklist-button.unblacklist:hover {
+    background-color: #6b7280;
+}
+
+.admin-manage-users-page .blacklist-button svg {
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* No results */
+.admin-manage-users-page .no-results {
+    background-color: white;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    color: #6b7280;
+    width: 100%;
+}

@@ -1,7 +1,6 @@
 import React from "react";
 import Hero from "../components/Hero";
 import Recommended from "../components/Recommended"; // ✅ Import this
-import PopularBreeds from "../components/PopularBreeds";
 import CTASection from "../components/CTASection";
 import RecentAdverts from "../components/RecentAdverts";
 
@@ -13,7 +12,6 @@ function Home() {
             <RecentAdverts />
 
             <Recommended /> {/* ✅ Add this line */}
-            <PopularBreeds />
             <CTASection />
         </>
     );

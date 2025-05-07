@@ -1,60 +1,63 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import "./Footer.css";
+import React from 'react';
+import './Footer.css'; // Create this file for styling
+import { FaFacebookF, FaInstagram, FaTwitter, FaChevronUp } from 'react-icons/fa';
 
-function Footer() {
+const Footer = () => {
     return (
-        <footer className="site-footer">
-            <div className="footer-container">
-                {/* Column 1: About Us */}
-                <div className="footer-column">
-                    <h4>About Us</h4>
-                    <p>
-                        Stud Service Hub connects dog breeders and owners across the UK.
-                        Our mission is to make finding the perfect stud dog fast, safe, and easy.
-                    </p>
-                </div>
+        <footer className="footer">
 
-                {/* Column 2: Social */}
-                <div className="footer-column">
-                    <h4>Follow Us</h4>
-                    <ul>
-                        <li><a href="#">Facebook</a></li>
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="#">TikTok</a></li>
-                        <li><a href="#">YouTube</a></li>
-                    </ul>
+            <div className="footer-content">
+                <div className="footer-col">
+                    <img
+                        src="https://placehold.co/100x60"
+                        alt="Placeholder Logo"
+                        className="footer-logo"
+                    />                    <p>Find the perfect stud dog for your next litter. Trusted breeders, verified adverts.</p>
+                    <div className="social-icons">
+                        <FaFacebookF />
+                        <FaInstagram />
+                        <FaTwitter />
+                    </div>
                 </div>
-
-                {/* Column 3: Popular Breeds */}
-                <div className="footer-column">
+                <div className="footer-col">
                     <h4>Popular Breeds</h4>
                     <ul>
-                        <li><Link to="/breed/french-bulldog">French Bulldog</Link></li>
-                        <li><Link to="/breed/cocker-spaniel">Cocker Spaniel</Link></li>
-                        <li><Link to="/breed/toy-poodle">Toy Poodle</Link></li>
-                        <li><Link to="/breed/staffy">Staffy</Link></li>
-                        <li><Link to="/breed/golden-retriever">Golden Retriever</Link></li>
+                        <li>Labrador</li>
+                        <li>French Bulldog</li>
+                        <li>Cocker Spaniel</li>
+                        <li>Poodle</li>
                     </ul>
                 </div>
-
-                {/* Column 4: Site Menu */}
-                <div className="footer-column">
-                    <h4>Menu</h4>
+                <div className="footer-col">
+                    <h4>Company</h4>
                     <ul>
-                        <li><Link to="/">Home</Link></li>
-                        <li><Link to="/browse">Browse Studs</Link></li>
-                        <li><Link to="/new-advert">New Advert</Link></li>
-                        <li><Link to="/login">Login</Link></li>
+                        <li>Sitemap</li>
+                        <li>Terms of Service</li>
+                        <li>Privacy Policy</li>
+                        <li>Cookie Policy</li>
+                    </ul>
+                </div>
+                <div className="footer-col">
+                    <h4>Help</h4>
+                    <ul>
+                        <li>Live Chat</li>
+                        <li>FAQ</li>
+                        <li>Terms & Conditions</li>
+                        <li>Contact Us</li>
                     </ul>
                 </div>
             </div>
-
             <div className="footer-bottom">
-                <p>&copy; {new Date().getFullYear()} Stud Service Hub. All rights reserved.</p>
+                <div className="footer-container">
+                    <span>© 2025 Stud Service Hub. All rights reserved.</span>
+                    <div className="footer-scroll-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                        <FaChevronUp />
+                    </div>
+                </div>
             </div>
+
         </footer>
     );
-}
+};
 
 export default Footer;

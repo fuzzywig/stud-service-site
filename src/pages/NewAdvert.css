@@ -1,168 +1,480 @@
+/* NewAdvert.css - Redesigned */
+:root {
+    --primary: #3a6ea5;
+    --primary-dark: #2c5282;
+    --accent: #ff6b6b;
+    --light: #f8fafc;
+    --dark: #2d3748;
+    --text: #4a5568;
+    --border: #e2e8f0;
+    --success: #48bb78;
+    --error: #e53e3e;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+}
+
 .new-advert-page {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    background: #fefef4;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    max-width: 1440px;
+    margin: 0 auto;   /* centers it horizontally */
+    padding: 0 1.5rem; /* preserves your side padding */
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.form-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+    .form-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 .advert-form {
+    padding: 2.5rem 0.5rem 2.5rem;
+    background: white;
+    max-width: 100%;
+}
+
+.advert-form h1 {
+    margin: 0 0 2rem;
+    color: var(--dark);
+    font-size: 1.8rem;
+    font-weight: 700;
+    position: relative;
+}
+
+.advert-form h1:after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background: var(--primary);
+    bottom: -8px;
+    left: 0;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    max-width: 100%;
+}
+
+.form-section-title {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.form-section-title svg {
+    width: 20px;
+    height: 20px;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-
+    margin-bottom: 1.5rem;
 }
 
-.form-group label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #256845;
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-input, select, textarea {
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
     font-size: 1rem;
-    background-color: #fff;
-    color: #000;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: white;
+    color: #2d3748;
 }
 
-textarea {
-    min-height: 100px;
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(58, 110, 165, 0.2);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #a0aec0;
+}
+
+textarea.form-control {
+    min-height: 120px;
     resize: vertical;
 }
 
-.checkbox {
-    flex-direction: row;
-    align-items: center;
+.error {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--error);
+    font-size: 0.85rem;
 }
 
-.submit-button {
-    background-color: #b83c56;
-    color: #fff;
-    padding: 12px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.submit-button:hover {
-    background-color: #9e3047;
-}
-
-/* Image Upload Styling */
-.image-upload {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.image-upload input[type="file"] {
-    padding: 8px;
-    font-size: 1rem;
-}
-
-.preview-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.preview-image-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-}
-
-.preview-image-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.success-message {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: rgba(72, 187, 120, 0.1);
+    border-left: 4px solid var(--success);
+    color: var(--success);
     border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-weight: 500;
 }
 
-.remove-button {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #b83c56;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    font-size: 0.8rem;
-    width: 20px;
-    height: 20px;
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.styled-checkbox {
+    display: flex;
+    align-items: center;
     cursor: pointer;
 }
 
-.remove-button:hover {
-    background: #9e3047;
+.styled-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
 }
 
-/* Responsive tweaks */
-@media (max-width: 600px) {
-    .new-advert-page {
-        padding: 15px;
-    }
-
-    .submit-button {
-        font-size: 1rem;
-        padding: 10px;
-    }
-
-    .preview-image-wrapper {
-        width: 80px;
-        height: 80px;
-    }
+.styled-checkbox span {
+    position: relative;
+    padding-left: 30px;
+    user-select: none;
 }
+
+.styled-checkbox span:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s;
+}
+
+.styled-checkbox input:checked ~ span:before {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.styled-checkbox span:after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.styled-checkbox input:checked ~ span:after {
+    opacity: 1;
+}
+
+.image-upload {
+    border: 2px dashed var(--border);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    text-align: center;
+    transition: all 0.2s;
+}
+.image-upload p {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem; /* <--- Add this to create space below the paragraph */
+}
+
+
+.image-upload:hover {
+    border-color: var(--primary);
+}
+
+.image-upload-label {
+    display: block;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.file-upload-btn {
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .75rem 1.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+}
+
+.file-upload-btn:hover {
+    background: #edf2f7;
+}
+
 .preview-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .preview-image-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
-    flex-shrink: 0;
+    width: 100%;
+    padding-bottom: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
 .preview-image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.remove-button {
+.preview-image-wrapper button {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    background: #b83c56;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
-    border-radius: 50%;
-    font-size: 0.8rem;
-    width: 20px;
-    height: 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s;
 }
 
-.remove-button:hover {
-    background: #9e3047;
+.preview-image-wrapper button:hover {
+    background: rgba(229, 62, 62, 0.9);
 }
+
+.submit-button {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 2rem;
+}
+
+.submit-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.form-help-panel {
+    background: #f1f5f9;
+    padding: 2.5rem 1.5rem;
+}
+
+.form-help-panel h2 {
+    margin: 0 0 1.5rem;
+    color: var(--primary-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.help-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.help-section:last-child {
+    border-bottom: none;
+}
+
+.help-section h4 {
+    margin: 0 0 0.75rem;
+    color: var(--dark);
+    font-size: 1.1rem;
+}
+
+.help-section p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.css-13cymwt-control {
+    border-color: var(--border) !important;
+    border-radius: var(--radius) !important;
+    min-height: 48px !important;
+}
+
+.css-13cymwt-control:hover {
+    border-color: var(--primary) !important;
+}
+
+.css-t3ipsp-control {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 1px var(--primary) !important;
+    border-radius: var(--radius) !important;
+    min-height: 48px !important;
+}
+
+.css-1nmdiq5-menu {
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow) !important;
+}
+/* 1) Give the form more real estate (instead of 1fr/350px) */
+.form-layout {
+    grid-template-columns: 2fr 1fr;
+}
+
+/* 2) Allow the children (form & sidebar) to shrink inside their grid cells */
+.form-layout > * {
+    min-width: 0;
+}
+
+/* 3) Make sure inputs include their padding in the 100% width calculation */
+.form-control,
+textarea.form-control {
+    box-sizing: border-box;
+}
+/* Only show the form (hide help panel) on mobile */
+@media (max-width: 768px) {
+    .form-layout {
+        grid-template-columns: 1fr;  /* just the form column */
+    }
+    .form-help-panel {
+        display: none;               /* hide the sidebar */
+    }
+}
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.preview-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-image-wrapper {
+    width: 100%;
+    aspect-ratio: 10/1;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: #f8fafc;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius);
+}
+
+/* Buttons now in a separate row BELOW the image */
+.image-button-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 6px;
+}
+
+.set-main-btn,
+.remove-image-btn {
+    flex: 1;
+    font-size: 12px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #eee;
+    color: #333;
+    transition: background 0.2s, color 0.2s;
+}
+
+.set-main-btn.active {
+    background-color: #256845;
+    color: #fff;
+    border-color: #256845;
+}
+
+.remove-image-btn {
+    background-color: #b83c56;
+    color: #fff;
+    border: none;
+}
+
+.remove-image-btn:hover {
+    background-color: #992a42;
+}
+/* Remove number input arrows (for Chrome, Safari, Edge) */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove number input arrows (for Firefox) */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+
+

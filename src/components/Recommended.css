@@ -1,51 +1,305 @@
+/* src/components/Recommended.css - Restyled version */
+
+:root {
+    --primary-color: #256845;
+    --secondary-color: #b83c56;
+    --light-bg: #f8f9fa;
+    --border-color: #e0e4e8;
+    --gold: #FFD700;
+    --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
 .recommended-section {
-    background-color: #fefef4;
-    padding: 60px 20px;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f0f6f3, #f6f0f3);
+    position: relative;
+    overflow: hidden;
 }
 
-.recommended-section h2 {
+/* Decorative elements to make it stand out */
+.recommended-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    z-index: 1;
+}
+
+.recommended-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    z-index: 1;
+}
+
+.container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.section-header {
     text-align: center;
-    color: #256845;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin: 0 0 1rem;
+    font-weight: 800;
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+}
+
+.award-icon {
     font-size: 2rem;
-    margin-bottom: 40px;
+    margin: 0 0.75rem;
+    vertical-align: middle;
+    display: inline-block;
+    color: var(--gold);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns */
-    gap: 30px;
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    font-weight: 500;
+    margin-top: 0.5rem;
 }
-.dog-card {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 20px;
+
+.loading-spinner {
     text-align: center;
-    transition: transform 0.2s ease;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 3rem 0;
 }
 
-.dog-card:hover {
-    transform: translateY(-5px);
+/* Grid Layout */
+.stud-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
 }
 
-.dog-image {
-    width: 100%;
-    height: auto;
+/* Card Styling */
+.stud-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    text-decoration: none; /* Remove link styling */
+    color: inherit; /* Inherit text color */
+}
+
+.stud-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--hover-shadow);
+}
+
+.stud-image-wrapper {
+    position: relative;
+}
+
+.stud-image-container {
+    height: 340px;
+    background-color: #f0f2f5;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stud-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+}
+
+.stud-card:hover .stud-image {
+    transform: scale(1.05);
+}
+
+.stud-price {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid white;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.award-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--gold);
+    color: white;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    border: 2px solid white;
+    z-index: 1;
+}
+
+.award-badge-icon {
+    font-size: 1.3rem;
+}
+
+.stud-details {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.stud-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0 0 0.5rem;
+    text-align: center;
+}
+
+.stud-breed {
+    font-size: 1rem;
+    color: #555;
+    margin: 0 0 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.stud-rating {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0;
+}
+
+.stars {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.star {
+    font-size: 1.6rem;
+    margin: 0 0.15rem;
+}
+
+.star.full {
+    color: var(--gold);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.star.half {
+    color: var(--gold);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.star.empty {
+    color: #ddd;
+}
+
+.review-count {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.view-profile-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
     border-radius: 8px;
-    margin-bottom: 15px;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    display: block;
 }
 
-.price {
-    font-weight: bold;
-    color: #b83c56;
+.view-profile-btn:hover {
+    background-color: #9c3349;
 }
-@media (max-width: 1024px) {
-    .card-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns for tablet */
+
+/* Premium indicator ribbon */
+.stud-card::before {
+    content: 'Top Rated';
+    position: absolute;
+    top: 20px;
+    right: -30px;
+    background: var(--secondary-color);
+    color: white;
+    padding: 5px 30px;
+    transform: rotate(45deg);
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 3;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+/* Responsive Layout */
+@media (max-width: 1199px) {
+    .stud-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stud-image-container {
+        height: 280px;
     }
 }
-@media (max-width: 600px) {
-    .card-grid {
-        grid-template-columns: 1fr; /* 1 column for mobile */
+
+@media (max-width: 767px) {
+    .stud-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .recommended-section {
+        padding: 3rem 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
+
+    .award-icon {
+        font-size: 1.6rem;
+    }
+
+    .stud-image-container {
+        height: 320px;
     }
 }

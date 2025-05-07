@@ -25,7 +25,10 @@ a {
     box-sizing: border-box;
 }
 
-
+/* Remove footer styles from here */
+.site-footer {
+    /* Removed footer styles */
+}
 
 /* Header */
 .site-header {
@@ -59,15 +62,6 @@ a {
     margin: 0;
 }
 
-
-/* Footer */
-.site-footer {
-    background-color: #b83c56;
-    color: #fff;
-    padding: 1rem 0;
-    text-align: center;
-    margin-top: 40px;
-}
 .layout {
     width: 100%;
     min-height: 100vh;

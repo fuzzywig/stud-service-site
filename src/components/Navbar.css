@@ -1,19 +1,581 @@
-/* Core navbar layout */
+/* ======== REDESIGNED NAVBAR AND SIDEBAR MENU ======== */
+
+/* ----- TOP NAVBAR STYLES ----- */
 .navbar {
+    background: linear-gradient(to right, #256845 0%, #2d7a52 100%);
+    padding: 12px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow: hidden;
+}
+
+/* Ensure menu icon is clearly visible */
+.menu-icon-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.menu-icon {
+    color: white !important;
+    font-size: 1.4rem !important;
+}
+
+.navbar-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #fefef4;
-    color: #333;
-    padding: 10px 20px;
-    border-bottom: 1px solid #ddd;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .navbar-left {
     display: flex;
     align-items: center;
+    gap: 15px;
 }
 
+.hamburger-btn {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: white;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    /* Make sure icon is clearly visible */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.hamburger-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.5px;
+}
+
+.logo-icon {
+    margin-right: 8px;
+    font-size: 1.4rem;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* New Advert button */
+.advert-btn {
+    background-color: #b83c56;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.advert-btn:hover {
+    background-color: #a12c44;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.advert-btn-icon {
+    font-size: 1rem;
+}
+
+/* Icon link (login/register/profile/messages) */
+.icon-link {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    color: #ffffff;
+    background:none;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.icon-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.icon-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.icon-link.has-notification::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #b83c56;
+    border-radius: 50%;
+    border: 2px solid #256845;
+}
+
+/* Dropdown menu */
+.dropdown-wrapper {
+    position: relative;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    min-width: 180px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    z-index: 100;
+    overflow: hidden;
+    animation: dropdown-appear 0.2s ease;
+}
+
+@keyframes dropdown-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.user-dropdown a:hover {
+    background-color: #f4f9fd;
+    color: #256845;
+}
+
+.dropdown-icon {
+    font-size: 1rem;
+    color: #666;
+}
+
+.user-dropdown a:hover .dropdown-icon {
+    color: #256845;
+}
+
+/* Mobile responsive */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: inline !important;
+    }
+
+    .navbar {
+        padding: 10px 0;
+    }
+
+    .navbar-inner {
+        padding: 0 12px;
+    }
+
+    .advert-btn {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo {
+        font-size: 1.4rem;
+    }
+}
+
+/* ----- SIDEBAR MENU STYLES ----- */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: -360px; /* Increased from -320px to account for wider sidebar */
+    width: 340px; /* Increased from 300px for a wider sidebar */
+    height: 100%;
+    background: white;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.menu-overlay.open {
+    left: 0;
+}
+
+/* Menu header */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #256845;
+    color: white;
+}
+
+.menu-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.close-btn {
+    background: rgba(0, 0, 0, 0.2);    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+.close-btn svg {
+    color: white !important;
+    font-size: 20px;
+}
+/* User section */
+.sidebar-user-section {
+    padding: 24px 20px;
+    background-color: #f4f9fd;
+    border-bottom: 1px solid #e0eaf4;
+}
+
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #256845 0%, #2d7a52 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 3px 8px rgba(37, 104, 69, 0.2);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    margin: 0 0 6px 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.profile-status {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+}
+
+/* Guest section */
+.sidebar-guest {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.sidebar-guest p {
+    margin: 0 0 15px 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.guest-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.guest-button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.login-btn {
+    background-color: #256845;
+    color: white;
+}
+
+.login-btn:hover {
+    background-color: #1d523a;
+}
+
+.register-btn {
+    background-color: white;
+    color: #256845;
+    border: 1px solid #256845;
+}
+
+.register-btn:hover {
+    background-color: #f0f8f3;
+}
+
+/* Category chips */
+.sidebar-categories {
+    padding: 20px;
+    border-bottom: 1px solid #e0eaf4;
+}
+
+.sidebar-categories h3 {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+}
+
+.category-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.category-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: #f4f9fd;
+    color: #256845;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid #dceaf4;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.category-chip:hover {
+    background-color: #256845;
+    color: white;
+    border-color: #256845;
+}
+
+/* Menu items */
+.sidebar-nav {
+    padding: 15px 0;
+}
+
+.menu-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    margin: 5px 0;
+}
+
+.menu-item a {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    gap: 15px;
+}
+
+.menu-item a:hover {
+    background-color: #f4f9fd;
+    color: #256845;
+}
+
+.menu-item a.active {
+    background-color: #f4f9fd;
+    color: #256845;
+    font-weight: 600;
+}
+
+.menu-item a.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #256845;
+}
+
+.menu-icon {
+    font-size: 1.2rem;
+    color: #666;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.menu-item a:hover .menu-icon,
+.menu-item a.active .menu-icon {
+    color: #256845;
+}
+
+/* Footer section */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #e0eaf4;
+    margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sidebar-footer-text {
+    margin: 0 0 15px 0;
+    font-size: 0.85rem;
+    color: #888;
+    text-align: center;
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: #f8e7ea;
+    color: #b83c56;
+    text-decoration: none;
+    font-weight: 600;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.logout-button:hover {
+    background-color: #f2d0d6;
+}
+
+/* Backdrop overlay */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+/* Make the hamburger menu icon in the top navbar clearly visible */
+.navbar .hamburger-btn {
+    background-color: rgba(0, 0, 0, 0.2); /* Dark semi-transparent background */
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar .hamburger-btn:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.navbar .hamburger-btn svg {
+    color: white !important; /* Force white color */
+    font-size: 20px;
+}
+
+/* Original button styles for reference */
 .hamburger-btn {
     background: none;
     border: none;
@@ -22,160 +584,161 @@
     margin-right: 15px;
     font-size: 1.2rem;
 }
+/* Add this to your CSS to force visibility of menu items */
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #256845;
-    text-decoration: none;
-}
-
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-/* Icon link (login/register/profile/messages) */
-.icon-link {
-    padding: 10px;
-    font-size: 1.2rem;
-    color: #256845;
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
-
-.icon-link:hover {
-    color: #1b4f36;
-}
-
-/* New Advert button */
-.advert-btn {
-    background-color: #b83c56;
-    padding: 6px 14px;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-}
-
-.advert-btn:hover {
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #000;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    .advert-btn {
-        padding: 4px 10px;
-        font-size: 0.85rem;
-    }
-}
-
-/* Overlay side menu */
-.menu-overlay {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    width: 250px;
-    height: 100%;
-    background-color: #fefef4;
-    color: #333;
-    z-index: 1000;
-    transition: left 0.3s ease;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-x: hidden;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-}
-
-.menu-overlay.open {
-    left: 0;
-}
-
-.menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.menu-header h2 {
-    font-size: 1.4rem;
-    color: #333;
-    margin: 0;
-    flex-grow: 1;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: #333;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
+/* Debug styles to ensure menu items are visible */
 .menu-items {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.menu-items li {
-    margin-bottom: 15px;
+.menu-item {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.menu-items a {
-    color: #256845;
-    font-weight: bold;
+.menu-item a {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Make sure links have appropriate styling */
+.menu-item a {
+    padding: 12px 20px;
     text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
 }
 
-.menu-items a:hover {
-    color: #242424;
-    text-decoration: none;
+/* Make sure we can see the menu icon */
+.menu-icon {
+    color: #666 !important;
+    font-size: 20px !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-block !important;
 }
 
-/* 🔽 User dropdown under FaUser icon */
+/* Remove any potential overflow issues */
+.sidebar-nav {
+    overflow: visible !important;
+}
+.sidebar-nav-frontend a {
+    color: #000;
+}
+/* Force top-navbar SVG icons to stay white */
+.navbar .navbar-right .icon-link svg,
+.navbar .navbar-left .hamburger-btn svg,
+.navbar .logo-icon {
+    color: #fff !important;
+    fill:  #fff !important;
+}
+
+/* In case the SVG paths themselves need overriding: */
+.navbar .navbar-right .icon-link svg path,
+.navbar .navbar-left .hamburger-btn svg path {
+    stroke: #fff !important;
+    fill:   #fff !important;
+}
+/* ─── Force the top-navbar svgs to render white ─── */
+.navbar .icon-link svg,
+.navbar .hamburger-btn svg,
+.navbar .logo-icon {
+    color:  #fff !important;  /* for currentColor-based icons */
+    fill:   #fff !important;  /* for solid SVGs */
+    stroke: #fff !important;  /* for outlined SVGs */
+}
+/* at the very bottom of Navbar.css */
+.navbar.navbar   .navbar-right   .icon-link   svg {
+    color:  #fff !important;
+    fill:   #fff !important;
+    stroke: #fff !important;
+}
+/* ─── Force navbar SVGs back to normal size ─── */
+.navbar .icon-link svg,
+.navbar .hamburger-btn svg,
+.navbar .logo-icon {
+    width: 1em !important;    /* restore to 1em (≈ your font-size) */
+    height: auto !important;  /* keep aspect-ratio */
+}
+.navbar svg {
+    width: 1em !important;
+    height: auto !important;
+}
+/* Add these styles to your CSS for better visibility of the user profile icon */
+
+/* Ensure the user icon is visible in the navbar */
+.navbar-right .icon-link {
+    border-radius: 8px;
+}
+
+.navbar-right .icon-link svg {
+    color: white !important;
+    font-size: 20px;
+}
+
+/* Improve dropdown visibility */
 .dropdown-wrapper {
     position: relative;
 }
 
 .user-dropdown {
     position: absolute;
-    top: 40px;
+    top: 48px;
     right: 0;
+    min-width: 180px;
     background: white;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    z-index: 10;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 8px 0;
+    z-index: 100;
+}
+/* reset any global button styles for our navbar icon-buttons */
+button.icon-link {
+    all: unset;              /* strip out background, padding, border, etc */
     display: flex;
-    flex-direction: column;
-    min-width: 120px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
-.user-dropdown a {
-    padding: 8px;
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    transition: background 0.2s ease;
+/* rebake our own navbar button look */
+button.icon-link {
+    width: 40px;
+    height: 40px;
+    background: none !important;
+    color: #fff !important;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
 }
 
-.user-dropdown a:hover {
-    background: #f7f7f7;
+/* make sure the SVG inside is always white */
+button.icon-link svg {
+    color: #fff !important;
+    fill:  #fff !important;
+}
+/* Navbar-specific avatar styles */
+.navbar-profile-avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eee;
+}
+
+.navbar-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
