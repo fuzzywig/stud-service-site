@@ -1,0 +1,19 @@
+name: my-pet-connect
+services:
+  - name: web
+    environment_slug: node-js
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: your-username/your-repo
+    build_command: npm run build
+    run_command: node server.cjs
+    source_dir: /
+    envs:
+      - key: NODE_ENV
+        value: production
+    http_port: 5000
+    instance_count: 1
+    instance_size_slug: professional-m
+    routes:
+      - path: /
