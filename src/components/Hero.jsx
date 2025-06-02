@@ -299,7 +299,7 @@ function Hero() {
 
                 {/* RIGHT: Headline Text */}
                 <div className="hero-text">
-                    <h1>Discover, Buy & Sell Pets, Stud Services & Supplies</h1>
+                    <h1>, Buy & Sell Pets, Stud Services & Supplies</h1>
                     <p>
                         Your one-stop marketplace for finding a new pet, offering stud services,
                         or browsing quality accessories—tailored to you and local to your postcode.
