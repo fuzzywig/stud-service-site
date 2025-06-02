@@ -1,0 +1,1194 @@
+/* HelpSupport.css */
+
+/* Container and Layout */
+.hp-container {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+.main-content {
+
+padding: 0;
+    margin: 0;
+    background-color: #f8f9fa;
+
+}
+
+
+
+.hp-header {
+    background: linear-gradient(135deg, #1c5235 0%, #236642 100%);
+    color: white;
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hp-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 40%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.05);
+    transform: rotate(45deg);
+}
+
+.hp-header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.hp-header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.hp-header-subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Tabs Navigation */
+.hp-tabs {
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.hp-tabs-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.hp-tabs-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2rem;
+    justify-content: center; /* This centers the tabs */
+    z-index: 10;
+}
+
+.hp-tab-item {
+    position: relative;
+}
+
+.hp-tab-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+}
+
+.hp-tab-button:hover {
+    color: #4b5563;
+}
+
+.hp-tab-active {
+    color: #667eea;
+}
+
+.hp-tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #667eea;
+}
+
+.hp-tab-badge {
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    margin-left: 0.5rem;
+}
+
+/* Main Content */
+.hp-content {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Loading State */
+.hp-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #6b7280;
+}
+
+.hp-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Search Bar */
+.hp-search-container {
+    margin-bottom: 2rem;
+}
+
+.hp-search-wrapper {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hp-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+.hp-search-input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background-color: #fff;
+}
+
+.hp-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Quick Actions */
+.hp-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.hp-action-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hp-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.hp-action-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.hp-icon-red {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.hp-icon-green {
+    background-color: #d1fae5;
+    color: #10b981;
+}
+.hp-faq-section{
+    padding-bottom: 50px;
+}
+
+.hp-action-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.hp-action-desc {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* FAQ Section */
+.hp-faq-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.hp-faq-category {
+    background: white;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.hp-faq-expanded {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hp-faq-header {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s;
+}
+
+.hp-faq-header:hover {
+    background-color: #f9fafb;
+}
+
+.hp-faq-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hp-faq-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+}
+
+.hp-cat-green { background-color: #d1fae5; color: #10b981; }
+.hp-cat-blue { background-color: #dbeafe; color: #3b82f6; }
+.hp-cat-yellow { background-color: #fef3c7; color: #f59e0b; }
+.hp-cat-red { background-color: #fee2e2; color: #ef4444; }
+.hp-cat-grey { background-color: #f3f4f6; color: #6b7280; }
+.hp-cat-purple { background-color: #ede9fe; color: #8b5cf6; }
+
+.hp-faq-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.hp-faq-count {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #9ca3af;
+    margin-left: 0.5rem;
+}
+
+.hp-faq-chevron {
+    color: #9ca3af;
+    transition: transform 0.3s;
+}
+
+.hp-faq-expanded .hp-faq-chevron {
+    transform: rotate(90deg);
+}
+
+.hp-faq-content {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.hp-question {
+    border-top: 1px solid #f3f4f6;
+    padding: 1rem 0;
+}
+
+.hp-question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.hp-question-text {
+    font-size: 0.9375rem;
+    color: #374151;
+    margin: 0;
+    flex: 1;
+}
+
+.hp-rotated {
+    transform: rotate(90deg);
+}
+
+.hp-answer {
+    margin-top: 0.75rem;
+    padding-left: 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* Login Required */
+.hp-login-required {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hp-login-required h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0 0.5rem;
+    color: #1f2937;
+}
+
+.hp-login-required p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Forms */
+.hp-ticket-form {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hp-form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.hp-form-section:last-of-type {
+    border-bottom: none;
+}
+
+.hp-form-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.hp-form-info p {
+    margin: 0.5rem 0;
+    color: #4b5563;
+}
+
+.hp-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.hp-form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.hp-form-input,
+.hp-form-select,
+.hp-form-textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+    background-color: #fff;
+    color: #2d3436;
+}
+
+.hp-form-input:focus,
+.hp-form-select:focus,
+.hp-form-textarea:focus {
+    outline: none;
+    border-color: #1c5235;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.hp-form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* File Upload */
+.hp-upload-area {
+    border: 2px dashed #1c5235;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.hp-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    cursor: pointer;
+}
+
+.hp-upload-area:hover {
+    border-color: #b83c56;
+    background-color: #f9fafb;
+}
+
+.hp-upload-icon {
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+}
+
+.hp-upload-text {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.hp-upload-link {
+    color: #b83c56;
+    font-weight: 500;
+}
+
+.hp-upload-hint {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* Attachments */
+.hp-attachments {
+    margin-top: 1rem;
+}
+
+.hp-attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+
+.hp-attachment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.hp-attachment-name {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.hp-attachment-size {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.hp-attachment-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+}
+
+.hp-attachment-remove:hover {
+    text-decoration: underline;
+}
+
+/* Buttons */
+.hp-primary-button,
+.hp-submit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #1c5235;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hp-primary-button:hover,
+.hp-submit-button:hover {
+    background-color: #b83c56;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.hp-submit-section {
+    text-align: right;
+    margin-top: 2rem;
+}
+
+/* Alerts */
+.hp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.hp-alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.hp-alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.hp-alert-content {
+    flex: 1;
+}
+
+.hp-alert-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+}
+
+.hp-alert-text {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Tickets Section */
+.hp-tickets-section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Filters */
+.hp-tickets-filters {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.hp-filter-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.hp-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.hp-filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-filter-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.375rem;
+}
+
+.hp-filter-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+    color: #2d3436;
+}
+
+/* Tickets List */
+.hp-tickets-list {
+    overflow-x: auto;
+}
+
+.hp-tickets-header {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 100px 120px 120px 120px;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem 0.5rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.hp-ticket-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.hp-ticket-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 100px 100px 120px 120px 120px;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: center;
+    background-color: white;
+    transition: background-color 0.2s;
+}
+
+.hp-ticket-row:hover {
+    background-color: #f9fafb;
+}
+
+.hp-td {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.hp-td-id {
+    font-weight: 500;
+    color: #b83c56;
+}
+
+.hp-td-subject {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+/* Status Badges */
+.hp-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.hp-status-open {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.hp-status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.hp-status-closed {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+/* Priority Badges */
+.hp-priority {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.hp-priority-low {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.hp-priority-medium {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.hp-priority-high {
+    background-color: #fed7aa;
+    color: #9a3412;
+}
+
+.hp-priority-urgent {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Toggle Button */
+.hp-toggle-button {
+    padding: 0.375rem 0.75rem;
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hp-toggle-button:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+/* Ticket Conversation */
+.hp-ticket-conversation {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.hp-ticket-conversation h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+/* Messages */
+.hp-message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.hp-message-user {
+    background-color: #dbeafe;
+    margin-left: 2rem;
+}
+
+.hp-message-admin {
+    background-color: #f3f4f6;
+    margin-right: 2rem;
+}
+
+.hp-message-header {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.hp-message-header strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+.hp-message p {
+    margin: 0;
+    color: #1f2937;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.hp-no-replies {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 2rem 0;
+}
+
+/* Reply Section */
+.hp-reply-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.hp-reply-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 0.75rem;
+    background-color: #fff;
+}
+
+.hp-reply-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.hp-reply-send-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #1c5235;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hp-reply-send-button:hover:not(:disabled) {
+    background-color: #1c5235;
+}
+
+.hp-reply-send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.hp-ticket-closed-notice {
+    text-align: center;
+    padding: 1rem;
+    background-color: #e5e7eb;
+    color: #6b7280;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+/* No Tickets */
+.hp-no-tickets {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.hp-no-tickets-icon {
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.hp-no-tickets-title {
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.hp-no-tickets-text {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* No Results */
+.hp-no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.hp-no-results-icon {
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.hp-no-results-title {
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.hp-no-results-text {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Search Results */
+.hp-search-results {
+    margin-bottom: 2rem;
+}
+
+.hp-results-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.hp-result-item {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hp-result-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hp-header-title {
+        font-size: 2rem;
+    }
+
+    .hp-tabs-list {
+        gap: 1rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .hp-tab-button {
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+    .hp-quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .hp-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hp-tickets-header,
+    .hp-ticket-row {
+        display: block;
+    }
+
+    .hp-tickets-header {
+        display: none;
+    }
+
+    .hp-ticket-row {
+        padding: 1rem;
+    }
+
+    .hp-td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .hp-td:last-child {
+        border-bottom: none;
+    }
+
+    .hp-td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .hp-message-user,
+    .hp-message-admin {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .hp-tabs,
+    .hp-search-container,
+    .hp-quick-actions,
+    .hp-toggle-button,
+    .hp-reply-section {
+        display: none;
+    }
+
+    .hp-ticket-conversation {
+        display: block !important;
+    }
+}
+@media (max-width: 768px) {
+    .hp-tabs-inner {
+    }
+
+    .hp-tabs-list {
+        gap: 0.5rem;
+        overflow-x: visible;
+        justify-content: space-between;
+    }
+
+    .hp-tab-button {
+        font-size: 0.75rem;
+        padding: 0.75rem 0.25rem;
+        white-space: normal;
+        text-align: center;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .hp-tab-button svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .hp-tab-badge {
+        position: absolute;
+        top: 0.25rem;
+        right: 0;
+        margin-left: 0;
+        font-size: 0.625rem;
+        padding: 0.25rem 0.25rem;
+    }
+}
+/* Replace the existing .hp-form-info styles with these new styles */
+
+/* Contact Information Grid */
+.hp-contact-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+
+.hp-contact-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hp-contact-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #e0e7ff;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.hp-contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0; /* Allows text to truncate if needed */
+}
+
+.hp-contact-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.hp-contact-value {
+    font-size: 0.9375rem;
+    color: #1f2937;
+    font-weight: 500;
+    word-break: break-word; /* Handles long email addresses */
+}
+
+/* Alternative card-style layout (optional) */
+.hp-contact-info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.hp-contact-card {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+}
+
+.hp-contact-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .hp-contact-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .hp-contact-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hp-contact-value {
+        font-size: 0.875rem;
+    }
+}
+
+/* If you want to use different colors for each icon */
+.hp-contact-info-item:nth-child(1) .hp-contact-icon {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
+.hp-contact-info-item:nth-child(2) .hp-contact-icon {
+    background-color: #fce7f3;
+    color: #ec4899;
+}
+
+.hp-contact-info-item:nth-child(3) .hp-contact-icon {
+    background-color: #d1fae5;
+    color: #10b981;
+}
+
+/* Remove the old .hp-form-info styles */
+/* Delete this block from your CSS:
+.hp-form-info p {
+    margin: 0.5rem 0;
+    color: #4b5563;
+}
+*/

@@ -1,507 +1,651 @@
-/* src/pages/admin/ManageUserProfile.css */
+/* ManageUserProfile.css */
 
-/* Main container - works with AdminSidebar */
 .admin-user-profile-page {
     display: flex;
     min-height: 100vh;
-    background-color: #f9fafb;
-    position: relative;
+    background-color: #f8f9fa;
 }
 
-.admin-user-profile-page .content-area {
-    flex: 1 1 0%;
-    padding: 1.5rem;
-    width: 100%;
-    margin-left: 0; /* Default for mobile when sidebar is collapsed */
-    transition: margin-left 0.3s ease;
+.content-area {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px; /* Adjust based on your sidebar width */
 }
 
-/* When sidebar is open on larger screens */
-@media (min-width: 1024px) {
-    .admin-user-profile-page .content-area {
-        margin-left: 250px; /* Width of the sidebar */
-    }
-}
-
-/* Page header */
-.admin-user-profile-page .page-title {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
-    color: #1f2937;
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #333;
     margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
 }
 
-/* Loading state */
-.admin-user-profile-page .loading-container {
+/* Loading State */
+.loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 16rem;
+    height: 300px;
 }
 
-.admin-user-profile-page .loading-animation {
+.loading-animation {
     display: flex;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-circle {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(0, 123, 255, 0.2);
+    border-top-color: rgba(0, 123, 255, 0.8);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 120px;
+}
+
+.loading-line {
+    height: 8px;
+    background-color: rgba(0, 123, 255, 0.2);
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes pulse {
     0%, 100% {
-        opacity: 1;
+        opacity: 0.5;
     }
     50% {
-        opacity: .5;
+        opacity: 1;
     }
 }
 
-.admin-user-profile-page .loading-circle {
-    border-radius: 9999px;
-    background-color: #e5e7eb;
-    height: 3rem;
-    width: 3rem;
-}
-
-.admin-user-profile-page .loading-lines {
-    margin-left: 1rem;
-    flex: 1 1 0%;
-}
-
-.admin-user-profile-page .loading-line {
-    height: 1rem;
-    background-color: #e5e7eb;
-    border-radius: 0.25rem;
-    margin-bottom: 0.5rem;
-}
-
-/* Main profile container */
-.admin-user-profile-page .profile-container {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+/* Profile Container */
+.profile-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
-/* Profile header */
-.admin-user-profile-page .profile-header {
+/* Profile Header */
+.profile-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-@media (min-width: 768px) {
-    .admin-user-profile-page .profile-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-}
-
-.admin-user-profile-page .user-summary {
+.user-summary {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    gap: 1rem;
 }
 
-@media (min-width: 768px) {
-    .admin-user-profile-page .user-summary {
-        margin-bottom: 0;
-    }
-}
-
-.admin-user-profile-page .avatar-container {
+.avatar-container {
     position: relative;
-    margin-right: 1.5rem;
 }
 
-.admin-user-profile-page .user-avatar {
-    height: 5rem;
-    width: 5rem;
-    border-radius: 9999px;
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #f3f4f6;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.admin-user-profile-page .status-indicator {
+.status-indicator {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    height: 1rem;
-    width: 1rem;
-    border-radius: 9999px;
-    border: 2px solid white;
+    bottom: 3px;
+    right: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
 }
 
-.admin-user-profile-page .status-active {
-    background-color: #10b981;
+.status-active {
+    background-color: #28a745;
 }
 
-.admin-user-profile-page .status-blacklisted {
-    background-color: #ef4444;
+.status-blacklisted {
+    background-color: #dc3545;
 }
 
-.admin-user-profile-page .user-header-details {
+.user-header-details {
     display: flex;
     flex-direction: column;
 }
 
-.admin-user-profile-page .user-name {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
+.user-name {
+    font-size: 1.5rem;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.25rem 0;
 }
 
-.admin-user-profile-page .user-id {
-    color: #6b7280;
+.user-id {
     font-size: 0.875rem;
-    margin-bottom: 0.5rem;
+    color: #6c757d;
+    margin: 0 0 0.5rem 0;
 }
 
-.admin-user-profile-page .user-status-badge {
+.user-status-badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
     font-size: 0.75rem;
-    border-radius: 9999px;
+    font-weight: 600;
+    text-transform: uppercase;
     width: fit-content;
 }
 
-.admin-user-profile-page .status-badge-active {
-    background-color: #d1fae5;
-    color: #065f46;
+.status-badge-active {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
 }
 
-.admin-user-profile-page .status-badge-blacklisted {
-    background-color: #fee2e2;
-    color: #991b1b;
+.status-badge-blacklisted {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
-/* Action buttons */
-.admin-user-profile-page .action-buttons {
+.action-buttons {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    justify-content: flex-start;
 }
 
-@media (min-width: 768px) {
-    .admin-user-profile-page .action-buttons {
-        justify-content: flex-end;
-    }
-}
-
-.admin-user-profile-page .action-button {
+.action-button {
     padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    color: white;
+    border-radius: 4px;
     font-weight: 500;
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     border: none;
 }
 
-.admin-user-profile-page .edit-button {
-    background-color: #2563eb;
+.edit-button {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #ced4da;
 }
 
-.admin-user-profile-page .edit-button:hover {
-    background-color: #1d4ed8;
-    color: #fff;
+.edit-button:hover {
+    background-color: #e9ecef;
 }
 
-.admin-user-profile-page .pause-button {
-    background-color: #f59e0b;
+.pause-button {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
 }
 
-.admin-user-profile-page .pause-button:hover {
-    background-color: #d97706;
-    color: #fff;
+.pause-button:hover {
+    background-color: #ffeeba;
 }
 
-.admin-user-profile-page .delete-button {
-    background-color: #dc2626;
-    color: #fff;
+.delete-button {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
-.admin-user-profile-page .delete-button:hover {
-    background-color: #b91c1c;
-    color: #fff;
+.delete-button:hover {
+    background-color: #f5c6cb;
 }
 
-/* Profile main content */
-.admin-user-profile-page .profile-main {
+/* Profile Main Content */
+.profile-main {
     padding: 1.5rem;
 }
 
-.admin-user-profile-page .profile-grid {
+.profile-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
-    grid-template-columns: 1fr;
 }
 
-@media (min-width: 768px) {
-    .admin-user-profile-page .profile-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+/* Cards */
+.user-card,
+.data-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    border: 1px solid #eee;
 }
 
-@media (min-width: 1024px) {
-    .admin-user-profile-page .profile-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .admin-user-profile-page .data-card {
-        grid-column: span 2;
-    }
-}
-
-/* Data cards */
-.admin-user-profile-page .user-card,
-.admin-user-profile-page .data-card {
-    background-color: white;
-    border-radius: 0.375rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
-    height: 100%;
-}
-
-.admin-user-profile-page .section-header {
-    font-size: 1rem;
-    line-height: 1.5rem;
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    font-size: 1.125rem;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
+    margin: 0;
 }
 
-.admin-user-profile-page .count-badge {
-    margin-left: 0.5rem;
-    padding: 0.125rem 0.5rem;
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     font-size: 0.75rem;
-    border-radius: 9999px;
+    font-weight: 600;
 }
 
-.admin-user-profile-page .badge-blue {
-    background-color: #dbeafe;
-    color: #1e40af;
+.badge-blue {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
 }
 
-.admin-user-profile-page .badge-purple {
-    background-color: #ede9fe;
-    color: #5b21b6;
+.badge-purple {
+    background-color: rgba(111, 66, 193, 0.1);
+    color: #6f42c1;
 }
 
-/* User info details */
-.admin-user-profile-page .user-details {
+/* User Details */
+.user-details {
     padding: 1rem;
 }
 
-.admin-user-profile-page .detail-row {
+.detail-row {
     display: flex;
-    align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f3f3;
 }
 
-.admin-user-profile-page .detail-row:last-child {
+.detail-row:last-child {
     border-bottom: none;
 }
 
-.admin-user-profile-page .detail-label {
-    color: #6b7280;
+.detail-label {
+    width: 120px;
     font-weight: 500;
-    width: 6rem;
-    flex-shrink: 0;
+    color: #6c757d;
 }
 
-.admin-user-profile-page .detail-value {
-    color: #1f2937;
-    flex-grow: 1;
-    word-break: break-word;
+.detail-value {
+    flex: 1;
+    color: #212529;
 }
 
-/* Table styles */
-.admin-user-profile-page .table-container {
-    overflow-x: auto;
+/* Advert Cards - Replacing Table */
+.advert-cards-container {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-.admin-user-profile-page .data-table {
-    width: 100%;
-    border-collapse: collapse;
+.advert-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.admin-user-profile-page .table-header {
-    background-color: #f9fafb;
+.advert-card:hover {
+    background-color: #f1f3f5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.admin-user-profile-page .table-header-cell {
-    padding: 0.75rem 1rem;
-    text-align: left;
+.advert-card-content {
+    flex: 1;
+    min-width: 200px;
+}
+
+.advert-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+    color: #343a40;
+}
+
+.advert-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.status-paused {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.status-pending {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.2);
+}
+
+.advert-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.advert-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.card-button {
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
     white-space: nowrap;
 }
 
-.admin-user-profile-page .table-body {
-    background-color: white;
+.view-button {
+    background-color: #e7f5ff;
+    color: #007bff;
+    border: 1px solid #d0e3ff;
 }
 
-.admin-user-profile-page .table-row {
-    border-top: 1px solid #e5e7eb;
+.view-button:hover {
+    background-color: #d0e3ff;
 }
 
-.admin-user-profile-page .table-row:hover {
-    background-color: #f9fafb;
+.pause-button-table {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
 }
 
-.admin-user-profile-page .table-cell {
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    color: #1f2937;
+.pause-button-table:hover {
+    background-color: #ffeeba;
 }
 
-.admin-user-profile-page .status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 9999px;
+.remove-button {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
-.admin-user-profile-page .status-approved {
-    background-color: #d1fae5;
-    color: #065f46;
+.remove-button:hover {
+    background-color: #f5c6cb;
 }
 
-.admin-user-profile-page .status-pending {
-    background-color: #fef3c7;
-    color: #92400e;
+/* Empty State */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
 }
 
-.admin-user-profile-page .action-link {
-    font-size: 0.875rem;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
+/* Error State */
+.error-state {
+    padding: 2rem;
+    text-align: center;
 }
 
-.admin-user-profile-page .view-link {
-    color: #2563eb;
-    margin-right: 0.75rem;
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 1rem;
+    border-radius: 4px;
 }
 
-.admin-user-profile-page .view-link:hover {
-    color: #1d4ed8;
-}
-
-.admin-user-profile-page .remove-link {
-    color: #dc2626;
-}
-
-.admin-user-profile-page .remove-link:hover {
-    color: #b91c1c;
-}
-
-/* Reviews */
-.admin-user-profile-page .reviews-list {
-    padding: 0 1rem 1rem 1rem;
+/* Reviews Section */
+.user-profile-reviews-grid {
     display: grid;
-    gap: 0.75rem;
-    max-height: 500px;
-    overflow-y: auto;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
 }
 
-.admin-user-profile-page .review-card {
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    transition: background-color 0.1s;
+.user-profile-review-item {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.admin-user-profile-page .review-card:hover {
-    background-color: #f9fafb;
+.user-profile-review-item:hover {
+    background-color: #f1f3f5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.admin-user-profile-page .review-text {
-    color: #1f2937;
-    margin-bottom: 0.5rem;
+.user-profile-review-content {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    color: #343a40;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.admin-user-profile-page .review-footer {
+.user-profile-review-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.admin-user-profile-page .star-rating {
+.user-profile-star-rating {
     display: flex;
 }
 
-.admin-user-profile-page .star {
-    height: 1rem;
-    width: 1rem;
+.user-profile-star {
+    width: 16px;
+    height: 16px;
 }
 
-.admin-user-profile-page .star-filled {
-    color: #f59e0b;
+.user-profile-star-filled {
+    color: #ffc107;
 }
 
-.admin-user-profile-page .star-empty {
-    color: #d1d5db;
+.user-profile-star-empty {
+    color: #e2e6ea;
 }
 
-.admin-user-profile-page .review-date {
+.user-profile-review-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     font-size: 0.75rem;
-    color: #6b7280;
 }
 
-/* Empty states */
-.admin-user-profile-page .empty-state {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: #6b7280;
+.user-profile-reviewer-name {
+    font-weight: 500;
+    color: #495057;
 }
 
-/* Error state */
-.admin-user-profile-page .error-state {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 2rem;
-    text-align: center;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+.user-profile-review-date {
+    color: #6c757d;
 }
 
-.admin-user-profile-page .error-message {
-    color: #6b7280;
+.user-profile-show-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
 }
 
-/* Responsive adjustments for the sidebar */
+.user-profile-show-more-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: #007bff;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.user-profile-show-more-btn:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Review Modal */
+.review-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.review-modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.review-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.review-modal-close:hover {
+    color: #343a40;
+}
+
+.review-modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.review-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.review-modal-body {
+    padding: 1rem;
+}
+
+.review-modal-text {
+    margin: 0;
+    line-height: 1.6;
+    color: #343a40;
+}
+
+.review-modal-footer {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.review-modal-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.review-modal-rating {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .admin-user-profile-page .content-area {
+    .content-area {
+        margin-left: 0;
         padding: 1rem;
     }
 
-    .admin-user-profile-page .profile-header {
-        padding: 1rem;
+    .profile-header,
+    .action-buttons {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .admin-user-profile-page .profile-main {
-        padding: 1rem;
+    .advert-card {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .admin-user-profile-page .user-avatar {
-        height: 4rem;
-        width: 4rem;
+    .advert-card-actions {
+        width: 100%;
+        justify-content: space-between;
     }
+
+    .user-profile-reviews-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.admin-user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.default-avatar-icon {
+    font-size: 100px;
+    color: #ccc;
 }

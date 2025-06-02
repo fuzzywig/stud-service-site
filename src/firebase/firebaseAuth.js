@@ -11,6 +11,7 @@ import {
     signOut
 } from "firebase/auth";
 
+
 export const registerUser = async (email, password) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -51,11 +52,14 @@ export function useAuth() {
 
             if (user) {
                 try {
+                    // 🔁 Force refresh token to get latest custom claims
+                    await user.getIdToken(true);
+
                     const docRef = doc(db, "users", user.uid);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         setUserData({
-                            uid: user.uid, // ✅ include uid
+                            uid: user.uid,
                             ...docSnap.data()
                         });
                     } else {
@@ -74,6 +78,7 @@ export function useAuth() {
 
         return () => unsubscribe();
     }, []);
+
 
     return { currentUser, userData, loading };
 }

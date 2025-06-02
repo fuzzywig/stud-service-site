@@ -1,206 +1,195 @@
-.footer {
-    background-color: #1c5235;  /* or whatever your main footer bg is */
+.mpc-footer {
+    background-color: #1c5235;
     color: white;
-    padding-top: 60px;
+    padding-top: 80px;
+    position: relative;
+    overflow: hidden;
 }
 
-.footer-wave svg {
+/* Fancy divider */
+.mpc-footer-wave {
+    position: relative;
+    height: 70px;
+    margin-top: -70px;
+    margin-bottom: 40px;
+}
+
+.mpc-footer-wave svg {
     display: block;
     width: 100%;
-    height: 100px;
-    margin-bottom: -2px;
+    height: 70px;
+    transform: translateY(1px);
 }
 
-.footer-content {
+.mpc-footer-content {
     max-width: 1440px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     gap: 40px;
     padding: 0 20px;
+    position: relative;
+    z-index: 2;
 }
 
-.footer-col {
+.mpc-footer-col {
     flex: 1;
     min-width: 200px;
 }
 
+/* First column with logo and social media */
+.mpc-footer-col:first-child {
+    display: flex;
+    flex-direction: column;
+}
 
-/* General h4 style - now default to left-align */
-.footer-col h4 {
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+.mpc-footer-logo {
+    display: block;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.mpc-footer-logo:hover {
+    transform: translateY(-3px);
+}
+
+.mpc-footer-col:first-child p {
+    line-height: 1.6;
+    opacity: 0.9;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+/* Enhanced headings */
+.mpc-footer-col h4 {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
     color: #fff;
     position: relative;
     padding-bottom: 5px;
     text-align: left;
+    letter-spacing: 0.5px;
+    font-weight: 600;
 }
 
-/* Only center and underline the first column's heading */
-.footer-col:first-child h4 {
-    text-align: center;
-}
-
-.footer-col:first-child h4::after {
+/* Animated underline for headings */
+.mpc-footer-col h4::after {
     content: "";
     display: block;
     width: 40px;
     height: 3px;
-    background-color: #256845;
-    margin: 8px auto 0;
+    background-color: #b83c56;
+    margin-top: 10px;
+    margin-bottom: 16px;
     border-radius: 2px;
+    transition: width 0.3s ease;
 }
 
-
-
-.footer-col h4::after {
-    content: "";
-    display: block;
-    width: 40px;
-    height: 3px;
-    background-color: #fff;
-    margin-top: 8px;
-    margin-bottom: 16px; /* 👈 This adds more spacing below the underline */
-    border-radius: 2px;
+.mpc-footer-col:hover h4::after {
+    width: 60px;
 }
 
-.footer-col ul {
+/* Enhanced links */
+.mpc-footer-col ul {
     list-style: none;
     padding: 0;
 }
 
-.footer-col ul li {
-    margin-bottom: 8px;
-    cursor: pointer;
-}
-
-.footer-logo {
-    display: block;
-    margin-bottom: 12px;
-}
-
-.social-icons svg {
-    font-size: 18px;
-    margin-right: 12px;
-    cursor: pointer;
-}
-
-.footer-bottom {
-    width: 100%;
-    background-color: #14432e;  /* slightly darker or same as footer */
-    clear: both;
-    padding: 16px 0;
-}
-.footer-container {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 20px;
-    text-align: left;
-    font-size: 0.9rem;
-}
-
-.scroll-top {
-    color: #fff;
-    font-size: 1.2rem;
-    text-decoration: none;
-    padding-top: 15px;
-}
-
-.scroll-top:hover {
-    color: #b83c56;
-}
-
-@media (max-width: 768px) {
-    .footer-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px 20px;
-        padding: 30px 20px;
-        text-align: left;
-    }
-
-    .footer-col {
-        min-width: 100%;
-    }
-
-    .footer-logo {
-        margin: 0 auto 10px auto;
-        display: block;
-    }
-
-    .footer-logo-text {
-        text-align: center;
-    }
-
-    .footer-col:first-child {
-        text-align: center;
-    }
-
-    .footer-col:first-child p {
-        max-width: 90%;
-        margin: 0 auto;
-    }
-
-    .social-icons {
-        justify-content: center;
-        display: flex;
-        margin-top: 16px;
-        gap: 16px;
-    }
-
-
-
-    .footer-container {
-        max-width: 1440px;
-        margin: 0 auto;      /* center it */
-        padding: 0 20px;     /* small side padding on mobile */
-        text-align: left;    /* keep text left-aligned */
-    }
-
-    .scroll-top {
-        margin-top: 10px;
-    }
-}
-
-
-
-.footer-logo-text {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #ffffff;
+.mpc-footer-col ul li {
     margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
 }
-.social-icons {
-    margin-top: 16px; /* 👈 adds space between the paragraph and icons */
+.mpc-footer-col ul li a:hover {
+    color: #fff;
 }
-.social-icons:hover{
-    color: #b83c56;
+
+.mpc-footer-col ul li::before {
+    content: "→";
+    display: inline-block;
+    margin-right: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+    opacity: 0;
+    transform: translateX(-8px);
+}
+
+.mpc-footer-col ul li:hover {
+    color: #fff;
+}
+
+.mpc-footer-col ul li:hover::before {
+    opacity: 1;
+    color: #fff;
+}
+
+/* Enhanced social icons */
+/* Existing styles */
+.mpc-footer-social-icons {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
 
 }
-.footer-bottom {
-    width: 100%;
-    background-color: #256845;  /* slightly darker or same as footer */
-    clear: both;
-    padding: 30px 0;
-    margin-top: 40px;
-}
-.footer-scroll-top-btn {
-    background-color: #256845;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    padding: 10px;
+
+.mpc-footer-social-icons svg {
+    font-size: 46px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
+
 }
 
-.footer-scroll-top-btn:hover {
-    background-color: #1c5235;
+.mpc-footer-social-icons svg:hover {
+    color: #fff;
+    transform: translateY(-5px) rotate(8deg);
 }
-.footer-scroll-top {
+
+/* 🔍 Add this for desktop view */
+@media (min-width: 768px) {
+    .mpc-footer-social-icons svg {
+        font-size: 38px;
+        width: 46px;
+        height: 46px;
+    }
+}
+
+/* Enhanced footer bottom */
+.mpc-footer-bottom {
+    width: 100%;
+    background-color: rgba(20, 67, 46, 0.9);
+    clear: both;
+    padding: 20px 0;
+    margin-top: 60px;
+    position: relative;
+    z-index: 2;
+}
+
+.mpc-footer-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mpc-footer-container span {
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Scroll to top button - original design */
+.mpc-footer-scroll-top {
     cursor: pointer;
     background-color: #1c5235;
     color: white;
@@ -214,12 +203,133 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.footer-scroll-top:hover {
+.mpc-footer-scroll-top:hover {
     background-color: #b83c56;
     transform: translateY(-2px);
 }
-.footer-container {
+
+.mpc-footer-scroll-top:active {
+    transform: translateY(0);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .mpc-footer {
+        padding-top: 60px;
+    }
+
+    .mpc-footer-wave {
+        height: 50px;
+        margin-top: -50px;
+    }
+
+    .mpc-footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px 25px;
+        padding: 30px 20px;
+    }
+
+    /* Make the first column span full width */
+    .mpc-footer-col:first-child {
+        grid-column: 1 / -1;
+        text-align: center;
+        align-items: center;
+    }
+
+    .mpc-footer-col:first-child p {
+        max-width: 90%;
+        margin: 0 auto 20px;
+    }
+
+    .mpc-footer-logo {
+        margin: 0 auto 20px;
+    }
+
+    .mpc-social-icons {
+        justify-content: center;
+    }
+
+    /* Ensure other columns have proper spacing */
+    .mpc-footer-col h4 {
+        margin-bottom: 15px;
+    }
+
+    /* Bottom footer adjustments */
+    .mpc-footer-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 15px 20px;
+        text-align: center;
+    }
+}
+
+/* Even smaller devices - smartphone size */
+@media (max-width: 480px) {
+    /* Hide the Popular Breeds section (the second column) */
+    .mpc-footer-col:nth-child(2) {
+        display: none;
+    }
+
+    .mpc-footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 35px;
+    }
+
+    .mpc-footer-col h4 {
+        text-align: center;
+    }
+
+    .mpc-footer-col h4::after {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .mpc-footer-col ul {
+        text-align: center;
+    }
+
+    .mpc-footer-col ul li {
+        justify-content: center;
+    }
+
+    .mpc-footer-col ul li::before {
+        display: none;
+    }
+
+    .mpc-footer-bottom {
+        margin-top: 40px;
+    }
+}
+.mpc-footer-bottom-flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 5px 0;
+}
+
+.mpc-footer-cookie-info {
+    font-size: 0.9rem;
+    color: #ccc;
+    max-width: 100%;
+
+}
+
+.mpc-footer-cookie-link {
+    color: #ccc;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.mpc-footer-cookie-link:hover {
+    color: #fff;
+}
+.mpc-footer-cookie-info a:hover {
+    font-size: 0.9rem;
+    color: #ccc;
+    max-width: 100%;
+
+
 }

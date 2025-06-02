@@ -1,305 +1,467 @@
-/* src/components/Recommended.css - Restyled version */
-
+/* src/components/Recommended.css */
 :root {
-    --primary-color: #256845;
-    --secondary-color: #b83c56;
-    --light-bg: #f8f9fa;
-    --border-color: #e0e4e8;
-    --gold: #FFD700;
-    --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.05);
-    --hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
+    --recommended-studs-primary: #256845;
+    --recommended-studs-secondary: #b83c56;
+    --recommended-studs-accent: #ffde59;
+    --recommended-studs-trophy: #ffd700; /* Gold color for trophy icon */
+    --recommended-studs-text-dark: #333;
+    --recommended-studs-text-light: #777;
+    --recommended-studs-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+    --recommended-studs-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+    --recommended-studs-transition-fast: 0.2s ease;
+    --recommended-studs-transition-medium: 0.3s ease;
+    --recommended-studs-border-radius: 12px;
+    --recommended-studs-divider-color: #f0f0f0;
 }
 
-.recommended-section {
-    padding: 4rem 2rem;
-    background: linear-gradient(135deg, #f0f6f3, #f6f0f3);
+.recommended-studs-section {
+    padding: 1rem 1rem;
+    background-color: #f0f0f0;
+}
+
+.recommended-studs-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.recommended-studs-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--recommended-studs-primary);
     position: relative;
-    overflow: hidden;
+    padding-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }
 
-/* Decorative elements to make it stand out */
-.recommended-section::before {
-    content: '';
+.recommended-studs-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background-color: var(--recommended-studs-primary);
+    border-radius: 4px;
+}
+
+.recommended-studs-trophy-icon {
+    color: var(--recommended-studs-trophy);
+}
+
+.recommended-studs-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--recommended-studs-text-light);
+    margin-bottom: 3rem;
+}
+
+.recommended-studs-loading {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.2rem;
+    color: var(--recommended-studs-text-light);
+}
+
+/* Responsive grid layout */
+.recommended-studs-grid {
+    display: grid;
+    gap: 2rem;
+    width: 100%;
+}
+
+/* Mobile layout: 1 column */
+@media (max-width: 767px) {
+    .recommended-studs-grid {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Tablet layout: 2 columns */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .recommended-studs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop layout: 4 columns */
+@media (min-width: 1200px) {
+    .recommended-studs-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Card styling */
+.recommended-studs-card {
+    position: relative;
+    border-radius: var(--recommended-studs-border-radius);
+    box-shadow: var(--recommended-studs-shadow);
+    overflow: hidden;
+    transition: transform var(--recommended-studs-transition-medium), box-shadow var(--recommended-studs-transition-medium);
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.recommended-studs-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--recommended-studs-shadow-hover);
+}
+
+/* Card header */
+.recommended-studs-card-header {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
-    z-index: 1;
-}
-
-.recommended-section::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    z-index: 1;
-}
-
-.container {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    position: relative;
-}
-
-.section-header h2 {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin: 0 0 1rem;
-    font-weight: 800;
-    display: inline-block;
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
     z-index: 2;
 }
 
-.award-icon {
-    font-size: 2rem;
-    margin: 0 0.75rem;
-    vertical-align: middle;
-    display: inline-block;
-    color: var(--gold);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.section-subtitle {
-    font-size: 1.2rem;
-    color: var(--secondary-color);
-    font-weight: 500;
-    margin-top: 0.5rem;
-}
-
-.loading-spinner {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #666;
-    padding: 3rem 0;
-}
-
-/* Grid Layout */
-.stud-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-}
-
-/* Card Styling */
-.stud-card {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: var(--box-shadow);
-    overflow: hidden;
-    transition: var(--transition);
+/* Controls container for trophy and favorite */
+.recommended-studs-controls {
     display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-    text-decoration: none; /* Remove link styling */
-    color: inherit; /* Inherit text color */
-}
-
-.stud-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--hover-shadow);
-}
-
-.stud-image-wrapper {
-    position: relative;
-}
-
-.stud-image-container {
-    height: 340px;
-    background-color: #f0f2f5;
-    position: relative;
-    overflow: hidden;
-    display: flex;
+    gap: 10px; /* Space between trophy and heart */
     align-items: center;
-    justify-content: center;
 }
 
-.stud-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    transition: transform 0.4s ease;
-}
-
-.stud-card:hover .stud-image {
-    transform: scale(1.05);
-}
-
-.stud-price {
-    position: absolute;
-    bottom: 15px;
-    left: 15px;
-    background-color: var(--primary-color);
+.recommended-studs-price {
+    background-color: var(--recommended-studs-primary);
     color: white;
     font-weight: 700;
-    font-size: 1.1rem;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 2px solid white;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-    z-index: 1;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    font-size: 1rem;
+    padding: 6px 12px;
+    border-radius: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.award-badge {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: var(--gold);
-    color: white;
+.recommended-studs-trophy {
+    background-color: var(--recommended-studs-trophy);
+    border: none;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-    border: 2px solid white;
-    z-index: 1;
+    color: white;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.award-badge-icon {
-    font-size: 1.3rem;
+/* Favorite button styling */
+.recommended-studs-favorite {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--recommended-studs-transition-fast);
+    color: #ccc;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.stud-details {
-    padding: 1.5rem;
+.recommended-studs-favorite:hover {
+    background-color: white;
+}
+
+.recommended-studs-favorite.active {
+    color: var(--recommended-studs-secondary);
+    background-color: white;
+}
+
+/* Card image */
+.recommended-studs-image-container {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    display: block;
+    background-color: #f8f8f8; /* Light background to handle transparent images */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommended-studs-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform var(--recommended-studs-transition-medium);
+    padding: 10px; /* Add padding to prevent image touching edges */
+}
+
+.recommended-studs-card:hover .recommended-studs-image {
+    transform: scale(1.05);
+}
+
+.recommended-studs-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--recommended-studs-transition-fast);
+}
+
+.recommended-studs-overlay span {
+    color: white;
+    font-weight: 600;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    border-radius: 4px;
+}
+
+.recommended-studs-card:hover .recommended-studs-overlay {
+    opacity: 1;
+}
+
+/* Card content with flex layout to push details to bottom */
+.recommended-studs-content {
+    padding: 1.2rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
 }
 
-.stud-name {
-    font-size: 1.4rem;
+.recommended-studs-card-title {
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--primary-color);
-    margin: 0 0 0.5rem;
-    text-align: center;
+    color: var(--recommended-studs-primary);
+    margin: 0;
+    line-height: 1.3;
+    min-height: 1.3em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.stud-breed {
-    font-size: 1rem;
-    color: #555;
-    margin: 0 0 1rem;
-    text-align: center;
-    font-weight: 500;
+/* Spacer to push details to bottom */
+.recommended-studs-spacer {
+    flex-grow: 1;
+    min-height: 10px;
 }
 
-.stud-rating {
-    margin-top: auto;
+/* Details divider styling - fixed above details */
+.recommended-studs-details-divider {
+    height: 1px;
+    background-color: var(--recommended-studs-divider-color);
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* Details section right above footer */
+.recommended-studs-details {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 0.5rem;
-    margin-bottom: 0;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
-.stars {
+.recommended-studs-detail-item {
     display: flex;
-    margin-bottom: 0.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--recommended-studs-text-light);
+    font-size: 0.95rem;
 }
 
-.star {
-    font-size: 1.6rem;
-    margin: 0 0.15rem;
+.recommended-studs-detail-item svg {
+    color: var(--recommended-studs-primary);
+    width: 16px;
 }
 
-.star.full {
-    color: var(--gold);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+/* Card footer with three elements */
+.recommended-studs-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--recommended-studs-divider-color);
 }
 
-.star.half {
-    color: var(--gold);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.star.empty {
-    color: #ddd;
-}
-
-.review-count {
+/* Rating styles */
+.recommended-studs-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background-color: var(--recommended-studs-primary);
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
     font-size: 0.9rem;
-    color: #666;
+}
+
+.recommended-studs-star-icon {
+    color: var(--recommended-studs-accent);
+}
+
+/* Views count styles - in center */
+.recommended-studs-views {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--recommended-studs-text-light);
+    font-size: 0.9rem;
+    background-color: #f5f5f5;
+    padding: 5px 10px;
+    border-radius: 4px;
     font-weight: 500;
 }
 
-.view-profile-btn {
-    background-color: var(--secondary-color);
+/* Reviews count styles - with green background like rating */
+.recommended-studs-reviews {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: var(--recommended-studs-primary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Section footer */
+.recommended-studs-more {
+    text-align: center;
+    margin-top: 3rem;
+    margin-bottom: 20px;
+}
+
+.recommended-studs-more-text {
+    font-size: 1.1rem;
+    color: var(--recommended-studs-text-dark);
+    margin-bottom: 1rem;
+}
+
+.recommended-studs-more-button {
+    background: none;
     border: none;
-    font-weight: 700;
+    color: #c8c8c8;
+    text-decoration: none;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    text-align: center;
-    display: block;
+    padding: 0;
+    margin-top: 0.5rem;
+    font-weight: 500;
 }
 
-.view-profile-btn:hover {
-    background-color: #9c3349;
+.recommended-studs-more-button:hover {
+    text-decoration: none;
+    color: #b83c56;
 }
 
-/* Premium indicator ribbon */
-.stud-card::before {
-    content: 'Top Rated';
-    position: absolute;
-    top: 20px;
-    right: -30px;
-    background: var(--secondary-color);
-    color: white;
-    padding: 5px 30px;
-    transform: rotate(45deg);
-    font-size: 0.8rem;
-    font-weight: 700;
-    z-index: 3;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-}
-
-/* Responsive Layout */
-@media (max-width: 1199px) {
-    .stud-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .stud-image-container {
-        height: 280px;
-    }
-}
-
+/* Mobile adjustments */
 @media (max-width: 767px) {
-    .stud-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .recommended-section {
-        padding: 3rem 1rem;
-    }
-
-    .section-header h2 {
+    .recommended-studs-title {
         font-size: 2rem;
+        gap: 0.5rem;
     }
 
-    .award-icon {
-        font-size: 1.6rem;
+    .recommended-studs-subtitle {
+        font-size: 1.1rem;
     }
 
-    .stud-image-container {
-        height: 320px;
+    .recommended-studs-image-container {
+        height: 260px; /* Keep larger image container for mobile */
     }
+
+    .recommended-studs-card-title {
+        font-size: 1.4rem;
+    }
+
+    .recommended-studs-details-divider {
+        margin-bottom: 1.2rem;
+    }
+
+    .recommended-studs-detail-item {
+        font-size: 1rem;
+    }
+
+    .recommended-studs-price {
+        font-size: 1.1rem;
+    }
+
+    .recommended-studs-controls {
+        gap: 8px; /* Slightly less space on mobile */
+    }
+
+    .recommended-studs-trophy,
+    .recommended-studs-favorite {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .recommended-studs-rating,
+    .recommended-studs-views,
+    .recommended-studs-reviews {
+        font-size: 1rem;
+        padding: 6px 8px; /* Slightly less horizontal padding on mobile */
+    }
+}
+
+/* Tablet specific adjustments for image uniformity */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .recommended-studs-image-container {
+        height: 220px; /* Consistent height for tablets */
+    }
+}
+
+/* Desktop specific adjustments for image uniformity */
+@media (min-width: 1200px) {
+    .recommended-studs-image-container {
+        height: 220px; /* Consistent height for desktop */
+    }
+}
+.recommended-studs-favorite {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    color: #ccc;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.recommended-studs-favorite:hover {
+    color: #b83c56;
+    transform: scale(1.1);
+    background-color: white;
+}
+
+.recommended-studs-favorite.active {
+    color: #b83c56;
+    background-color: white;
 }

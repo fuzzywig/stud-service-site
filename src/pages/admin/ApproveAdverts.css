@@ -4,7 +4,7 @@
 .admin-approve-adverts-page {
     display: flex;
     min-height: 100vh;
-    background-color: #f9fafb;
+    background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
     position: relative;
     width: 100%;
     overflow-x: hidden;
@@ -17,32 +17,136 @@
     box-sizing: border-box;
 }
 
+/* Content area */
 .admin-approve-adverts-page .content-area {
     flex: 1;
-    padding: 1rem;
+    padding: 1.5rem;
     max-width: 100%;
     overflow-x: hidden;
-    margin-left: 0; /* Default for mobile when sidebar is collapsed */
+    margin-left: 0;
     transition: margin-left 0.3s ease;
 }
 
-/* When sidebar is open on larger screens */
 @media (min-width: 1024px) {
     .admin-approve-adverts-page .content-area {
-        margin-left: 250px; /* Width of the sidebar */
+        margin-left: 250px;
         width: calc(100% - 250px);
+        padding: 2.5rem;
     }
 }
 
-/* Page title */
+/* Page header */
 .admin-approve-adverts-page .page-title {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
+    font-size: 2.25rem;
+    line-height: 2.75rem;
+    font-weight: 800;
     color: #1f2937;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #e5e7eb;
+    letter-spacing: -0.025em;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+@media (min-width: 768px) {
+    .admin-approve-adverts-page .page-title {
+        font-size: 2.75rem;
+        line-height: 3.25rem;
+    }
+}
+
+@media (max-width: 1023px) {
+    .admin-approve-adverts-page .page-title {
+        padding-left: 3rem;
+    }
+}
+
+/* Search section */
+.admin-approve-adverts-page .search-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    width: 100%;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@media (min-width: 768px) {
+    .admin-approve-adverts-page .search-section {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.admin-approve-adverts-page .search-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .admin-approve-adverts-page .search-container {
+        width: 500px;
+        margin-bottom: 0;
+    }
+}
+
+.admin-approve-adverts-page .search-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 1.25rem;
+}
+
+.admin-approve-adverts-page .search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border-radius: 0.75rem;
+    border: 2px solid #e5e7eb;
+    font-size: 1rem;
+    color: #1f2937;
+    background-color: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.admin-approve-adverts-page .search-input::placeholder {
+    color: #9ca3af;
+}
+
+.admin-approve-adverts-page .search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background-color: white;
+}
+
+.admin-approve-adverts-page .search-results-count {
+    font-size: 0.9375rem;
+    color: #6b7280;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.admin-approve-adverts-page .search-results-count::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #f59e0b;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
 }
 
 /* Loading state */
@@ -50,41 +154,70 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 16rem;
+    height: 24rem;
     width: 100%;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .admin-approve-adverts-page .loading-animation {
     display: flex;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: .5;
-    }
+    align-items: center;
+    gap: 1rem;
 }
 
 .admin-approve-adverts-page .loading-circle {
-    border-radius: 9999px;
-    background-color: #e5e7eb;
-    height: 3rem;
-    width: 3rem;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+    animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
 }
 
 .admin-approve-adverts-page .loading-lines {
-    margin-left: 1rem;
-    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .admin-approve-adverts-page .loading-line {
-    height: 1rem;
-    background-color: #e5e7eb;
+    height: 0.5rem;
+    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
     border-radius: 0.25rem;
-    margin-bottom: 0.5rem;
+    width: 120px;
+    animation: shimmer 1.5s infinite;
+}
+
+.admin-approve-adverts-page .loading-line:nth-child(2) {
+    width: 100px;
+    animation-delay: 0.2s;
+}
+
+.admin-approve-adverts-page .loading-line:nth-child(3) {
+    width: 140px;
+    animation-delay: 0.4s;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
 }
 
 /* Empty state */
@@ -92,457 +225,534 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 16rem;
+    min-height: 24rem;
     width: 100%;
 }
 
 .admin-approve-adverts-page .empty-state-content {
     text-align: center;
-    padding: 2rem;
+    padding: 4rem;
     background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    max-width: 400px;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-width: 450px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .admin-approve-adverts-page .empty-state-icon {
-    font-size: 3rem;
+    font-size: 5rem;
     color: #10b981;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 6px rgba(16, 185, 129, 0.2));
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .admin-approve-adverts-page .empty-state-content h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.75rem;
+    font-weight: 700;
     color: #1f2937;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0;
 }
 
 .admin-approve-adverts-page .empty-state-content p {
     color: #6b7280;
     margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
 }
 
-/* Adverts grid */
-.admin-approve-adverts-page .adverts-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    width: 100%;
-}
-
-@media (min-width: 640px) {
-    .admin-approve-adverts-page .adverts-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1280px) {
-    .admin-approve-adverts-page .adverts-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Advert cards */
-.admin-approve-adverts-page .advert-card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    overflow: hidden;
+/* Adverts list */
+.admin-approve-adverts-page .adverts-list {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: 1.75rem;
+    width: 100%;
 }
 
-.admin-approve-adverts-page .advert-card:hover {
-    transform: translateY(-2px);
+/* Advert list item */
+.admin-approve-adverts-page .advert-list-item {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    border-radius: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Advert image */
-.admin-approve-adverts-page .advert-image-container {
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.6s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.05);
     position: relative;
-    width: 100%;
+}
+
+.admin-approve-adverts-page .advert-list-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 640px) {
+    .admin-approve-adverts-page .advert-list-item {
+        flex-direction: column;
+    }
+}
+
+/* Advert thumbnail */
+.admin-approve-adverts-page .advert-thumbnail {
+    position: relative;
+    width: 200px;
     height: 200px;
-    background-color: #f3f4f6;
-}
-
-.admin-approve-adverts-page .advert-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.admin-approve-adverts-page .advert-image-placeholder {
-    width: 100%;
-    height: 100%;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
-    font-size: 0.875rem;
-}
-
-.admin-approve-adverts-page .advert-image-count {
-    position: absolute;
-    bottom: 0.5rem;
-    right: 0.5rem;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-}
-
-/* Advert content */
-.admin-approve-adverts-page .advert-content {
-    padding: 1rem;
-    flex: 1;
-}
-
-.admin-approve-adverts-page .advert-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 0.75rem 0;
-}
-
-.admin-approve-adverts-page .advert-breed {
-    font-weight: normal;
-    color: #6b7280;
-    margin-left: 0.25rem;
-}
-
-.admin-approve-adverts-page .advert-details {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.admin-approve-adverts-page .advert-detail {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-    color: #4b5563;
-}
-
-.admin-approve-adverts-page .detail-icon {
-    color: #6b7280;
-    margin-right: 0.5rem;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
-.admin-approve-adverts-page .advert-description {
-    font-size: 0.875rem;
-    color: #4b5563;
-    margin-top: 0.75rem;
-    line-height: 1.5;
-    height: 4.5em; /* Approximately 3 lines */
-    overflow: hidden;
-    position: relative;
-}
-
-.admin-approve-adverts-page .advert-description::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 70%;
-    height: 1.5em;
-    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
-}
-
-/* Advert actions */
-.admin-approve-adverts-page .advert-actions {
-    display: flex;
-    padding: 1rem;
-    border-top: 1px solid #f3f4f6;
-    background-color: #f9fafb;
-}
-
-.admin-approve-adverts-page .action-button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border: none;
-}
-
-.admin-approve-adverts-page .action-button:not(:last-child) {
-    margin-right: 0.5rem;
-}
-
-.admin-approve-adverts-page .action-button svg {
-    margin-right: 0.5rem;
-}
-
-.admin-approve-adverts-page .action-button.view {
-    background-color: #e5e7eb;
-    color: #1f2937;
-}
-
-.admin-approve-adverts-page .action-button.view:hover {
-    background-color: #d1d5db;
-}
-
-.admin-approve-adverts-page .action-button.approve {
-    background-color: #10b981;
-    color: white;
-}
-
-.admin-approve-adverts-page .action-button.approve:hover {
-    background-color: #059669;
-}
-
-.admin-approve-adverts-page .action-button.reject {
-    background-color: #ef4444;
-    color: white;
-}
-
-.admin-approve-adverts-page .action-button.reject:hover {
-    background-color: #dc2626;
-}
-
-/* Modal */
-.admin-approve-adverts-page .advert-preview-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-approve-adverts-page .modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.admin-approve-adverts-page .modal-content {
-    position: relative;
-    background-color: white;
-    border-radius: 0.5rem;
-    max-width: 1000px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    z-index: 51;
-}
-
-/* Modal header */
-.admin-approve-adverts-page .modal-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.admin-approve-adverts-page .modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-.admin-approve-adverts-page .modal-subtitle {
-    font-weight: normal;
-    color: #6b7280;
-    margin-left: 0.5rem;
-}
-
-.admin-approve-adverts-page .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-    line-height: 1;
-}
-
-.admin-approve-adverts-page .modal-close:hover {
-    background-color: #f3f4f6;
-    color: #1f2937;
-}
-
-/* Modal body */
-.admin-approve-adverts-page .modal-body {
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-}
-
-@media (min-width: 768px) {
-    .admin-approve-adverts-page .modal-body {
-        flex-direction: row;
-        gap: 1.5rem;
+@media (max-width: 640px) {
+    .admin-approve-adverts-page .advert-thumbnail {
+        width: 100%;
+        height: 200px;
     }
 }
 
-.admin-approve-adverts-page .modal-image-container {
-    width: 100%;
-    margin-bottom: 1.5rem;
-}
-
-@media (min-width: 768px) {
-    .admin-approve-adverts-page .modal-image-container {
-        width: 50%;
-        margin-bottom: 0;
-    }
-}
-
-.admin-approve-adverts-page .modal-image {
-    width: 100%;
-    height: 300px;
-    object-fit: contain;
-    background-color: #f3f4f6;
-    border-radius: 0.375rem;
-}
-
-.admin-approve-adverts-page .modal-image-placeholder {
-    width: 100%;
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f3f4f6;
-    color: #9ca3af;
-    border-radius: 0.375rem;
-}
-
-.admin-approve-adverts-page .image-thumbnails {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.admin-approve-adverts-page .image-thumbnail {
-    width: 60px;
-    height: 60px;
-    border-radius: 0.25rem;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-}
-
-.admin-approve-adverts-page .image-thumbnail.active {
-    border-color: #3b82f6;
-}
-
-.admin-approve-adverts-page .image-thumbnail img {
+.admin-approve-adverts-page .thumbnail-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-.admin-approve-adverts-page .modal-details {
-    flex: 1;
+.admin-approve-adverts-page .advert-list-item:hover .thumbnail-image {
+    transform: scale(1.05);
 }
 
-.admin-approve-adverts-page .details-section {
-    margin-bottom: 1.5rem;
+.admin-approve-adverts-page .thumbnail-placeholder {
+    color: #9ca3af;
+    font-size: 3rem;
 }
 
-.admin-approve-adverts-page .details-section:last-child {
-    margin-bottom: 0;
-}
-
-.admin-approve-adverts-page .section-title {
-    font-size: 1rem;
+.admin-approve-adverts-page .image-count-badge {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 0.75rem 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 2rem;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.admin-approve-adverts-page .detail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+.admin-approve-adverts-page .image-count-badge::before {
+    content: '📷';
+    font-size: 0.875rem;
+}
+
+/* Advert info */
+.admin-approve-adverts-page .advert-info {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.admin-approve-adverts-page .advert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
     gap: 0.75rem;
 }
 
-.admin-approve-adverts-page .detail-item {
-    font-size: 0.875rem;
-}
-
-.admin-approve-adverts-page .detail-label {
-    font-weight: 500;
-    color: #6b7280;
-    margin-right: 0.25rem;
-}
-
-.admin-approve-adverts-page .detail-value {
+.admin-approve-adverts-page .advert-title {
+    font-size: 1.25rem;
+    font-weight: 700;
     color: #1f2937;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
 }
 
-.admin-approve-adverts-page .full-description {
+.admin-approve-adverts-page .advert-name {
+    font-weight: 500;
+    color: #6366f1;
+}
+
+.admin-approve-adverts-page .advert-date {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    white-space: nowrap;
+    background: #f3f4f6;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-weight: 500;
+}
+
+/* Advert meta information */
+.admin-approve-adverts-page .advert-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.admin-approve-adverts-page .meta-item {
+    display: flex;
+    align-items: center;
     font-size: 0.875rem;
     color: #4b5563;
-    line-height: 1.5;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+}
+
+.admin-approve-adverts-page .advert-list-item:hover .meta-item {
+    border-color: #d1d5db;
+}
+
+.admin-approve-adverts-page .meta-icon {
+    color: #6b7280;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.admin-approve-adverts-page .meta-item:has(.fa-pound-sign) .meta-icon {
+    color: #059669;
+}
+
+.admin-approve-adverts-page .meta-item:has(.fa-map-marker-alt) .meta-icon {
+    color: #ef4444;
+}
+
+.admin-approve-adverts-page .meta-item:has(.fa-user) .meta-icon {
+    color: #3b82f6;
+}
+
+.admin-approve-adverts-page .meta-item:has(.fa-calendar-alt) .meta-icon {
+    color: #f59e0b;
+}
+
+.admin-approve-adverts-page .meta-item:has(.fa-palette) .meta-icon {
+    color: #8b5cf6;
+}
+
+.admin-approve-adverts-page .meta-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Advert description */
+.admin-approve-adverts-page .advert-description {
+    font-size: 0.9375rem;
+    color: #6b7280;
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-top: auto;
+    line-height: 1.6;
 }
 
-/* Modal footer */
-.admin-approve-adverts-page .modal-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e5e7eb;
+/* View button */
+.admin-approve-adverts-page .view-button-container {
     display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-}
-
-.admin-approve-adverts-page .modal-action-button {
-    display: inline-flex;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-left: 2px solid #bae6fd;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .admin-approve-adverts-page .view-button-container {
+        padding: 1rem;
+        border-left: none;
+        border-top: 2px solid #bae6fd;
+    }
+}
+
+.admin-approve-adverts-page .view-button {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #3b82f6;
+    white-space: nowrap;
+    padding: 0.625rem 1.25rem;
+    background: white;
+    border-radius: 0.5rem;
+    border: 2px solid #3b82f6;
+    transition: all 0.2s;
+}
+
+.admin-approve-adverts-page .advert-list-item:hover .view-button {
+    background: #3b82f6;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+}
+
+/* Status indicators - for future use */
+.admin-approve-adverts-page .status-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-1.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(1.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .admin-approve-adverts-page .advert-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-approve-adverts-page .meta-item {
+        justify-content: flex-start;
+    }
+}
+
+/* Print styles */
+@media print {
+    .admin-approve-adverts-page .search-section,
+    .admin-approve-adverts-page .view-button-container {
+        display: none;
+    }
+
+    .admin-approve-adverts-page .advert-list-item {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+}
+.advert-card {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fff;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: box-shadow 0.2s ease;
+}
+
+.advert-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.advert-image-section {
+    flex: 0 0 150px;
+    height: 150px;
+    margin-right: 16px;
+    position: relative;
+}
+
+.advert-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.image-count-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: #000a;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
+.advert-details-section {
+    flex: 1;
+}
+
+.advert-title {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.advert-meta-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.meta-icon {
+    margin-right: 6px;
+    color: #888;
+}
+
+.advert-description {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.advert-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-left: 16px;
+}
+
+.advert-actions button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
     border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-.admin-approve-adverts-page .modal-action-button svg {
-    margin-right: 0.5rem;
-}
-
-.admin-approve-adverts-page .modal-action-button.approve {
-    background-color: #10b981;
+.btn-approve {
+    background-color: #2ecc71;
     color: white;
 }
 
-.admin-approve-adverts-page .modal-action-button.approve:hover {
-    background-color: #059669;
+.btn-approve:hover {
+    background-color: #27ae60;
 }
 
-.admin-approve-adverts-page .modal-action-button.reject {
-    background-color: #ef4444;
+.btn-reject {
+    background-color: #e74c3c;
     color: white;
 }
 
-.admin-approve-adverts-page .modal-action-button.reject:hover {
-    background-color: #dc2626;
+.btn-reject:hover {
+    background-color: #c0392b;
+}
+
+.btn-view {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-view:hover {
+    background-color: #2980b9;
+}
+
+.loading-icon,
+.empty-state-icon {
+    font-size: 48px;
+    color: #999;
+    margin-bottom: 12px;
+}
+.advert-details-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem; /* space between each detail */
+    margin-top: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* space between icon and text */
+}
+
+.meta-icon {
+    color: #256845; /* your brand green */
+    min-width: 16px;
+}
+.advert-description-block {
+    margin: 1rem 0 1.5rem 0;
+    /* No border or background here */
+}
+
+.description-heading {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #256845; /* Use your brand colour or any preferred */
+}
+
+.advert-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.4;
 }

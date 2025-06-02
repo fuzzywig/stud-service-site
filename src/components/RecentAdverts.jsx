@@ -9,250 +9,302 @@ import {
     limit,
     getDocs,
     doc,
-    getDoc
+    getDoc,
+    setDoc,
+    updateDoc,
+    increment,
+    deleteDoc
 } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import "./RecentAdverts.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
-import { breedOptions } from "./breedOptions";
-import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
-import { useAuth } from "../firebase/firebaseAuth";
 import {
-    setDoc,
-    deleteDoc
-} from "firebase/firestore";
-// Capitalize helper
-function capitalize(str) {
-    if (typeof str !== "string" || str.length === 0) return "";
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+    faHeart as fasHeart,
+    faEye,
+    faMapMarkerAlt,
+    faDog,
+    faPoundSign,
+    faStar
+} from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../firebase/firebaseAuth";
 
-// Humanize helper
-function humanize(str) {
+function humanize(str = "") {
     return str
-        .split("-")
+        .split(/[-_ ]+/)
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
 }
 
-export default function RecentAdverts() {
-    const [recentAds, setRecentAds] = useState([]);
+export default function RecentAdverts({ category, intent, title = "Recent Adverts", limitCount = 8 }) {
+    const [ads, setAds] = useState([]);
     const [usersMap, setUsersMap] = useState({});
     const [ratingsMap, setRatingsMap] = useState({});
+    const { currentUser } = useAuth();
+    const [favs, setFavs] = useState({});
 
-    const { currentUser } = useAuth(); // 🔹 Add this line
-    const [favourites, setFavourites] = useState({}); // 🔹 And this line
-
-    // 1) Fetch ads + owner data
+    // 1️⃣ load adverts filtered by category
     useEffect(() => {
-        async function fetchAdsAndUsers() {
-            const db = getFirestore();
-            const adsQ = query(
-                collection(db, "studAds"),
+        const db = getFirestore();
+        async function load() {
+            // Define filters only once
+            const filters = [
                 where("approved", "==", true),
-                orderBy("createdAt", "desc"),
-                limit(16)
-            );
-            const adsSnap = await getDocs(adsQ);
-            const ads = adsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setRecentAds(ads);
+                where("category", "==", category),
+                where("sold", "==", false),  // exclude sold adverts
+            ];
 
-            const ownerIds = Array.from(new Set(ads.map(ad => ad.ownerId).filter(Boolean)));
-            const map = {};
+            if (intent) {
+                filters.push(where("intent", "==", intent));
+            }
+
+            const q = query(
+                collection(db, "allListings"),
+                ...filters,
+                orderBy("createdAt", "desc"),
+                limit(limitCount)
+            );
+
+            const snap = await getDocs(q);
+            const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            setAds(arr);
+
+            // owners
+            const uids = [...new Set(arr.map(a => a.ownerId).filter(Boolean))];
+            const um = {};
             await Promise.all(
-                ownerIds.map(async uid => {
-                    const udoc = await getDoc(doc(db, "users", uid));
-                    if (udoc.exists()) map[uid] = udoc.data();
+                uids.map(async uid => {
+                    const ud = await getDoc(doc(db, "users", uid));
+                    if (ud.exists()) um[uid] = ud.data();
                 })
             );
-            setUsersMap(map);
+            setUsersMap(um);
         }
-        fetchAdsAndUsers().catch(console.error);
-    }, []);
+        load().catch(console.error);
+    }, [category, intent, limitCount]);
 
+
+
+    // 2️⃣ favourites
     useEffect(() => {
         if (!currentUser) return;
-
-        async function fetchFavourites() {
-            const db = getFirestore();
-            const favSnap = await getDocs(collection(db, "users", currentUser.uid, "favourites"));
-            const favMap = {};
-            favSnap.docs.forEach(doc => {
-                favMap[doc.id] = true;
-            });
-            setFavourites(favMap);
+        const db = getFirestore();
+        async function loadFavs() {
+            const snap = await getDocs(collection(db, "users", currentUser.uid, "favourites"));
+            const map = {};
+            snap.docs.forEach(d => (map[d.id] = true));
+            setFavs(map);
         }
-
-        fetchFavourites().catch(console.error);
+        loadFavs().catch(console.error);
     }, [currentUser]);
 
-
-    // 2) Fetch reviews & compute averages (only approved reviews)
+    // 3️⃣ ratings
     useEffect(() => {
-        if (!recentAds.length) return;
-        async function fetchRatings() {
-            const db = getFirestore();
-            const newMap = {};
+        if (!ads.length) return;
+        const db = getFirestore();
 
+        async function loadRatings() {
+            const rm = {};
             await Promise.all(
-                recentAds.map(async ad => {
-                    // string ID field + approved filter
-                    const qById = query(
+                ads.map(async (ad) => {
+                    // Only look at the top-level reviews collection
+                    const reviewsQ = query(
                         collection(db, "reviews"),
                         where("advertId", "==", ad.id),
                         where("approved", "==", true)
                     );
-
-                    // DocumentReference field + approved filter
-                    const adRef = doc(db, "studAds", ad.id);
-                    const qByRef = query(
-                        collection(db, "reviews"),
-                        where("advert", "==", adRef),
-                        where("approved", "==", true)
-                    );
-
-                    const [snapById, snapByRef] = await Promise.all([
-                        getDocs(qById),
-                        getDocs(qByRef)
-                    ]);
-                    // merge the two sets
-                    const allDocs = [
-                        ...snapById.docs,
-                        ...snapByRef.docs.filter(d => !snapById.docs.find(x => x.id === d.id))
-                    ];
-
-                    console.log(`Ad ${ad.id} → ${allDocs.length} approved review(s)`);
-
-                    const ratings = allDocs.map(d => d.data().rating || 0);
-                    newMap[ad.id] =
-                        ratings.length > 0
-                            ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-                            : 0;
+                    const snap = await getDocs(reviewsQ);
+                    const vals = snap.docs.map((d) => d.data().rating || 0);
+                    rm[ad.id] = vals.length
+                        ? vals.reduce((sum, r) => sum + r, 0) / vals.length
+                        : 0;
                 })
             );
-
-            setRatingsMap(newMap);
+            setRatingsMap(rm);
         }
-        fetchRatings().catch(console.error);
-    }, [recentAds]);
 
-    const toggleFavourite = async (e, adId) => {
-        e.preventDefault(); // Prevent link navigation
+        loadRatings().catch(console.error);
+    }, [ads]);
 
+
+    // toggle fav
+    // Replace the existing toggleFav function (around line 108-124) with this:
+    const toggleFav = async (e, id) => {
+        e.preventDefault();
         if (!currentUser) {
-            alert("Please log in to save favourites.");
+            alert("Log in to favourite");
             return;
         }
-
         const db = getFirestore();
-        const favRef = doc(db, "users", currentUser.uid, "favourites", adId);
-        const isFav = favourites[adId];
+        const favRef = doc(db, "users", currentUser.uid, "favourites", id);
+        const countRef = doc(db, "favoritesCounts", id);
+        const isF = favs[id];
 
         try {
-            if (isFav) {
+            if (isF) {
+                // Remove favorite
                 await deleteDoc(favRef);
+
+                // Update count in favoritesCounts collection
+                try {
+                    const countDoc = await getDoc(countRef);
+                    if (countDoc.exists()) {
+                        const currentCount = countDoc.data().count || 0;
+                        if (currentCount > 1) {
+                            await updateDoc(countRef, {
+                                count: increment(-1)
+                            });
+                        } else {
+                            // Delete the document if count would be 0
+                            await deleteDoc(countRef);
+                        }
+                    }
+                } catch (error) {
+                    console.log("Could not update favorite count:", error);
+                }
             } else {
+                // Add favorite
                 await setDoc(favRef, {
-                    advertId: adId,
+                    advertId: id,
                     addedAt: new Date()
                 });
+
+                // Update count in favoritesCounts collection
+                try {
+                    const countDoc = await getDoc(countRef);
+                    if (countDoc.exists()) {
+                        await updateDoc(countRef, {
+                            count: increment(1)
+                        });
+                    } else {
+                        // Initialize if doesn't exist
+                        await setDoc(countRef, {
+                            count: 1,
+                            advertId: id,
+                            createdAt: new Date()
+                        });
+                    }
+                } catch (error) {
+                    console.log("Could not update favorite count:", error);
+                }
             }
 
-            setFavourites(prev => ({
-                ...prev,
-                [adId]: !isFav
-            }));
+            setFavs(f => ({ ...f, [id]: !isF }));
         } catch (err) {
-            console.error("Failed to toggle favourite:", err);
+            console.error(err);
         }
     };
 
 
     return (
-        <div>
-
-        <section className="recent-adverts-section">
-            <div className="recent-adverts-container">
-                <h2 className="section-title">Recent Adverts</h2>
-                <div className="responsive-card-grid">
-                    {recentAds.map(ad => {
-                        const opt = breedOptions.find(o => o.value === ad.breed);
-                        const breedLabel = opt
-                            ? opt.label
-                            : ad.breed
-                                ? humanize(ad.breed)
-                                : "";
-
-                        const title =
-                            ad.colour && breedLabel
-                                ? `${capitalize(ad.colour)} ${breedLabel}`
-                                : ad.name || "Unnamed Stud";
-
-                        // pull city/county or coords
+        <section className="recent-studs-section">
+            <div className="recent-studs-container">
+                <h2 className="recent-studs-title">{title}</h2>
+                <div className="recent-studs-grid">
+                    {ads.map(ad => {
+                        const breed = humanize(ad.breedOrType);
+                        const cat = humanize(ad.category);
+                        const price = ad.price ?? ad.fee ?? 0;
                         const user = usersMap[ad.ownerId] || {};
-                        const { city, county } = user;
-                        const areaLabel =
-                            city || county
-                                ? [city, county].filter(Boolean).join(", ")
-                                : ad.location
-                                    ? `${ad.location.latitude.toFixed(4)}, ${ad.location.longitude.toFixed(4)}`
-                                    : "N/A";
-
-                        const avgRating = ratingsMap[ad.id] || 0;
+                        const area = user.city || user.county
+                            ? [user.city, user.county].filter(Boolean).join(", ")
+                            : "N/A";
+                        const rate = (ratingsMap[ad.id] || 0).toFixed(1);
+                        const favAct = favs[ad.id];
+                        const link = `/advert-details/${ad.id}`;
+                        const titleText = ad.title || (cat ? `${cat} ${breed}` : "Untitled");
 
                         return (
-                            <div className="card" key={ad.id}>
-                                <Link to={`/stud-details/${ad.id}`} className="card-image">
-                                    <div className="image-container">
-                                        <img
-                                            src={ad.images?.[0] || "https://placehold.co/400x300"}
-                                            alt={title}
-                                        />
+                            <div className="recent-studs-card" key={ad.id}>
+                                <div className="recent-studs-card-header">
+                                    <div className="recent-studs-price">
+                                        <FontAwesomeIcon icon={faPoundSign} />
+                                        <span>{price}</span>
                                     </div>
-                                    <div className="price-tag">£{ad.price || "200"}</div>
                                     <button
-                                        className={`fav-btn-overlay ${favourites[ad.id] ? "active" : ""}`}
-                                        onClick={(e) => toggleFavourite(e, ad.id)}
+                                        className={`recent-studs-favorite ${favAct ? "active" : ""}`}
+                                        onClick={e => toggleFav(e, ad.id)}
                                         aria-label="Toggle Favourite"
                                     >
-                                        <FontAwesomeIcon icon={favourites[ad.id] ? fasHeart : farHeart} />
+                                        <FontAwesomeIcon icon={favAct ? fasHeart : farHeart} />
                                     </button>
-
-                                </Link>
-
-                                <div className="card-content">
-                                    <h3 className="card-title">{title}</h3>
                                 </div>
+                                <Link to={`/advert-details/${ad.id}`} className="recent-studs-image-container">
+                                    <img
+                                        src={ad.images?.[0] || "https://placehold.co/400x300"}
+                                        alt={titleText}
+                                        className="recent-studs-image"
+                                    />
+                                    <div className="recent-studs-overlay">
+                                        <span>View Details</span>
+                                    </div>
+                                </Link>
+                                <div className="recent-studs-content">
+                                    <h3 className="recent-studs-card-title">
+                                        {titleText.length > 58
+                                            ? titleText.slice(0, 58) + "…"
+                                            : titleText}
+                                    </h3>
 
-                                <div className="card-footer">
-                                    <div className="left-aligned-details">
-                                        <div className="detail-row">
-                                            <span className="detail-icon">🐕</span> {breedLabel || "N/A"}
+                                    <div className="recent-studs-spacer" />
+
+                                    <div className="recent-studs-details-divider" />
+
+                                    <div className="recent-studs-details">
+                                        <div className="recent-studs-detail-item">
+                                            <FontAwesomeIcon icon={faDog} />
+                                            <span>
+                                                {cat && `${cat}: `} {breed}
+                                            </span>
                                         </div>
-                                        <div className="detail-row">
-                                            <span className="detail-icon">📍</span> {areaLabel}
+                                        <div className="recent-studs-detail-item">
+                                            <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                            <span>{area}</span>
                                         </div>
                                     </div>
-                                    <div className="star-rating">
-                                        <span className="star-icon">★</span>
-                                        <span className="rating-number">{avgRating.toFixed(1)}</span>
+                                    <div className="recent-studs-card-footer">
+                                        {ad.intent === "stud" && ratingsMap[ad.id] > 0 && (
+                                        <div className="recent-studs-rating">
+                                            <FontAwesomeIcon icon={faStar} />
+                                            <span className="recent-studs-rating-value">{rate}</span>
+                                        </div>
+                                        )}
+                                        {ad.intent && (() => {
+                                            const normalisedIntent = ad.intent.trim().toLowerCase().replace(/\s+/g, '');
+                                            const isStud = normalisedIntent === "stud";
+                                            const isSale = normalisedIntent === "sale";
+                                            return (
+                                                <div
+                                                    className={`recent-studs-intent ${
+                                                        isStud ? "intent-stud" :
+                                                            isSale ? "intent-sale" :
+                                                                "intent-other"
+                                                    }`}
+                                                    data-intent={ad.intent}
+                                                >
+                                                    {isStud ? "For Stud" :
+                                                        isSale ? "For Sale" :
+                                                            humanize(ad.intent)}
+                                                </div>
+                                            );
+                                        })()}
+
+                                        <div className="recent-studs-views">
+                                            <FontAwesomeIcon icon={faEye} />
+                                            <span>{ad.views ?? 0}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-            </div>
-            <div className="recent-adverts-footer">
-                <p className="recent-adverts-more-text">Looking for more?</p>
-                <Link to="/browse" className="recent-adverts-more-button">
-                    Browse More Studs
-                </Link>
+                <div className="recent-studs-more">
+                    <Link to={`/browse?category=${category}`} className="recent-studs-more-button">
+                        Browse All {humanize(category)}
+                    </Link>
+                </div>
             </div>
         </section>
-
-
-        </div>
     );
 }

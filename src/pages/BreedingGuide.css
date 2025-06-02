@@ -1,0 +1,902 @@
+/* BreedingGuide.css - Specific styles for the BreedingGuide component */
+
+/* Base container and layout */
+.breeding-guide {
+    min-height: 100vh;
+    background: #f5f5f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Hero Section */
+.breeding-guide__hero {
+    background: #1c5235;
+    color: white;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.breeding-guide__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.breeding-guide__subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+}
+
+/* Main Container */
+.breeding-guide__container {
+    max-width: 1440px;
+    margin: -2rem auto 0;
+    padding: 0 1rem 4rem;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+    position: relative;
+    z-index: 10;
+}
+
+/* Mobile Menu Toggle */
+.breeding-guide__mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #b83c56;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 100;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.breeding-guide__toggle-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+/* Navigation Sidebar */
+.breeding-guide__nav {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 1rem;
+}
+
+.breeding-guide__nav-header {
+    display: none;
+}
+
+.breeding-guide__nav-close {
+    display: none;
+}
+
+.breeding-guide__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.breeding-guide__nav-item:hover {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+}
+
+.breeding-guide__nav-item--active {
+    background: #b83c56;
+    color: white;
+    border-color: #b83c56;
+}
+
+.breeding-guide__nav-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.breeding-guide__icon {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.breeding-guide__nav-number {
+    background: #f5f5f5;
+    color: #666;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.breeding-guide__nav-item--active .breeding-guide__nav-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.breeding-guide__nav-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+/* Main Content Area */
+.breeding-guide__content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.breeding-guide__section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+.breeding-guide__section-icon {
+    width: 48px;
+    height: 48px;
+    background: #1c5235;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.breeding-guide__section-icon .breeding-guide__icon {
+    width: 28px;
+    height: 28px;
+}
+
+.breeding-guide__section-title {
+    font-size: 1.75rem;
+    color: #1c5235;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Content Styles */
+.breeding-guide__text {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Checklist Styles */
+.breeding-guide__checklist {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 1.5rem;
+}
+
+.breeding-guide__checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.breeding-guide__checklist-item:last-child {
+    margin-bottom: 0;
+}
+
+.breeding-guide__check-icon {
+    width: 20px;
+    height: 20px;
+    fill: #1c5235;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Health Cards */
+.breeding-guide__health-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.breeding-guide__health-card {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__health-card:hover {
+    background: #ebebeb;
+    transform: translateY(-2px);
+}
+
+.breeding-guide__card-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 0.75rem;
+    fill: #b83c56;
+}
+
+.breeding-guide__health-card p {
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Cycle Timeline */
+.breeding-guide__cycle-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.breeding-guide__cycle-phase {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 1.25rem;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__cycle-phase--active {
+    background: #fff;
+    border-color: #b83c56;
+}
+
+.breeding-guide__cycle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.breeding-guide__cycle-header h4 {
+    margin: 0;
+    color: #1c5235;
+    font-size: 1rem;
+}
+
+.breeding-guide__cycle-duration {
+    background: #b83c56;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.breeding-guide__cycle-phase p {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Info Box */
+.breeding-guide__info-box {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 1.5rem;
+}
+
+.breeding-guide__tip {
+    background: white;
+    border-left: 4px solid #b83c56;
+    padding: 1rem 1.5rem;
+    margin-top: 1.5rem;
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.breeding-guide__tip-icon {
+    width: 24px;
+    height: 24px;
+    fill: #b83c56;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.breeding-guide__tip p {
+    margin: 0;
+    color: #333;
+    font-size: 0.875rem;
+}
+
+/* Pregnancy Grid */
+.breeding-guide__pregnancy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.breeding-guide__pregnancy-card {
+    background: white;
+    border: 2px solid #f5f5f5;
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__pregnancy-card:hover {
+    border-color: #b83c56;
+    transform: translateY(-2px);
+}
+
+.breeding-guide__pregnancy-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 0.75rem;
+    fill: #1c5235;
+}
+
+.breeding-guide__pregnancy-card h4 {
+    color: #1c5235;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.breeding-guide__pregnancy-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Puppy Care */
+.breeding-guide__puppy-care {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.breeding-guide__care-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__care-item:hover {
+    background: #ebebeb;
+}
+
+.breeding-guide__care-icon {
+    width: 48px;
+    height: 48px;
+    fill: #b83c56;
+    flex-shrink: 0;
+}
+
+.breeding-guide__care-item h4 {
+    margin: 0 0 0.25rem 0;
+    color: #1c5235;
+    font-size: 1rem;
+}
+
+.breeding-guide__care-item p {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Rehoming Steps */
+.breeding-guide__rehoming {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.breeding-guide__rehoming-step {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    background: white;
+    border: 2px solid #f5f5f5;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__rehoming-step:hover {
+    border-color: #1c5235;
+}
+
+.breeding-guide__step-number {
+    background: #b83c56;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.breeding-guide__rehoming-step h4 {
+    margin: 0 0 0.25rem 0;
+    color: #1c5235;
+    font-size: 1rem;
+}
+
+.breeding-guide__rehoming-step p {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Responsibilities */
+.breeding-guide__responsibilities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.breeding-guide__responsibility-card {
+    background: #1c5235;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__responsibility-card:hover {
+    background: #256845;
+    transform: translateY(-2px);
+}
+
+.breeding-guide__responsibility-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+}
+
+.breeding-guide__responsibility-card p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.875rem;
+}
+
+/* Navigation Controls */
+.breeding-guide__navigation {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f5f5f5;
+}
+
+.breeding-guide__nav-button {
+    background: #1c5235;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breeding-guide__nav-button:hover:not(:disabled) {
+    background: #256845;
+    transform: translateY(-1px);
+}
+
+.breeding-guide__nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.breeding-guide__button-icon {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.breeding-guide__progress {
+    flex: 1;
+    height: 6px;
+    background: #f5f5f5;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.breeding-guide__progress-bar {
+    height: 100%;
+    background: #b83c56;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Footer */
+.breeding-guide__footer {
+    background: #b83c56;
+    color: white;
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.breeding-guide__cta {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.breeding-guide__cta h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.breeding-guide__cta p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.breeding-guide__cta-button {
+    background: #1c5235;
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.breeding-guide__cta-button:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    color: #2d3436;
+}
+
+.breeding-guide__disclaimer {
+    margin: 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.8;
+    font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .breeding-guide__container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .breeding-guide__mobile-toggle {
+        display: flex;
+    }
+
+    .breeding-guide__nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        border-radius: 0;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+        overflow-y: auto;
+    }
+
+    .breeding-guide__nav--open {
+        left: 0;
+    }
+
+    .breeding-guide__nav-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f5f5f5;
+    }
+
+    .breeding-guide__nav-header h3 {
+        margin: 0;
+        color: #1c5235;
+        font-size: 1.25rem;
+    }
+
+    .breeding-guide__nav-close {
+        display: block;
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .breeding-guide__nav-close svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+    }
+
+    .breeding-guide__content {
+        padding: 1.5rem;
+    }
+
+    .breeding-guide__section-title {
+        font-size: 1.5rem;
+    }
+
+    .breeding-guide__section-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .breeding-guide__section-icon .breeding-guide__icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .breeding-guide__cycle-timeline,
+    .breeding-guide__pregnancy-grid,
+    .breeding-guide__responsibilities {
+        grid-template-columns: 1fr;
+    }
+
+    .breeding-guide__health-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .breeding-guide__navigation {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .breeding-guide__progress {
+        width: 100%;
+        order: -1;
+    }
+
+    .breeding-guide__nav-button {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .breeding-guide__title {
+        font-size: 2rem;
+    }
+
+    .breeding-guide__subtitle {
+        font-size: 1rem;
+    }
+
+    .breeding-guide__hero {
+        padding: 2rem 1rem;
+    }
+
+    .breeding-guide__content {
+        padding: 1rem;
+    }
+
+    .breeding-guide__section-header {
+        flex-wrap: wrap;
+    }
+
+    .breeding-guide__section-title {
+    }
+}
+/* Updated Footer Styles - Add these to your BreedingGuide.css */
+
+/* Footer */
+.breeding-guide__footer {
+    background: #b83c56;
+    color: white;
+    margin-top: 4rem;
+    padding: 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.breeding-guide__footer-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 4rem 2rem 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Title and text */
+.breeding-guide__footer-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.breeding-guide__footer-text {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Highlight badges */
+.breeding-guide__footer-highlights {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.breeding-guide__footer-highlight {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.breeding-guide__footer-highlight:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.breeding-guide__footer-highlight-icon {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+.breeding-guide__footer-highlight span {
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+/* Reminder box */
+.breeding-guide__footer-reminder {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    text-align: left;
+    backdrop-filter: blur(10px);
+}
+
+.breeding-guide__footer-reminder-icon {
+    width: 24px;
+    height: 24px;
+    fill: #fbbf24;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.breeding-guide__footer-reminder p {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+.breeding-guide__footer-reminder strong {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .breeding-guide__footer-container {
+        padding: 3rem 1.5rem 2.5rem;
+    }
+
+    .breeding-guide__footer-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .breeding-guide__footer-text {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .breeding-guide__footer-highlights {
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .breeding-guide__footer-highlight {
+        padding: 0.625rem 1.25rem;
+    }
+
+    .breeding-guide__footer-highlight-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .breeding-guide__footer-highlight span {
+        font-size: 0.8125rem;
+    }
+
+    .breeding-guide__footer-reminder {
+        padding: 1.25rem 1.5rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .breeding-guide__footer-reminder-icon {
+        margin: 0 auto;
+    }
+
+    .breeding-guide__footer-reminder p {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .breeding-guide__footer-highlights {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .breeding-guide__footer-highlight {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
+}

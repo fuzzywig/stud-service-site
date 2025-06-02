@@ -3,12 +3,11 @@
 /* ----- TOP NAVBAR STYLES ----- */
 .navbar {
     background: linear-gradient(to right, #256845 0%, #2d7a52 100%);
-    padding: 12px 0;
+    padding: 10px 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 100;
-    overflow: hidden;
 }
 
 /* Ensure menu icon is clearly visible */
@@ -29,7 +28,8 @@
     align-items: center;
     max-width: 1440px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 2px;
+    height: 60px;
 }
 
 .navbar-left {
@@ -66,7 +66,7 @@
     text-decoration: none;
     display: flex;
     align-items: center;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .logo-icon {
@@ -78,9 +78,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
 }
 
 /* New Advert button */
@@ -103,6 +100,7 @@
     background-color: #a12c44;
     transform: translateY(-1px);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    color: #fff;
 }
 
 .advert-btn-icon {
@@ -115,7 +113,7 @@
     height: 40px;
     font-size: 1.1rem;
     color: #ffffff;
-    background:none;
+    background: none;
     border: none;
     cursor: pointer;
     border-radius: 8px;
@@ -160,9 +158,10 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 8px 0;
-    z-index: 100;
+    z-index: 3000;
     overflow: hidden;
     animation: dropdown-appear 0.2s ease;
+    margin-top: 13px;
 }
 
 @keyframes dropdown-appear {
@@ -193,11 +192,12 @@
 }
 
 .dropdown-icon {
-    font-size: 1rem;
     color: #666;
+    margin-right: 8px;
+
 }
 
-.user-dropdown a:hover .dropdown-icon {
+.user-dropdown a:hover {
     color: #256845;
 }
 
@@ -220,7 +220,8 @@
     }
 
     .navbar-inner {
-        padding: 0 12px;
+        padding: 0 20px;
+        margin: 0 auto;
     }
 
     .advert-btn {
@@ -235,6 +236,7 @@
     .logo {
         font-size: 1.4rem;
     }
+
 }
 
 /* ----- SIDEBAR MENU STYLES ----- */
@@ -245,11 +247,12 @@
     width: 340px; /* Increased from 300px for a wider sidebar */
     height: 100%;
     background: white;
-    z-index: 1000;
+    z-index: 1200;
     transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
     overflow-y: auto;
     overflow-x: hidden;
+
 }
 
 .menu-overlay.open {
@@ -276,7 +279,8 @@
 }
 
 .close-btn {
-    background: rgba(0, 0, 0, 0.2);    border: none;
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
     color: white;
     width: 36px;
     height: 36px;
@@ -292,10 +296,12 @@
 .close-btn:hover {
     background-color: rgba(0, 0, 0, 0.3);
 }
+
 .close-btn svg {
     color: white !important;
     font-size: 20px;
 }
+
 /* User section */
 .sidebar-user-section {
     padding: 24px 20px;
@@ -387,6 +393,7 @@
 
 .login-btn:hover {
     background-color: #1d523a;
+    color: #fff;
 }
 
 .register-btn {
@@ -397,6 +404,7 @@
 
 .register-btn:hover {
     background-color: #f0f8f3;
+    color: #256845;
 }
 
 /* Category chips */
@@ -410,7 +418,7 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     color: #888;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .category-chips {
@@ -509,6 +517,11 @@
     margin-top: auto;
     width: 100%;
     box-sizing: border-box;
+    bottom: 0; /* Add this */
+    flex-shrink: 0; /* Add this */
+    position: relative; /* Add this */
+
+
 }
 
 .sidebar-footer-text {
@@ -556,6 +569,7 @@
     opacity: 1;
     visibility: visible;
 }
+
 /* Make the hamburger menu icon in the top navbar clearly visible */
 .navbar .hamburger-btn {
     background-color: rgba(0, 0, 0, 0.2); /* Dark semi-transparent background */
@@ -584,26 +598,6 @@
     margin-right: 15px;
     font-size: 1.2rem;
 }
-/* Add this to your CSS to force visibility of menu items */
-
-/* Debug styles to ensure menu items are visible */
-.menu-items {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.menu-item {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.menu-item a {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
 
 /* Make sure links have appropriate styling */
 .menu-item a {
@@ -630,48 +624,55 @@
 .sidebar-nav {
     overflow: visible !important;
 }
+
 .sidebar-nav-frontend a {
     color: #000;
 }
+
 /* Force top-navbar SVG icons to stay white */
 .navbar .navbar-right .icon-link svg,
 .navbar .navbar-left .hamburger-btn svg,
 .navbar .logo-icon {
     color: #fff !important;
-    fill:  #fff !important;
+    fill: #fff !important;
 }
 
 /* In case the SVG paths themselves need overriding: */
 .navbar .navbar-right .icon-link svg path,
 .navbar .navbar-left .hamburger-btn svg path {
     stroke: #fff !important;
-    fill:   #fff !important;
+    fill: #fff !important;
 }
+
 /* ─── Force the top-navbar svgs to render white ─── */
 .navbar .icon-link svg,
 .navbar .hamburger-btn svg,
 .navbar .logo-icon {
-    color:  #fff !important;  /* for currentColor-based icons */
-    fill:   #fff !important;  /* for solid SVGs */
-    stroke: #fff !important;  /* for outlined SVGs */
+    color: #fff !important; /* for currentColor-based icons */
+    fill: #fff !important; /* for solid SVGs */
+    stroke: #fff !important; /* for outlined SVGs */
 }
+
 /* at the very bottom of Navbar.css */
-.navbar.navbar   .navbar-right   .icon-link   svg {
-    color:  #fff !important;
-    fill:   #fff !important;
+.navbar.navbar .navbar-right .icon-link svg {
+    color: #fff !important;
+    fill: #fff !important;
     stroke: #fff !important;
 }
+
 /* ─── Force navbar SVGs back to normal size ─── */
 .navbar .icon-link svg,
 .navbar .hamburger-btn svg,
 .navbar .logo-icon {
-    width: 1em !important;    /* restore to 1em (≈ your font-size) */
-    height: auto !important;  /* keep aspect-ratio */
+    width: 1em !important; /* restore to 1em (≈ your font-size) */
+    height: auto !important; /* keep aspect-ratio */
 }
+
 .navbar svg {
     width: 1em !important;
     height: auto !important;
 }
+
 /* Add these styles to your CSS for better visibility of the user profile icon */
 
 /* Ensure the user icon is visible in the navbar */
@@ -689,27 +690,17 @@
     position: relative;
 }
 
-.user-dropdown {
-    position: absolute;
-    top: 48px;
-    right: 0;
-    min-width: 180px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    padding: 8px 0;
-    z-index: 100;
-}
+
 /* reset any global button styles for our navbar icon-buttons */
 button.icon-link {
-    all: unset;              /* strip out background, padding, border, etc */
+    all: unset; /* strip out background, padding, border, etc */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 }
 
-/* rebake our own navbar button look */
+
 button.icon-link {
     width: 40px;
     height: 40px;
@@ -722,8 +713,9 @@ button.icon-link {
 /* make sure the SVG inside is always white */
 button.icon-link svg {
     color: #fff !important;
-    fill:  #fff !important;
+    fill: #fff !important;
 }
+
 /* Navbar-specific avatar styles */
 .navbar-profile-avatar {
     width: 68px;
@@ -741,4 +733,153 @@ button.icon-link svg {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+.dropdown-wrapper {
+    position: relative;
+}
+
+
+.user-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background 0.2s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown-item:hover {
+    background-color: #f4f4f4;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+/* === Scoped styles for New Advert button in navbar === */
+.navbar-new-advert-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+}
+.navbar-new-advert-btn svg {
+
+    padding-right: 0;
+
+}
+
+.navbar-new-advert-icon {
+    margin-right: 0.5rem;
+}
+
+.navbar-new-advert-text {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .navbar-new-advert-text {
+        display: inline;
+    }
+}
+/* Scope styling to match your original link-based design */
+.navbar-new-advert-btn {
+    background-color: #a03248 ; /* or whatever your original was */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.navbar-new-advert-btn:hover {
+    background-color: #b83c56; /* hover state */
+}
+
+.navbar-new-advert-icon {
+    margin-right: 0;
+    padding-top: 2px;
+}
+
+.navbar-new-advert-text {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .navbar-new-advert-text {
+        display: inline;
+        padding-left: 10px;
+    }
+
+}
+.navbar-sidebar-new-advert-btn {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
+    color: #000;
+    font-weight: 500;
+    font-size: 1rem;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    gap: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.navbar-sidebar-new-advert-btn:hover {
+    background-color: #f4f9fd;
+    color: #256845;
+}
+
+.navbar-sidebar-new-advert-btn .menu-icon {
+    font-size: 1.2rem;
+    color: #666;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.navbar-sidebar-new-advert-btn:hover .menu-icon {
+    color: #256845;
+}
+@media (min-width: 768px) {
+
+    .navbar-new-advert-btn
+
+}
+@media (max-width:  768px) {
+
+    .navbar-inner{
+
+
+        height: 40px;
+
+    }
+
 }

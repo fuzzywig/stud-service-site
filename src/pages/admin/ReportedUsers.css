@@ -1,0 +1,1088 @@
+/* ReportedUsers.css */
+/* Using 'repus-' prefix for all classes to avoid conflicts with other components */
+
+.repus-reported-users-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.repus-content-area {
+    flex: 1;
+    padding: 1.5rem;
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Responsive adjustment for sidebar */
+@media (max-width: 1023px) {
+    .repus-content-area {
+        margin-left: 0;
+        padding: 1rem;
+    }
+}
+
+/* Page header */
+.repus-page-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.repus-page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Stats cards */
+.repus-page-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.repus-stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    flex: 1;
+    min-width: 180px;
+}
+
+.repus-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    margin-right: 1rem;
+    color: white;
+}
+
+.repus-pending-icon {
+    background-color: #f59e0b;
+}
+
+.repus-reviewed-icon {
+    background-color: #10b981;
+}
+
+.repus-blacklisted-icon {
+    background-color: #ef4444;
+}
+
+.repus-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.repus-stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.repus-stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Toolbar */
+.repus-toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.repus-search-box {
+    position: relative;
+    width: 300px;
+    flex-shrink: 1; /* Allow shrinking */
+    min-width: 0; /* Allow shrinking below content width */
+}
+
+.repus-filter-sort {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 0; /* Allow shrinking */
+}
+
+@media (max-width: 1024px) {
+    .repus-search-box {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .repus-filter-sort {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .repus-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.repus-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.repus-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    color: #111827;
+    font-size: 0.875rem;
+    background-color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+.repus-search-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.repus-filter-sort {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.repus-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.repus-filter-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    background-color: white;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repus-filter-button:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.repus-filter-button.active {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.repus-sort-dropdown {
+    position: relative;
+}
+
+.repus-sort-options {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    border-radius: 0.25rem;
+    padding-top: 0.5rem;
+    padding-left: 15px;
+    padding-bottom: 0.5rem;
+    border: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.repus-sort-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-right: 0.5rem;
+}
+
+.repus-sort-button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: transparent;
+    color: #6b7280;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repus-sort-button:hover {
+    background-color: #f3f4f6;
+}
+
+.repus-sort-button.active {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.repus-sort-icon {
+    font-size: 0.75rem;
+}
+
+.repus-sort-icon.active {
+    color: #2563eb;
+}
+
+/* Loading state */
+.repus-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.repus-loading-animation {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.repus-loading-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 3px solid rgba(37, 99, 235, 0.2);
+    border-top-color: #2563eb;
+    animation: repus-spin 1s linear infinite;
+}
+
+@keyframes repus-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.repus-loading-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.repus-loading-line {
+    width: 150px;
+    height: 0.5rem;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    animation: repus-pulse 1.5s infinite;
+}
+
+.repus-loading-line:nth-child(2) {
+    width: 100px;
+    animation-delay: 0.2s;
+}
+
+.repus-loading-line:nth-child(3) {
+    width: 75px;
+    animation-delay: 0.4s;
+}
+
+@keyframes repus-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.repus-loading-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 1rem;
+}
+
+/* Grid layout for reports */
+.repus-reports-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .repus-reports-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Report card */
+.repus-report-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+}
+
+.repus-report-card.expanded {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.repus-report-header {
+    padding: 1.25rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.repus-report-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.repus-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.repus-status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.repus-status-reviewed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.repus-status-blacklisted {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.repus-report-users {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.repus-reported-user,
+.repus-reporter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 160px;
+}
+
+.repus-user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.repus-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.repus-user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.repus-user-name {
+    font-weight: 500;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.repus-user-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.repus-report-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.repus-date-icon {
+    color: #6b7280;
+}
+
+.repus-report-reason {
+    background-color: #f9fafb;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.repus-report-reason p {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.repus-report-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.repus-action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repus-action-button.blacklist {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.repus-action-button.blacklist:hover {
+    background-color: #fecaca;
+}
+
+.repus-action-button.unblacklist {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.repus-action-button.unblacklist:hover {
+    background-color: #a7f3d0;
+}
+
+.repus-action-button.review {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.repus-action-button.review:hover {
+    background-color: #dbeafe;
+}
+
+.repus-action-button.review:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.repus-action-button.view-profile {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.repus-action-button.view-profile:hover {
+    background-color: #e5e7eb;
+}
+
+.repus-expand-toggle {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #6b7280;
+}
+
+/* Report details */
+.repus-report-details {
+    border-top: 1px solid #e5e7eb;
+}
+
+.repus-details-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    overflow-x: auto;
+}
+
+.repus-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.repus-tab:hover {
+    color: #4b5563;
+}
+
+.repus-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.repus-tab-content {
+    padding: 1.25rem;
+}
+
+.repus-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1rem 0;
+}
+
+.repus-subsection-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+/* Messages tab */
+.repus-messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    background-color: #f9fafb;
+}
+
+.repus-message-item {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+}
+
+.repus-reporter-message {
+    align-self: flex-start;
+}
+
+.repus-reported-message {
+    align-self: flex-end;
+}
+
+.repus-message-sender {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.repus-message-bubble {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.repus-reporter-message .repus-message-bubble {
+    border-top-left-radius: 0;
+}
+
+.repus-reported-message .repus-message-bubble {
+    border-top-right-radius: 0;
+    background-color: #eff6ff;
+}
+
+.repus-message-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #111827;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.repus-message-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+    text-align: right;
+}
+
+/* Notes tab */
+.repus-notes-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.repus-notes-textarea {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.repus-notes-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.repus-save-notes-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-end;
+}
+
+.repus-save-notes-button:hover {
+    background-color: #1d4ed8;
+}
+
+.repus-save-notes-button:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+}
+
+.repus-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.repus-note-item {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+}
+
+.repus-note-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.repus-note-author {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.repus-note-date {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.repus-note-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #111827;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+/* User details tab */
+.repus-user-profiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.repus-user-profile {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.repus-reported-user-profile {
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.1);
+}
+
+.repus-reporter-user-profile {
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
+}
+
+.repus-profile-header {
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.repus-profile-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 0;
+}
+
+.repus-reported-user-profile .repus-profile-title {
+    color: #b91c1c;
+}
+
+.repus-reporter-user-profile .repus-profile-title {
+    color: #2563eb;
+}
+
+.repus-profile-content {
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.repus-profile-avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.repus-avatar-placeholder {
+    font-size: 2rem;
+}
+
+.repus-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.repus-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.repus-profile-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.25rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.repus-profile-id {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+}
+
+.repus-profile-email {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin: 0 0 0.75rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.repus-profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.repus-meta-item {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.repus-meta-item strong {
+    color: #4b5563;
+}
+
+.repus-profile-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.repus-profile-action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repus-profile-action-button.view {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.repus-profile-action-button.view:hover {
+    background-color: #dbeafe;
+}
+
+.repus-profile-action-button.blacklist {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.repus-profile-action-button.blacklist:hover {
+    background-color: #fecaca;
+}
+
+.repus-profile-action-button.unblacklist {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.repus-profile-action-button.unblacklist:hover {
+    background-color: #a7f3d0;
+}
+
+/* Empty state */
+.repus-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    text-align: center;
+}
+
+.repus-empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+}
+
+.repus-empty-state-icon svg {
+    font-size: 1.5rem;
+}
+
+.repus-empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+}
+
+.repus-empty-state-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem 0;
+    max-width: 400px;
+}
+
+.repus-empty-state-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.repus-empty-state-button:hover {
+    background-color: #e5e7eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .repus-page-header {
+        padding: 1rem;
+    }
+
+    .repus-page-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        margin-left: 25px;
+    }
+
+    .repus-report-header {
+        padding: 1rem;
+    }
+
+    .repus-tab-content {
+        padding: 1rem;
+    }
+
+    .repus-user-profiles {
+        grid-template-columns: 1fr;
+    }
+
+    .repus-action-button span {
+        display: none;
+    }
+
+    .repus-profile-action-button span {
+        display: none;
+    }
+}
+
+/* Add some transition effects */
+.repus-report-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.repus-report-card.expanded .repus-report-details {
+    max-height: 2000px; /* Large enough to accommodate content */
+    transition: max-height 0.5s ease-in;
+}
+
+/* Hover effects */
+.repus-report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* No data states */
+.repus-no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.repus-no-data svg {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.repus-no-data p {
+    margin: 0;
+    font-size: 0.875rem;
+}

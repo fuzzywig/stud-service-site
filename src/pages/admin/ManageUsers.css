@@ -66,6 +66,13 @@
     }
 }
 
+/* Adjust padding for page content when toggle is visible */
+@media (max-width: 1023px) {
+    .admin-manage-users-page .page-title {
+        padding-left: 3rem; /* Make room for the hamburger button */
+    }
+}
+
 .admin-manage-users-page .page-actions {
     display: flex;
     align-items: center;
@@ -203,68 +210,62 @@
     margin-bottom: 0.5rem;
 }
 
-/* Users grid */
-.admin-manage-users-page .users-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+/* Users list */
+.admin-manage-users-page .users-list {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
     width: 100%;
 }
 
-@media (min-width: 640px) {
-    .admin-manage-users-page .users-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .admin-manage-users-page .users-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 1280px) {
-    .admin-manage-users-page .users-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* User card */
-.admin-manage-users-page .user-card {
+/* User list item */
+.admin-manage-users-page .user-list-item {
+    display: flex;
+    flex-direction: column;
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
+    cursor: pointer;
 }
 
-.admin-manage-users-page .user-card:hover {
+.admin-manage-users-page .user-list-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.admin-manage-users-page .user-card-header {
-    display: flex;
-    align-items: center;
+@media (min-width: 640px) {
+    .admin-manage-users-page .user-list-item {
+        flex-direction: row;
+    }
+}
+
+/* User avatar section */
+.admin-manage-users-page .user-avatar-section {
     padding: 1rem;
-    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background-color: #f9fafb;
-    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .admin-manage-users-page .user-avatar-section {
+        width: 120px;
+        flex-shrink: 0;
+        border-right: 1px solid #f3f4f6;
+    }
 }
 
 .admin-manage-users-page .user-avatar-wrapper {
     position: relative;
-    margin-right: 1rem;
-    flex-shrink: 0;
+    margin-bottom: 0.5rem;
 }
 
 .admin-manage-users-page .user-avatar {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 4rem;
+    height: 4rem;
     border-radius: 9999px;
     object-fit: cover;
     border: 2px solid white;
@@ -274,8 +275,8 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 1rem;
+    height: 1rem;
     border-radius: 9999px;
     border: 2px solid white;
 }
@@ -288,27 +289,12 @@
     background-color: #ef4444;
 }
 
-.admin-manage-users-page .user-header-info {
-    flex: 1;
-    min-width: 0; /* To handle text overflow */
-    overflow: hidden;
-}
-
-.admin-manage-users-page .user-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .admin-manage-users-page .user-status-badge {
     display: inline-block;
-    padding: 0.125rem 0.375rem;
+    padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
     border-radius: 9999px;
+    text-align: center;
 }
 
 .admin-manage-users-page .status-badge-active {
@@ -321,80 +307,164 @@
     color: #991b1b;
 }
 
-/* User card body */
-.admin-manage-users-page .user-card-body {
-    padding: 1rem;
+/* User info section */
+.admin-manage-users-page .user-info-section {
     flex: 1;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    width: 100%;
+}
+
+.admin-manage-users-page .user-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .user-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.admin-manage-users-page .user-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .user-name {
+        margin-bottom: 0;
+    }
+}
+
+.admin-manage-users-page .user-joined-date {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.admin-manage-users-page .date-icon {
+    margin-right: 0.375rem;
+}
+
+/* User details */
+.admin-manage-users-page .user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .admin-manage-users-page .user-details {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem 2rem;
+    }
 }
 
 .admin-manage-users-page .user-detail {
     display: flex;
-    margin-bottom: 0.5rem;
-    width: 100%;
-    overflow: hidden;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #4b5563;
 }
 
-.admin-manage-users-page .detail-label {
-    font-weight: 500;
+.admin-manage-users-page .detail-icon {
     color: #6b7280;
-    width: 4rem;
+    margin-right: 0.5rem;
     flex-shrink: 0;
 }
 
 .admin-manage-users-page .detail-value {
-    color: #1f2937;
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.admin-manage-users-page .user-id {
+    font-family: monospace;
+    font-size: 0.8rem;
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
 }
 
 /* User stats */
 .admin-manage-users-page .user-stats {
     display: flex;
-    justify-content: space-between;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    gap: 1.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
     border-top: 1px solid #f3f4f6;
-    width: 100%;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .admin-manage-users-page .stat-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.admin-manage-users-page .stat-icon {
+    color: #6b7280;
+    margin-right: 0.5rem;
 }
 
 .admin-manage-users-page .stat-value {
-    font-weight: 600;
-    color: #1f2937;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    font-weight: 500;
 }
 
-.admin-manage-users-page .stat-label {
+/* Admin comment button */
+.admin-manage-users-page .admin-comment-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    margin-left: auto;
+    border-radius: 0.25rem;
     font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 0.25rem;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-/* User card footer */
-.admin-manage-users-page .user-card-footer {
+.admin-manage-users-page .admin-comment-button:hover {
+    background-color: #f3f4f6;
+    color: #2563eb;
+}
+
+.admin-manage-users-page .comment-icon {
+    margin-right: 0.375rem;
+}
+
+/* User actions */
+.admin-manage-users-page .user-actions {
     display: flex;
     padding: 1rem;
-    border-top: 1px solid #f3f4f6;
     background-color: #f9fafb;
-    width: 100%;
+    border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 640px) {
+    .admin-manage-users-page .user-actions {
+        width: 200px;
+        flex-shrink: 0;
+        flex-direction: column;
+        gap: 0.5rem;
+        border-top: none;
+        border-left: 1px solid #f3f4f6;
+    }
 }
 
 .admin-manage-users-page .view-profile-button {
@@ -411,7 +481,13 @@
     text-decoration: none;
     margin-right: 0.5rem;
     transition: background-color 0.2s;
-    white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+    .admin-manage-users-page .view-profile-button {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
 }
 
 .admin-manage-users-page .view-profile-button:hover {
@@ -420,7 +496,6 @@
 
 .admin-manage-users-page .view-profile-button svg {
     margin-right: 0.5rem;
-    flex-shrink: 0;
 }
 
 .admin-manage-users-page .blacklist-button {
@@ -435,7 +510,6 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
-    white-space: nowrap;
 }
 
 .admin-manage-users-page .blacklist-button.blacklist {
@@ -458,7 +532,6 @@
 
 .admin-manage-users-page .blacklist-button svg {
     margin-right: 0.5rem;
-    flex-shrink: 0;
 }
 
 /* No results */
@@ -470,4 +543,618 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     color: #6b7280;
     width: 100%;
+}
+
+/* Admin Comments Popup */
+.admin-manage-users-page .admin-comment-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-manage-users-page .comment-popup-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.admin-manage-users-page .comment-popup-content {
+    position: relative;
+    background-color: white;
+    border-radius: 0.5rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 51;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.admin-manage-users-page .comment-popup-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-manage-users-page .comment-popup-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.admin-manage-users-page .comment-popup-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-manage-users-page .comment-popup-close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.admin-manage-users-page .comment-popup-body {
+    padding: 1.5rem;
+}
+
+.admin-manage-users-page .comment-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 150px;
+    margin-bottom: 1rem;
+}
+
+.admin-manage-users-page .comment-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-manage-users-page .comment-popup-info {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+    font-style: italic;
+}
+
+.admin-manage-users-page .comment-popup-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.admin-manage-users-page .comment-popup-cancel {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.admin-manage-users-page .comment-popup-cancel:hover {
+    background-color: #e5e7eb;
+}
+
+.admin-manage-users-page .comment-popup-save {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.admin-manage-users-page .comment-popup-save:hover {
+    background-color: #1d4ed8;
+}
+
+.admin-manage-users-page .comment-popup-save:disabled,
+.admin-manage-users-page .comment-popup-cancel:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.admin-manage-users-page .save-icon {
+    margin-right: 0.5rem;
+}
+/* === Admin Notes Popup === */
+.admin-notes-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 17, 17, 0.7);
+    backdrop-filter: blur(2px);
+    z-index: 1;
+}
+
+.popup-content {
+    position: relative;
+    background: #fff;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 10px;
+    z-index: 2;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.popup-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+    color: #256845;
+    text-align: center;
+}
+
+.note-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0;
+    margin-bottom: 16px;
+    list-style: none;
+}
+
+.note-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.note-list li p {
+    margin: 0 0 4px 0;
+    font-size: 0.95rem;
+}
+
+.note-list li small {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.popup-content textarea {
+    width: 100%;
+    resize: vertical;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+
+.popup-content button {
+    display: inline-block;
+    background-color: #256845;
+    color: white;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.popup-content button:hover {
+    background-color: #1e5438;
+}
+
+/* Optional: fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.popup-close-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #444;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    z-index: 3;
+}
+
+.popup-close-button:hover {
+    color: #000;
+}
+.admin-comment-button.has-notes {
+    color: #d32f2f; /* red */
+    font-weight: 600;
+}
+.popup-content .note-delete-button {
+    background: transparent !important;
+    border: none;
+    padding: 0;
+    margin-left: 6px;
+    width: 16px;
+    height: 16px;
+    color: #c62828;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-content .note-delete-button:hover {
+    color: #ff5252;
+}
+
+
+.note-list li {
+    position: relative;
+    padding-right: 30px; /* space for delete button */
+}
+
+.note-delete-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+.verified-badge {
+    margin-left: 8px;
+    color: green;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+.default-avatar-icon {
+    font-size: 80px;
+    color: #ccc;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+/* Add these styles to your existing ManageUsers.css */
+
+/* Duplicate Alert Banner */
+.duplicate-alert-banner {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.duplicate-alert-banner .alert-icon {
+    color: #f39c12;
+    font-size: 20px;
+}
+
+.duplicate-alert-banner span {
+    flex: 1;
+    color: #856404;
+    font-weight: 500;
+}
+
+.view-duplicates-btn {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.view-duplicates-btn:hover {
+    background: #e67e22;
+}
+
+/* Duplicate Filter Button */
+.filter-button.duplicate-filter {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.filter-button.duplicate-filter.active {
+    background: #f39c12;
+    color: white;
+    border-color: #f39c12;
+}
+
+/* User List Item Duplicate Indicators */
+.user-list-item.is-duplicate {
+    border-left: 4px solid #f39c12;
+    background: linear-gradient(to right, #fff3cd 0%, transparent 100px);
+}
+
+.user-list-item.is-original {
+    border-left: 4px solid #27ae60;
+    background: linear-gradient(to right, #e8f8f5 0%, transparent 100px);
+}
+
+/* Duplicate Badges */
+.duplicate-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 8px;
+}
+
+.duplicate-badge.duplicate {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.duplicate-badge.original {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.duplicate-badge svg {
+    font-size: 10px;
+}
+
+/* Composite Key Display */
+.composite-key-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.composite-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.composite-value {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #495057;
+    word-break: break-all;
+}
+
+/* Copy ID Button */
+.copy-id-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-id-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.copy-id-btn svg {
+    font-size: 10px;
+    color: #6c757d;
+}
+
+/* Search Results Count Enhancement */
+.search-results-count {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.duplicate-count {
+    color: #f39c12;
+    font-weight: 500;
+}
+
+/* Enhanced User Stats for Duplicates */
+.user-list-item.is-duplicate .user-stats,
+.user-list-item.is-original .user-stats {
+    padding-top: 8px;
+    border-top: 1px solid #e9ecef;
+    margin-top: 8px;
+}
+
+/* Loading Animation Enhancement */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.loading-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.loading-circle {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-lines {
+    display: flex;
+    gap: 4px;
+}
+
+.loading-line {
+    width: 4px;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 2px;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+.loading-line:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-line:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scaleY(1);
+        background: #e9ecef;
+    }
+    50% {
+        transform: scaleY(1.5);
+        background: #007bff;
+    }
+}
+
+/* Admin Comment Button Enhancement */
+.admin-comment-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-comment-button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.admin-comment-button.has-notes {
+    background: #cfe2ff;
+    border-color: #b6d4fe;
+    color: #084298;
+    font-weight: 500;
+}
+
+.admin-comment-button.has-notes:hover {
+    background: #b6d4fe;
+}
+
+/* User ID Enhancement */
+.user-id {
+    display: inline-flex;
+    align-items: center;
+    font-family: monospace;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .duplicate-alert-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .view-duplicates-btn {
+        width: 100%;
+    }
+
+    .composite-key-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

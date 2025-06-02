@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // at the top
+import { collection, getDocs, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { getPopularBreeds } from "../utils/getPopularBreeds";
 import {
     FaBars,
     FaUser,
+    FaCat,
     FaEnvelope,
     FaTimes,
     FaSearch,
@@ -15,6 +19,7 @@ import {
     FaHome,
     FaComments,
     FaHeart,
+    FaTrophy,
     FaBell,
     FaCog,
     FaQuestionCircle,
@@ -28,32 +33,140 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 
-function Navbar() {
-    const [menuOpen, setMenuOpen] = useState(false);
+function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const location = useLocation(); // Get current location from react-router
     const [activeItem, setActiveItem] = useState('/');
     const [userProfile, setUserProfile] = useState(null);
+    const dropdownRef = useRef(null);
+    const navigate = useNavigate();
+    const [userLoaded, setUserLoaded] = useState(false);
+    // NEW: sidebar “chips” state
+    const [topBreeds, setTopBreeds]     = useState([]);
+    const [topCategories, setTopCategories] = useState([]);
+    const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+
+    const listingsRef = collection(db, "allListings");
 
     // Update active item whenever the URL changes
+
+    // after: const [topBreeds, setTopBreeds] = useState([]);
+    useEffect(() => {
+        async function loadTopBreeds() {
+            const snap = await getDocs(
+                query(collection(db, "allListings"), where("approved", "==", true))
+            );
+            const breedsByCategory = {};
+
+            snap.forEach(doc => {
+                const data = doc.data();
+                const breed = data.breed || data.breedOrType;
+                const category = data.category; // Get the category too
+
+                if (breed && category) {
+                    const key = `${category}:${breed}`;
+                    breedsByCategory[key] = (breedsByCategory[key] || 0) + 1;
+                }
+            });
+
+            // Get top 4 breeds with their categories
+            const top4 = Object.entries(breedsByCategory)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 4)
+                .map(([key]) => {
+                    const [category, breed] = key.split(':');
+                    return { breed, category };
+                });
+
+            setTopBreeds(top4);
+        }
+        loadTopBreeds().catch(console.error);
+    }, []);
+
+
+
     useEffect(() => {
         setActiveItem(location.pathname);
     }, [location]);
 
     useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+
+
+
+
+    useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
-            if (user) {
-                console.log("✅ Logged in as:", user.uid);
-            } else {
-                console.log("🚫 No user logged in");
-            }
+            setUserLoaded(true); // ✅ this enables logic to run
         });
-
 
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const q = query(
+            collection(db, "conversations"),
+            where("users", "array-contains", currentUser.uid)
+        );
+
+        const unsubscribe = onSnapshot(q, snapshot => {
+            let hasUnread = false;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const msg = data.lastMessage;
+
+                if (
+                    msg &&
+                    msg.senderId !== currentUser.uid &&
+                    (!msg.readBy || !msg.readBy.includes(currentUser.uid))
+                ) {
+                    hasUnread = true;
+                }
+            });
+
+            setHasUnreadMessages(hasUnread);
+        });
+
+        return () => unsubscribe();
+    }, [currentUser]);
+
+
+
+
+    // NEW: load sidebar chips data
+
+
+
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -95,6 +208,7 @@ function Navbar() {
     // Determine if a path is active
     const isActive = (path) => activeItem === path;
 
+
     return (
         <>
             {/* Redesigned Top Navbar */}
@@ -122,46 +236,126 @@ function Navbar() {
                     </div>
 
                     <div className="navbar-right">
-                        <Link to="/new-advert" className="advert-btn" onClick={() => setActiveItem('/new-advert')}>
-                            <FaPlus className="advert-btn-icon" />
-                            <span className="desktop-only">New Advert</span>
-                        </Link>
+                        <button
+                            type="button"
+                            className="navbar-new-advert-btn"
+                            onClick={() => {
+                                if (!userLoaded) return;
 
-                        {currentUser ? (
-                            <>
-                                <Link to="/messages" className="icon-link has-notification" onClick={() => setActiveItem('/messages')}>
-                                    <FaEnvelope />
-                                </Link>
-                                <Link to={`/profile/${currentUser.uid}`} className="icon-link" onClick={() => setActiveItem(`/profile/${currentUser.uid}`)}>
-                                    <FaUser />
-                                </Link>
-                            </>
-                        ) : (
-                            <div className="dropdown-wrapper">
-                                <button className="icon-link" onClick={toggleDropdown} aria-label="User menu">
-                                    <FaUser />
-                                </button>
-                                {showDropdown && (
-                                    <div className="user-dropdown">
-                                        <Link to="/login" onClick={() => {
-                                            setShowDropdown(false);
-                                            setActiveItem('/login');
-                                        }}>
-                                            <FaSignInAlt className="dropdown-icon" />
-                                            <span>Login</span>
-                                        </Link>
-                                        <Link to="/register" onClick={() => {
-                                            setShowDropdown(false);
-                                            setActiveItem('/register');
-                                        }}>
-                                            <FaUserPlus className="dropdown-icon" />
-                                            <span>Register</span>
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
+                                if (!currentUser) {
+                                    alert("To publish a new advert, please sign in or register first.");
+                                    handleMenuItemClick(); // close sidebar
+                                    onLoginClick(); // ✅ open modal instead of navigating to /login
+                                } else {
+                                    handleMenuItemClick("/new-advert");
+                                    navigate("/new-advert");
+                                }
+                            }}
+
+                        >
+                            <FaPlus className="navbar-new-advert-icon" />
+                            <span className="navbar-new-advert-text">New Advert</span>
+                        </button>
+
+                        {currentUser && (
+                            <Link to="/messages" className={`icon-link ${hasUnreadMessages ? "has-notification" : ""}`}>
+                                <FaComments />
+                            </Link>
+
                         )}
+
+
+
+                        <div className="dropdown-wrapper" ref={dropdownRef}>
+                            <button className="icon-link" onClick={toggleDropdown} aria-label="User menu">
+                                <FaUser />
+                            </button>
+
+                            {showDropdown && (
+                                <div className="user-dropdown">
+                                    {currentUser ? (
+                                        <>
+                                            <Link
+                                                to={`/profile/${currentUser.uid}`}
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem(`/profile/${currentUser.uid}`);
+                                                }}
+                                            >
+                                                <FaUser className="dropdown-icon" />
+                                                <span>My Profile</span>
+                                            </Link>
+
+                                            <Link
+                                                to="/favourites"
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem('/favourites');
+                                                }}
+                                            >
+                                                <FaHeart className="dropdown-icon" />
+                                                <span>Favourites</span>
+                                            </Link>
+
+                                            <Link
+                                                to="/my-adverts"
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem('/my-adverts');
+                                                }}
+                                            >
+                                                <FaListAlt className="dropdown-icon" />
+                                                <span>My Adverts</span>
+                                            </Link>
+
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={async () => {
+                                                    setShowDropdown(false);
+                                                    await auth.signOut();
+                                                    navigate("/");
+                                                }}
+                                            >
+                                                <FaSignOutAlt className="dropdown-icon" />
+                                                <span>Logout</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    onLoginClick();
+                                                }}
+                                            >
+                                                <FaSignInAlt className="dropdown-icon" />
+                                                <span>Login</span>
+                                            </button>
+
+                                            <Link
+                                                to="/register"
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem('/register');
+                                                }}
+                                            >
+                                                <FaUserPlus className="dropdown-icon" />
+                                                <span>Register</span>
+                                            </Link>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                     </div>
+
+
                 </div>
             </nav>
 
@@ -171,7 +365,7 @@ function Navbar() {
             {/* Redesigned Sidebar Menu */}
             <div className={`menu-overlay ${menuOpen ? "open" : ""}`}>
                 <div className="menu-header">
-                    <h2><FaPaw /> Stud Service Hub</h2>
+                    <h2>Sidebar</h2>
                     <button
                         className="close-btn"
                         onClick={closeMenu}
@@ -227,14 +421,30 @@ function Navbar() {
                         <div className="sidebar-guest">
                             <p>Welcome to Stud Service Hub</p>
                             <div className="guest-buttons">
-                                <Link to="/login" className="guest-button login-btn" onClick={() => handleMenuItemClick('/login')}>
+                                {/* LOGIN: keep as <Link> for styling but prevent navigation */}
+                                <Link
+                                    to="/login"
+                                    className="guest-button login-btn"
+                                    onClick={e => {
+                                        e.preventDefault();   // stop the route change
+                                        handleMenuItemClick(); // close sidebar
+                                        onLoginClick();        // open modal
+                                    }}
+                                >
                                     <FaSignInAlt /> <span>Login</span>
                                 </Link>
-                                <Link to="/register" className="guest-button register-btn" onClick={() => handleMenuItemClick('/register')}>
+
+                                {/* REGISTER: normal navigation */}
+                                <Link
+                                    to="/register"
+                                    className="guest-button register-btn"
+                                    onClick={() => handleMenuItemClick('/register')}
+                                >
                                     <FaUserPlus /> <span>Register</span>
                                 </Link>
                             </div>
                         </div>
+
                     )}
                 </div>
 
@@ -242,20 +452,22 @@ function Navbar() {
                 <div className="sidebar-categories">
                     <h3>Popular Categories</h3>
                     <div className="category-chips">
-                        <Link to="/category/dogs" className="category-chip" onClick={() => handleMenuItemClick('/category/dogs')}>
-                            <FaDog /> Dogs
-                        </Link>
-                        <Link to="/category/cats" className="category-chip" onClick={() => handleMenuItemClick('/category/cats')}>
-                            <FaPaw /> Cats
-                        </Link>
-                        <Link to="/category/popular" className="category-chip" onClick={() => handleMenuItemClick('/category/popular')}>
-                            <FaHeart /> Popular
-                        </Link>
-                        <Link to="/category/new" className="category-chip" onClick={() => handleMenuItemClick('/category/new')}>
-                            <FaBell /> New
-                        </Link>
+
+                        {/* Top 3 Breeds */}
+                        {topBreeds.map(({ breed, category }) => (
+                            <Link
+                                key={`${category}-${breed}`}
+                                to={`/browse?category=${category}&breed=${encodeURIComponent(breed)}`}
+                                className="category-chip"
+                                onClick={() => handleMenuItemClick(`/browse?category=${category}&breed=${breed}`)}
+                            >
+                                <FaPaw /> {breed}
+                            </Link>
+                        ))}
                     </div>
                 </div>
+
+
 
                 {/* Main navigation menu - FIXED VERSION */}
                 <div className="sidebar-nav-frontend">
@@ -270,15 +482,57 @@ function Navbar() {
                         <li className="menu-item">
                             <Link to="/browse" onClick={() => handleMenuItemClick('/browse')}>
                                 <FaSearch className="menu-icon" />
-                                <span>Browse Studs</span>
+                                <span>All Listings</span>
                             </Link>
                         </li>
                         <li className="menu-item">
-                            <Link to="/new-advert" onClick={() => handleMenuItemClick('/new-advert')}>
-                                <FaPlus className="menu-icon" />
-                                <span>New Advert</span>
+                            <Link
+                                to="/browse?category=dogs&intent=sale&maxAge=6"
+                                onClick={() => handleMenuItemClick('/browse?category=dogs&intent=sale&maxAge=6')}
+                            >
+                                <FaDog className="menu-icon" />
+                                <span>Puppies for Sale</span>
                             </Link>
                         </li>
+                        <li className="menu-item">
+                            <Link
+                                to="/browse?category=cats&intent=sale&maxAge=6"
+                                onClick={() => handleMenuItemClick('/browse?category=cats&intent=sale&maxAge=6')}
+                            >
+                                <FaCat className="menu-icon" />
+                                <span>Kittens for Sale</span>
+                            </Link>
+                        </li>
+                        {/* Top Studs */}
+                        <li className="menu-item">
+                            <Link to="/top-studs" onClick={() => handleMenuItemClick("/top-studs")}>
+                                <FaTrophy className="menu-icon" />
+                                <span>Top Studs</span>
+                            </Link>
+                        </li>
+                        <li className="menu-item">
+                            <button
+                                type="button"
+                                className="navbar-sidebar-new-advert-btn"
+                                onClick={() => {
+                                    if (!userLoaded) return;
+
+                                    if (!currentUser) {
+                                        alert("To publish a new advert, please sign in or register first.");
+                                        handleMenuItemClick(); // close sidebar
+                                        onLoginClick(); // ✅ open modal instead of navigating to /login
+                                    } else {
+                                        handleMenuItemClick("/new-advert");
+                                        navigate("/new-advert");
+                                    }
+                                }}
+
+                            >
+                                <FaPlus className="menu-icon" />
+                                <span>New Advert</span>
+                            </button>
+                        </li>
+
 
                         {/* User-specific links */}
                         {currentUser && (
@@ -296,11 +550,16 @@ function Navbar() {
                                     </Link>
                                 </li>
                                 <li className="menu-item">
-                                    <Link to={`/profile/${currentUser?.uid}`} onClick={() => handleMenuItemClick(`/profile/${currentUser?.uid}`)}>
+                                    <Link
+                                        to="/my-adverts"
+                                        onClick={() => handleMenuItemClick('/my-adverts')}
+                                        className={isActive('/my-adverts') ? 'active' : ''}
+                                    >
                                         <FaListAlt className="menu-icon" />
-                                        <span>My Listings</span>
+                                        <span>My Adverts</span>
                                     </Link>
                                 </li>
+
 
                                 <li className="menu-item">
                                     <Link to="/Favourites" onClick={() => handleMenuItemClick('/Favourites')}>
@@ -316,19 +575,33 @@ function Navbar() {
                         {!currentUser && (
                             <>
                                 <li className="menu-item">
-                                    <Link to="/login" onClick={() => handleMenuItemClick('/login')}>
+                                    <Link
+                                        to="/login"                       // leave this for styling
+                                        className="menu-button menu-login-button"
+                                        onClick={e => {
+                                            e.preventDefault();            // stop the navigation
+                                            handleMenuItemClick();         // close sidebar/dropdowns
+                                            onLoginClick();                // open your modal
+                                        }}
+                                    >
                                         <FaSignInAlt className="menu-icon" />
                                         <span>Login</span>
                                     </Link>
                                 </li>
                                 <li className="menu-item">
-                                    <Link to="/register" onClick={() => handleMenuItemClick('/register')}>
+                                    <Link
+                                        to="/register"
+                                        onClick={() => handleMenuItemClick('/register')}
+                                        className="menu-button menu-register-button"
+                                    >
                                         <FaUserPlus className="menu-icon" />
                                         <span>Register</span>
                                     </Link>
                                 </li>
                             </>
                         )}
+
+
 
                         {/* Help - always visible */}
                         <li className="menu-item">
@@ -344,10 +617,24 @@ function Navbar() {
                 {currentUser && (
                     <div className="sidebar-footer">
                         <p className="sidebar-footer-text">Logged in as {currentUser.email}</p>
-                        <Link to="/logout" className="logout-button" onClick={() => handleMenuItemClick('/logout')}>
+                        <Link
+                            to="/"
+                            className="logout-button"
+                            onClick={async (e) => {
+                                e.preventDefault(); // prevent default link navigation
+                                try {
+                                    await auth.signOut();         // sign out from Firebase
+                                    handleMenuItemClick('/');     // close sidebar
+                                    window.location.href = "/";   // hard redirect to homepage
+                                } catch (err) {
+                                    console.error("Logout failed", err);
+                                }
+                            }}
+                        >
                             <FaSignOutAlt />
                             <span>Logout</span>
                         </Link>
+
                     </div>
                 )}
             </div>

@@ -1,0 +1,19 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [ /* ... */ ]
+    },
+    {
+      "source": "imageresize",
+      "codebase": "imageresize",
+      "ignore": [ /* ... */ ],
+      "predeploy": [ /* ... */ ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

@@ -4,19 +4,14 @@ import Navbar from "./Navbar";
 import Footer from "./Footer"; // Import the proper Footer component
 import "./Layout.css";
 
-function Layout() {
+function Layout({ onLoginClick, onResetCookieConsent }) {
     return (
         <div className="layout">
-            {/* Full-width navbar */}
-            <Navbar />
-
-            {/* Main content stays centered */}
+            <Navbar onLoginClick={onLoginClick} />
             <main className="main-content">
                 <Outlet />
             </main>
-
-            {/* Full-width footer */}
-            <Footer />
+            <Footer onResetCookieConsent={onResetCookieConsent} />
         </div>
     );
 }

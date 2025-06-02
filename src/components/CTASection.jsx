@@ -1,25 +1,31 @@
 import React from "react";
 import "./CTASection.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDog, faStar, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 function CTASection() {
     return (
         <section className="cta-section">
             <div className="cta-container">
-                <h2>Quality studs and serious handlers—all in one place</h2>
-                <p>Post your stud advert or browse proven studs across the UK—find your perfect match now.</p>
-                <div className="cta-buttons">
-                    <a href="/new-advert" className="cta-button primary">Post Your Advert</a>
-                    <a href="/browse" className="cta-button secondary">Browse Studs</a>
+                <div className="cta-badge">
+                    <FontAwesomeIcon icon={faStar} /> Trusted by Dog Lovers Nationwide
                 </div>
-                <div className="social-proof">
-                    <div className="user-avatars">
-                        <img src="https://placehold.co/400" alt="User testimonial" />
-                        <img src="https://placehold.co/400" alt="User testimonial" />
-                        <img src="https://placehold.co/400" alt="User testimonial" />
-                    </div>
-                    <div className="social-text">
-                        <p>Joined by <span>1,200+</span> dog owners</p>
-                    </div>
+
+                <h2 className="cta-title">
+                    Discover, Connect & Advertise — All in One Place
+                </h2>
+
+                <p className="cta-description">
+                    Whether you're a verified breeder, a proud pet owner, or someone searching for their next companion — we make it simple to connect with the right people.
+                </p>
+
+                <div className="cta-buttons">
+                    <a href="/new-advert" className="cta-button cta-button-primary">
+                        <FontAwesomeIcon icon={faDog} /> Post Your Listing
+                    </a>
+                    <a href="/browse" className="cta-button cta-button-secondary">
+                        <FontAwesomeIcon icon={faSearch} /> Browse Available Pets
+                    </a>
                 </div>
             </div>
         </section>

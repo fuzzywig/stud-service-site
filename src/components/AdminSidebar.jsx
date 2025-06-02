@@ -11,7 +11,9 @@ import {
     FaStar,
     FaGlobe,
     FaSignOutAlt,
-    FaUser
+    FaUser,
+    FaSearch,
+    FaShieldAlt
 } from 'react-icons/fa';
 import './AdminSidebar.css';
 
@@ -112,6 +114,33 @@ export default function AdminSidebar() {
                             <FaUsers className="admin-sidebar-icon" />
                             <span>Manage Users</span>
                         </Link>
+                        <Link
+                            to="/admin/reported-users"
+                            className={`admin-sidebar-link ${isActive('/admin/reported-users') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <FaShieldAlt className="admin-sidebar-icon" />
+                            <span>Reported Users</span>
+                        </Link>
+                        <Link
+                            to="/admin/uid-inspector"
+                            className={`admin-sidebar-link ${isActive('/admin/uid-inspector') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <FaSearch className="admin-sidebar-icon" />
+                            <span>UID Inspector</span>
+                        </Link>
+                        <Link
+                            to="/admin/tickets"
+                            className={`admin-sidebar-link ${isActive('/admin/tickets') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <FaClipboardCheck className="admin-sidebar-icon" /> {/* or choose a different icon */}
+                            <span>Support Tickets</span>
+                        </Link>
+
+
+
 
                         <a
                             href="/"

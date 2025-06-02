@@ -1,592 +1,721 @@
-// src/pages/NewAdvert.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./NewAdvert.css";
-import { db, auth, storage } from "../firebase/firebase";
-import {
-    collection,
-    addDoc,
-    serverTimestamp,
-    doc,
-    getDoc
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Select from "react-select";
-import { breedOptions } from "../components/breedOptions";
-import colourOptions from "../components/colourOptions";
-function NewAdvert() {
-    const [formData, setFormData] = useState({
-        title: "",
-        name: "",
-        breed: "",
-        age: "",
-        colour: "",
-        otherColour: "",
-        fee: "",
-        height: "",
-        weight: "",
-        fleaWormed: false,
-        vacsUpToDate: false,
-        kcRegistered: false,
-        kcName: "",
-        healthTested: false,
-        proven: false,
-        healthChecks: Array(10).fill(""),
-        facebookUrl: "",
-        instagramUrl: "",
-        description: "",
-        images: [],
-        mainImageIndex: 0,
-        matings: ""
-    });
-    const [errors, setErrors] = useState({});
-    const [success, setSuccess] = useState("");
+import { db, storage, auth } from "../firebase/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value
-        }));
-        setErrors(prev => ({ ...prev, [name]: "" }));
-    };
+import {
+    petBreedOptions,
+    updatedPetCategories as petCategories,
+    updatedFieldConfigurations as fieldConfigurations,
+} from "./data/breedOptions";
 
-    const handleHealthCheckChange = (idx, value) => {
-        const updated = [...formData.healthChecks];
-        updated[idx] = value;
-        setFormData(prev => ({ ...prev, healthChecks: updated }));
-    };
+export default function NewAdvert() {
+    const [step, setStep] = useState(1);
+    const [category, setCategory] = useState("");      // e.g. "dogs", "cats"
+    const [intent, setIntent] = useState("");          // "sale" or "stud"
+    const [breedOrType, setBreedOrType] = useState(""); // e.g. "Labrador", "Sheep"
+    const [formData, setFormData] = useState({});
+    const [images, setImages] = useState([]);
+    // track whether user wants to enter health tests
+    const [healthTestsEnabled, setHealthTestsEnabled] = useState(false);
+    // store up to 10 test descriptions
+    // at the top of NewAdvert, alongside your other useState calls
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const validate = () => {
-        const newErrors = {};
-        if (!formData.title) newErrors.title = "Advert title is required.";
-        if (!formData.breed) newErrors.breed = "Breed is required.";
-        if (!formData.name) newErrors.name = "Dog’s name is required.";
-        if (!formData.age) newErrors.age = "Age is required.";
-        if (!formData.colour) newErrors.colour = "Colour is required.";
-        if (formData.colour === "other" && !formData.otherColour.trim())
-            newErrors.otherColour = "Please specify the colour.";
-        if (!formData.description || formData.description.length < 250)
-            newErrors.description = "Description must be at least 250 characters.";
-        if (formData.images.length === 0)
-            newErrors.images = "Please upload at least one image.";
-        if (formData.matings && formData.matings < 0)
-            newErrors.matings = "Number of matings must be positive.";
+    const [healthTests, setHealthTests] = useState(Array(10).fill(""));
+    const [formFields, setFormFields] = useState([]);
+    const studCategories = ["dogs", "cats"];
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const uploadImages = async (images, userId) => {
-        const urls = [];
-        for (const img of images) {
-            const fileRef = ref(storage, `studAds/${userId}/${Date.now()}_${img.file.name}`);
-            const snap = await uploadBytes(fileRef, img.file);
-            urls.push(await getDownloadURL(snap.ref));
-        }
-        return urls;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validate()) return;
-
-        const user = auth.currentUser;
-        if (!user) {
-            alert("Please log in to post an advert.");
-            return;
-        }
-
-        // fetch user’s saved GeoPoint & postcode
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) {
-            alert("User profile missing location data.");
-            return;
-        }
-        const { location, postcode } = userSnap.data();
-
-        try {
-            const imageUrls = await uploadImages(formData.images, user.uid);
-
-            // determine final colour
-            const finalColour =
-                formData.colour === "other"
-                    ? formData.otherColour.trim()
-                    : formData.colour;
-
-            await addDoc(collection(db, "studAds"), {
-                title: formData.title,
-                name: formData.name,
-                breed: formData.breed,
-                age: formData.age,
-                colour: finalColour,
-                fee: formData.fee,
-                height: formData.height,
-                weight: formData.weight,
-                fleaWormed: formData.fleaWormed,
-                vacsUpToDate: formData.vacsUpToDate,
-                kcRegistered: formData.kcRegistered,
-                kcName: formData.kcName,
-                healthTested: formData.healthTested,
-                proven: formData.proven,
-                healthChecks: formData.healthChecks.filter(h => h.trim() !== ""),
-                facebookUrl: formData.facebookUrl,
-                instagramUrl: formData.instagramUrl,
-                description: formData.description,
-                images: imageUrls,
-                mainImageIndex: formData.mainImageIndex,
-                matings: formData.matings ? Number(formData.matings) : 0,
-                ownerId: user.uid,
-                postcode,
-                createdAt: serverTimestamp(),
-                approved: false
-            });
-
-            setSuccess(
-                "Your advert has been submitted successfully and is awaiting approval!"
-            );
-            setFormData({
-                title: "",
-                name: "",
-                breed: "",
-                age: "",
-                colour: "",
-                otherColour: "",
-                fee: "",
-                height: "",
-                weight: "",
-                fleaWormed: false,
-                vacsUpToDate: false,
-                kcRegistered: false,
-                kcName: "",
-                healthTested: false,
-                proven: false,
-                healthChecks: Array(10).fill(""),
-                facebookUrl: "",
-                instagramUrl: "",
-                description: "",
-                images: [],
-                mainImageIndex: 0,
-                matings: ""
-            });
-        } catch (err) {
-            console.error("Submission failed:", err);
-            alert("Something went wrong: " + err.message);
-        }
-    };
-
+    const [mainImageIndex, setMainImageIndex] = useState(null);
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        const previews = files
-            .slice(0, 10 - formData.images.length)
-            .map(file => ({ file, url: URL.createObjectURL(file) }));
-        setFormData(prev => ({ ...prev, images: [...prev.images, ...previews] }));
+        const previews = files.slice(0, 10 - images.length).map((file) => ({
+            file,
+            url: URL.createObjectURL(file)
+        }));
+        setImages((prev) => [...prev, ...previews]);
     };
 
     const handleImageRemove = (idx) => {
-        const updated = [...formData.images];
-        URL.revokeObjectURL(updated[idx].url);
-        updated.splice(idx, 1);
-        setFormData(prev => ({ ...prev, images: updated }));
+        setImages(prev => prev.filter((_, i) => i !== idx));
     };
 
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const files = Array.from(e.dataTransfer.files);
-        const previews = files
-            .slice(0, 10 - formData.images.length)
-            .map(file => ({ file, url: URL.createObjectURL(file) }));
-        setFormData(prev => ({ ...prev, images: [...prev.images, ...previews] }));
+    const handleStartOver = () => {
+        // Show confirmation dialog
+        if (window.confirm("Are you sure you want to start over? All your data will be lost.")) {
+            // Reset all form state
+            setStep(1);
+            setCategory("");
+            setIntent("");
+            setBreedOrType("");
+            setFormData({});
+            setImages([]);
+            setHealthTestsEnabled(false);
+            setHealthTests(Array(10).fill(""));
+            setFormFields([]);
+        }
+    };
+
+    // 1) Capitalize helper
+    const capitalize = str =>
+        str && str.length
+            ? str.charAt(0).toUpperCase() + str.slice(1)
+            : "";
+
+    // 2) Build a dynamic heading
+    const getHeading = () => {
+        if (!category) return "Create New Advert";
+
+        let base = `Create New ${capitalize(category)}`;
+        if (intent === "sale")      base += " For Sale";
+        else if (intent === "stud") base += " Stud";
+        if (breedOrType)            base += `: ${breedOrType}`;
+
+        return base;
+    };
+
+    useEffect(() => {
+        if (!category || !intent) return;
+
+        console.log("🔍 Looking up fields for:", category);
+
+        // 1) Try to find a top‐level entry first
+        let cfg = petCategories[category];
+        console.log("→ top‐level cfg:", cfg);
+
+        // 2) If it exists but has no `fields` array, fall back to your old subcat logic
+        if (!cfg?.fields) {
+            cfg =
+                petCategories.mammals?.subcategories?.[category]       ||
+                petCategories.birds?.subcategories?.[category]        ||
+                petCategories.reptiles?.subcategories?.[category]     ||
+                petCategories.fish?.subcategories?.[category]         ||
+                petCategories.invertebrates?.subcategories?.[category]||
+                petCategories.livestock?.subcategories?.[category]    ||
+                null;
+            console.log("→ subcat fallback cfg:", cfg);
+        }
+
+        if (!cfg) {
+            console.warn("⚠️ No config found for", category);
+            setFormFields([]);
+            return;
+        }
+
+        // 3) Build your field list
+        const baseFields = Array.isArray(cfg.fields) ? cfg.fields : [];
+        const saleExtras  = intent === "sale" ? cfg.fieldsForSale  || [] : [];
+        const studExtras  = intent === "stud" ? cfg.fieldsForStud  || [] : [];
+        const allFields   = [...baseFields, ...saleExtras, ...studExtras];
+
+        console.log("✔️ Fields to render:", allFields);
+
+        setFormFields([...new Set(allFields)]);
+    }, [category, intent]);
+
+
+
+    const renderField = (fieldName) => {
+        const config = fieldConfigurations[fieldName];
+        if (!config) return null;
+
+        switch (config.type) {
+            case "text":
+                return (
+                    <div className="newadvert-form-group" key={fieldName}>
+                        <input
+                            type="text"
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    [fieldName]: e.target.value
+                                }))
+                            }
+                            placeholder={config.label}
+                            className="newadvert-form-control"
+                        />
+                    </div>
+                );
+
+            case "number":
+                return (
+                    <div className="newadvert-form-group" key={fieldName}>
+                        <input
+                            type="number"
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    [fieldName]: e.target.value
+                                }))
+                            }
+                            placeholder={config.label}
+                            className="newadvert-form-control"
+                            min="0"
+                            step={fieldName.toLowerCase().includes("price") ? "0.01" : "1"}
+                        />
+                    </div>
+                );
+
+            case "select":
+                return (
+                    <div className="newadvert-form-group" key={fieldName}>
+                        <select
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    [fieldName]: e.target.value
+                                }))
+                            }
+                            className="newadvert-form-control"
+                        >
+                            <option value="">{config.label}</option>
+                            {config.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                );
+
+            case "checkbox":
+                return (
+                    <div className="newadvert-form-checkbox" key={fieldName}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                name={fieldName}
+                                checked={formData[fieldName] || false}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        [fieldName]: e.target.checked
+                                    }))
+                                }
+                            />{" "}
+                            {config.label}
+                        </label>
+                    </div>
+                );
+            case "textarea":
+                return (
+                    <div className="newadvert-form-group" key={fieldName}>
+                        <label htmlFor={fieldName}>{config.label}</label>
+                        <textarea
+                            id={fieldName}
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={e =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    [fieldName]: e.target.value
+                                }))
+                            }
+                            placeholder={config.placeholder}
+                            required={config.required}
+                            className="newadvert-form-control"
+                            rows={4}
+                        />
+                    </div>
+                );
+            case "date":
+                return (
+                    <div className="newadvert-form-group" key={fieldName}>
+                        <label htmlFor={fieldName}>{config.label}</label>
+                        <input
+                            type="date"
+                            id={fieldName}
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={e =>
+                                setFormData(prev => ({ ...prev, [fieldName]: e.target.value }))
+                            }
+                            placeholder={config.placeholder}
+                            required={config.required}
+                            className="newadvert-form-control"
+                        />
+                    </div>
+                );
+
+
+
+            default:
+                return null;
+        }
+    };
+    const handleSubmit = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            return alert("You must be logged in to post an advert.");
+        }
+
+        // turn on loading state
+        setIsSubmitting(true);
+
+        try {
+            // 1. Upload images
+            const uploadedImageUrls = [];
+            for (let img of images) {
+                const imageRef = ref(storage, `adverts/${user.uid}/${Date.now()}_${img.file.name}`);
+                const snap = await uploadBytes(imageRef, img.file);
+                const url = await getDownloadURL(snap.ref);
+                uploadedImageUrls.push(url);
+            }
+
+            // 2. Prepare your advert data
+            const advertData = {
+                category,
+                intent,
+                breedOrType,
+                createdAt: serverTimestamp(),
+                ownerId: user.uid,
+                images: uploadedImageUrls,
+                // plus any other formData fields…
+            };
+            formFields.forEach(field => {
+                if (formData[field] !== undefined) {
+                    advertData[field] = formData[field];
+                }
+            });
+            if (healthTestsEnabled) {
+                const tests = healthTests.filter(str => str.trim() !== "");
+                if (tests.length) advertData.healthTests = tests;
+            }
+
+            // 3. Send to Firestore
+            await addDoc(collection(db, "allListings"), advertData);
+
+            // 4. Advance to the “Awaiting Approval” step
+            setStep(6);
+
+        } catch (error) {
+            console.error("Failed to submit advert:", error);
+            alert("There was an error submitting your advert.");
+        } finally {
+            // always turn off loading state
+            setIsSubmitting(false);
+        }
+    };
+
+
+    // Generate progress indicator based on current step
+    const renderProgressSteps = () => {
+        const totalSteps = 6;
+        const steps = [];
+
+        for (let i = 1; i <= totalSteps; i++) {
+            let stepClass = "newadvert-progress-step";
+            if (i === step) stepClass += " active";
+            if (i < step) stepClass += " completed";
+
+            steps.push(
+                <div key={i} className={stepClass}>
+                    {i < step ? "✓" : i}
+                </div>
+            );
+        }
+
+        return (
+            <div className="newadvert-progress">
+                {steps}
+            </div>
+        );
     };
 
     return (
-        <div className="new-advert-page">
-            {success && <div className="success-message">{success}</div>}
+        <div className="newadvert-container">
+            <h1 className="newadvert-title">{getHeading()}</h1>
 
-            <div className="form-layout">
-                <form
-                    onSubmit={handleSubmit}
-                    className="advert-form"
-                    onDragOver={e => e.preventDefault()}
-                    onDrop={handleDrop}
-                >
-                    <h1>Create New Stud Advert</h1>
+            {renderProgressSteps()}
 
-                    {/* Basic Information */}
-                    <div className="form-section">
-                        <div className="form-section-title">
-                            {/* icon */}
-                            Basic Information
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Advert Title</label>
-                            <input
-                                className="form-control"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                placeholder="Enter an attention-grabbing title"
-                            />
-                            {errors.title && <small className="error">{errors.title}</small>}
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Dog Breed</label>
-                            <Select
-                                options={breedOptions}
-                                value={breedOptions.find(o => o.value === formData.breed)}
-                                onChange={opt =>
-                                    handleChange({ target: { name: "breed", value: opt?.value || "" } })
-                                }
-                                placeholder="Search for a breed..."
-                                isClearable
-                                className="breed-select"
-                            />
-                            {errors.breed && <small className="error">{errors.breed}</small>}
-                        </div>
+            {/* Start Over button (only shown after step 1) */}
+            {step > 1 && (
+                <div className="newadvert-startover">
+                    <button
+                        className="newadvert-btn newadvert-btn-danger"
+                        onClick={handleStartOver}
+                    >
+                        Start Over
+                    </button>
+                </div>
+            )}
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Dog’s Name</label>
-                                <input
-                                    className="form-control"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder="Your dog’s name"
-                                />
-                                {errors.name && <small className="error">{errors.name}</small>}
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Age</label>
-                                <input
-                                    className="form-control"
-                                    name="age"
-                                    value={formData.age}
-                                    onChange={handleChange}
-                                    placeholder="e.g. 2 years or 18 months"
-                                />
-                                {errors.age && <small className="error">{errors.age}</small>}
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Colour</label>
-                                <Select
-                                    options={colourOptions}
-                                    value={colourOptions.find(o => o.value === formData.colour)}
-                                    onChange={opt =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            colour: opt?.value || "",
-                                            // reset otherColour if not “other”
-                                            otherColour: opt?.value === "other" ? prev.otherColour : ""
-                                        }))
+            {step === 1 && (
+                <div className="newadvert-step">
+                    <h2 className="newadvert-subtitle">Step 1: Select a Category</h2>
+                    <div className="newadvert-options">
+                        {["dogs", "cats", "livestock", "horses", "birds", "rabbits", "reptiles", "rodents", "fish", "invertebrates", "poultry"].map((cat) => (
+                            <button
+                                key={cat}
+                                className={`newadvert-option-button ${category === cat ? "selected" : ""}`}
+                                onClick={() => {
+                                    setCategory(cat);
+                                    if (studCategories.includes(cat)) {
+                                        // this category supports both Sale and Stud → go to step 2
+                                        setStep(2);
+                                    } else {
+                                        // sale‐only → auto‐set intent and jump straight to step 3
+                                        setIntent("sale");
+                                        setStep(3);
                                     }
-                                    placeholder="Select a colour..."
-                                    isClearable
-                                    className="colour-select"
-                                />
-                                {errors.colour && <small className="error">{errors.colour}</small>}
-                            </div>
-                            {formData.colour === "other" && (
-                                <div className="form-group">
-                                    <label className="form-label">Other Colour</label>
-                                    <input
-                                        className="form-control"
-                                        name="otherColour"
-                                        value={formData.otherColour}
-                                        onChange={handleChange}
-                                        placeholder="Enter custom colour"
-                                    />
-                                    {errors.otherColour && (
-                                        <small className="error">{errors.otherColour}</small>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="form-group">
-                                <label className="form-label">Stud Fee (£)</label>
-                                <input
-                                    className="form-control"
-                                    type="number"
-                                    name="fee"
-                                    value={formData.fee}
-                                    onChange={handleChange}
-                                    placeholder="Fee amount in £"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Height</label>
-                                <input
-                                    className="form-control"
-                                    name="height"
-                                    value={formData.height}
-                                    onChange={handleChange}
-                                    placeholder="Height in inches or cm"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Weight</label>
-                                <input
-                                    className="form-control"
-                                    name="weight"
-                                    value={formData.weight}
-                                    onChange={handleChange}
-                                    placeholder="Weight in kg or lbs"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Number of Matings</label>
-                                <input
-                                    className="form-control"
-                                    type="number"
-                                    name="matings"
-                                    value={formData.matings}
-                                    onChange={handleChange}
-                                    placeholder="e.g. 2 matings"
-                                />
-                                {errors.matings && <small className="error">{errors.matings}</small>}
-                            </div>
-                        </div>
+                                }}
+                            >
+                                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                            </button>
+                        ))}
                     </div>
+                </div>
+            )}
 
-                    {/* Health & Registration */}
-                    <div className="form-section">
-                        <div className="form-section-title">
-                            {/* icon */}
-                            Health & Registration
-                        </div>
-                        <div className="checkbox-group">
-                            <label className="styled-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="fleaWormed" checked={formData.fleaWormed} onChange={handleChange}
-                                />
-                                <span>Flea & Worm Treated</span>
-                            </label>
-                            <label className="styled-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="vacsUpToDate" checked={formData.vacsUpToDate} onChange={handleChange}
-                                />
-                                <span>Vaccinations Up to Date</span>
-                            </label>
-                            <label className="styled-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="proven" checked={formData.proven} onChange={handleChange}
-                                />
-                                <span>Proven Stud</span>
-                            </label>
-                            <label className="styled-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="kcRegistered"
-                                    checked={formData.kcRegistered}
-                                    onChange={handleChange}
-                                />
-                                <span>KC Registered</span>
-                            </label>
-                        </div>
-
-                        {formData.kcRegistered && (
-                            <div className="form-group">
-                                <label className="form-label">KC Registered Name</label>
-                                <input
-                                    className="form-control"
-                                    name="kcName"
-                                    value={formData.kcName}
-                                    onChange={handleChange}
-                                    placeholder="Official KC registered name"
-                                />
-                            </div>
+            {step === 2 && category && (
+                <div className="newadvert-step">
+                    <h2 className="newadvert-subtitle">Step 2: Is your listing for Sale or Stud?</h2>
+                    <div className="newadvert-options">
+                        {["dogs", "cats", "horses"].includes(category) && (
+                            <>
+                                <button
+                                    className={`newadvert-option-button ${intent === 'sale' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setIntent("sale");
+                                        setStep(3);
+                                    }}
+                                >
+                                    For Sale
+                                </button>
+                                {category !== "horses" && (
+                                    <button
+                                        className={`newadvert-option-button ${intent === 'stud' ? 'selected' : ''}`}
+                                        onClick={() => {
+                                            setIntent("stud");
+                                            setStep(3);
+                                        }}
+                                    >
+                                        For Stud
+                                    </button>
+                                )}
+                            </>
                         )}
-
-                        <div className="form-group">
-                            <label className="styled-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="healthTested"
-                                    checked={formData.healthTested}
-                                    onChange={handleChange}
-                                />
-                                <span>Health Tested</span>
-                            </label>
-                        </div>
-
-                        {formData.healthTested && (
-                            <div className="form-group">
-                                <label className="form-label">Health Tests</label>
-                                {formData.healthChecks.map((check, i) => (
-                                    <input
-                                        key={i}
-                                        className="form-control"
-                                        value={check}
-                                        onChange={(e) => handleHealthCheckChange(i, e.target.value)}
-                                        placeholder={`Health Test ${i + 1} (e.g. Hip Score)`}
-                                        style={{ marginBottom: "0.5rem" }}
-                                    />
-                                ))}
-                            </div>
+                        {!["dogs", "cats", "horses"].includes(category) && (
+                            <button
+                                className="newadvert-option-button"
+                                onClick={() => {
+                                    setIntent("sale");
+                                    setStep(3);
+                                }}
+                            >
+                                Continue
+                            </button>
                         )}
                     </div>
+                    <button className="newadvert-back-button" onClick={() => setStep(1)}>← Go Back</button>
+                </div>
+            )}
 
-                    {/* Contact & Description */}
-                    <div className="form-section">
-                        <div className="form-section-title">
-                            {/* icon */}
-                            Contact & Description
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Facebook (Optional)</label>
-                                <input
-                                    className="form-control"
-                                    name="facebookUrl"
-                                    value={formData.facebookUrl}
-                                    onChange={handleChange}
-                                    placeholder="Your Facebook URL"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Instagram (Optional)</label>
-                                <input
-                                    className="form-control"
-                                    name="instagramUrl"
-                                    value={formData.instagramUrl}
-                                    onChange={handleChange}
-                                    placeholder="Your Instagram handle"
-                                />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Description</label>
-                            <textarea
-                                className="form-control"
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                rows={6}
-                                placeholder="Tell potential clients about your dog’s temperament, size, qualities, etc."
+            {step === 3 && intent && (
+                <div className="newadvert-step">
+                    <h2 className="newadvert-subtitle">
+                        Step 3: Select a {category === "livestock" ? "Subtype" : "Breed"}
+                    </h2>
+
+                    {petBreedOptions[category] ? (
+                        <div className="newadvert-select-container">
+                            <Select
+                                value={breedOrType ? { value: breedOrType, label: breedOrType } : null}
+                                options={petBreedOptions[category].map(breed => ({
+                                    value: breed,
+                                    label: breed
+                                }))}
+                                placeholder={`Select a ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                onChange={(selectedOption) => setBreedOrType(selectedOption.value)}
+                                className="newadvert-select"
+                                classNamePrefix="newadvert-select"
+                                styles={{
+                                    control: (baseStyles) => ({
+                                        ...baseStyles,
+                                        padding: '8px',
+                                        borderColor: '#e1e8ed',
+                                        boxShadow: 'none'
+                                    }),
+                                    menu: (baseStyles) => ({
+                                        ...baseStyles,
+                                        zIndex: 999
+                                    }),
+                                    menuList: (baseStyles) => ({
+                                        ...baseStyles,
+                                        "&::-webkit-scrollbar": {
+                                            width: "8px"
+                                        },
+                                        "&::-webkit-scrollbar-track": {
+                                            background: "#f1f1f1",
+                                            borderRadius: "4px"
+                                        },
+                                        "&::-webkit-scrollbar-thumb": {
+                                            background: "#cbd5e0",
+                                            borderRadius: "4px"
+                                        },
+                                        "&::-webkit-scrollbar-thumb:hover": {
+                                            background: "#a0aec0"
+                                        }
+                                    })
+                                }}
                             />
-                            {errors.description && <small className="error">{errors.description}</small>}
                         </div>
+                    ) : (
+                        <div className="newadvert-form-group">
+                            <input
+                                type="text"
+                                placeholder={`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                value={breedOrType}
+                                onChange={(e) => setBreedOrType(e.target.value)}
+                                className="newadvert-form-control"
+                            />
+                        </div>
+                    )}
+
+                    <div className="newadvert-summary-actions">
+                        <button className="newadvert-btn newadvert-btn-outline" onClick={() => setStep(2)}>
+                            ← Back
+                        </button>
+                        <button
+                            className="newadvert-btn newadvert-btn-primary"
+                            onClick={() => setStep(4)}
+                            disabled={!breedOrType}
+                        >
+                            Continue
+                        </button>
                     </div>
+                </div>
+            )}
 
-                    {/* Photos */}
-                    <div className="form-section">
-                        <div className="form-section-title">
-                            {/* icon */}
-                            Photos
+            {step === 4 && (
+                <div className="newadvert-step">
+                    <h2 className="newadvert-subtitle">Step 4: Advert Details</h2>
+
+                    { /* …inside the JSX of step 4… */ }
+                    {formFields
+                        .filter(f => f !== "breed")
+                        .map(renderField)
+                    }
+
+                    { /* if they tick “endangered”, show the CITES‐number field */ }
+                    {formData.endangered && (
+                        <>
+                            <div className="newadvert-callout">
+                                <strong>Why we ask: </strong>
+                                UK law requires a valid CITES Article 10 certificate for trading endangered species.
+                            </div>
+                            {renderField("citesCertificateNumber")}
+                        </>
+                    )}
+
+
+
+                    { /* then your image-upload, buttons, etc. */ }
+
+                    {/* If the user ticked “KC registered”, show the name‐input */}
+                    { formData.kcRegistered && (
+                        <div className="newadvert-form-group">
+                            <label htmlFor="kcName">KC Registration Name</label>
+                            <input
+                                type="text"
+                                id="kcName"
+                                name="kcName"
+                                value={formData.kcName || ""}
+                                onChange={e =>
+                                    setFormData(prev => ({ ...prev, kcName: e.target.value }))
+                                }
+                                placeholder="Enter kennel club registration name"
+                                className="newadvert-form-control"
+                            />
                         </div>
-                        <div className="image-upload" onDragOver={e => e.preventDefault()} onDrop={handleDrop}>
-                            <label className="image-upload-label">Upload Photos (Max 10)</label>
-                            <p>Drag and drop images here or click to browse</p>
-                            <label className="file-upload-btn">
-                                Browse Files
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageChange}
-                                    style={{ display: "none" }}
-                                />
-                            </label>
-                            {errors.images && <small className="error">{errors.images}</small>}
+                    )}
 
-                            {formData.images.length > 0 && (
-                                <div className="preview-grid">
-                                    {formData.images.map((img, i) => (
-                                        <div key={i} className="preview-image-container">
-                                            <div
-                                                className={`preview-image-wrapper ${
-                                                    formData.mainImageIndex === i ? "main-selected" : ""
-                                                }`}
-                                            >
-                                                <img src={img.url} alt={`Preview ${i}`} />
-                                            </div>
-                                            <div className="image-button-row">
-                                                <button
-                                                    type="button"
-                                                    className={`set-main-btn ${
-                                                        formData.mainImageIndex === i ? "active" : ""
-                                                    }`}
-                                                    onClick={() =>
-                                                        setFormData(prev => ({ ...prev, mainImageIndex: i }))
-                                                    }
-                                                >
-                                                    {formData.mainImageIndex === i ? "Main" : "Set Main"}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="remove-image-btn"
-                                                    onClick={() => handleImageRemove(i)}
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
+                    {/* Health Tests Toggle & Inputs */}
+                    {((category === "dogs" || category === "cats") && intent === "stud") && (
+                        <>
+                            <div className="newadvert-form-checkbox">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={healthTestsEnabled}
+                                        onChange={e => setHealthTestsEnabled(e.target.checked)}
+                                    />{" "}
+                                    Add health test details
+                                </label>
+                            </div>
+
+                            {healthTestsEnabled && (
+                                <div className="newadvert-health-tests-container">
+                                    {healthTests.map((value, idx) => (
+                                        <div className="newadvert-form-group" key={idx}>
+                                            <input
+                                                type="text"
+                                                value={value}
+                                                onChange={e => {
+                                                    const arr = [...healthTests];
+                                                    arr[idx] = e.target.value;
+                                                    setHealthTests(arr);
+                                                }}
+                                                placeholder={`Health Test #${idx + 1} (e.g. Hip Score, DNA…)`}
+                                                className="newadvert-form-control"
+                                            />
                                         </div>
                                     ))}
                                 </div>
                             )}
+                        </>
+                    )}
+
+                    <div className="newadvert-image-upload">
+                        <h3>Upload Photos (Max 10)</h3>
+                        <div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleImageChange}
+                                disabled={images.length >= 10}
+                            />
                         </div>
+                        {images.length > 0 && (
+                            <div className="newadvert-preview-grid">
+                                {images.map((img, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`newadvert-preview-item ${mainImageIndex===idx ? 'main-image' : ''}`}
+                                        onClick={() => setMainImageIndex(idx)}   // click anywhere to set main
+                                    >
+                                        {/* remove button */}
+                                        <button
+                                            type="button"
+                                            className="remove-btn"
+                                            onClick={e => {
+                                                e.stopPropagation();                // don’t also set main
+                                                handleImageRemove(idx);
+                                            }}
+                                        >✕</button>
+
+                                        {/* the actual image */}
+                                        <img src={img.url} alt={`preview-${idx}`} />
+
+                                        {/* hover overlay */}
+                                        <div className="hover-overlay">
+                                            {mainImageIndex === idx ? '★ Main Image' : 'Set as main'}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                        )}
                     </div>
 
-                    <button type="submit" className="submit-button">
-                        Submit Advert
-                    </button>
-                </form>
-
-                {/* Help Panel */}
-                <div className="form-help-panel">
-                    <h2>Need Help?</h2>
-                    <div className="help-section">
-                        <h4>Advert Title & Breed</h4>
-                        <p>
-                            Choose a clear, specific title that highlights your dog’s best qualities. Use the breed search to find the correct match.
-                        </p>
-                    </div>
-                    <div className="help-section">
-                        <h4>Dog Details</h4>
-                        <p>
-                            Enter your dog’s name, age (in months or years), and colour. Being specific helps potential clients know exactly what to expect.
-                        </p>
-                    </div>
-                    <div className="help-section">
-                        <h4>Health & Registration</h4>
-                        <p>
-                            Dogs with proper health testing and KC registration typically attract more serious inquiries and can command higher fees.
-                        </p>
-                    </div>
-                    <div className="help-section">
-                        <h4>Description Tips</h4>
-                        <p>
-                            Write a detailed description (minimum 250 characters) that includes personality traits, size, temperament, and any special qualities.
-                        </p>
-                    </div>
-                    <div className="help-section">
-                        <h4>Photos</h4>
-                        <p>
-                            High-quality photos showcase your dog best. Include full body shots and close-ups showing features important for your breed.
-                        </p>
-                    </div>
-                    <div className="help-section">
-                        <h4>Social Links</h4>
-                        <p>
-                            Adding your Facebook or Instagram helps build trust and allows potential clients to connect with you more easily.
-                        </p>
+                    <div className="newadvert-summary-actions">
+                        <button className="newadvert-btn newadvert-btn-outline" onClick={() => setStep(3)}>
+                            ← Back
+                        </button>
+                        <button className="newadvert-btn newadvert-btn-primary" onClick={() => setStep(5)}>
+                            Continue
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {step === 5 && (
+                <div className="newadvert-step">
+                    <h2 className="newadvert-subtitle">Step 5: Review Your Advert</h2>
+
+                    <ul className="newadvert-summary-list">
+                        <li><strong>Category:</strong> {category.charAt(0).toUpperCase() + category.slice(1)}</li>
+                        <li><strong>Intent:</strong> {intent === "sale" ? "For Sale" : "For Stud"}</li>
+                        <li><strong>{category === "livestock" ? "Subtype" : "Breed"}:</strong> {breedOrType}</li>
+                        {formFields.map((field) => (
+                            <li key={field}>
+                                <strong>{fieldConfigurations[field]?.label || field}:</strong>{" "}
+                                {formData[field] ? String(formData[field]) : "N/A"}
+                            </li>
+                        ))}
+
+                        {healthTestsEnabled && healthTests.some(test => test.trim() !== "") && (
+                            <li>
+                                <strong>Health Tests:</strong>
+                                <ul>
+                                    {healthTests
+                                        .filter(test => test.trim() !== "")
+                                        .map((test, idx) => (
+                                            <li key={idx}>{test}</li>
+                                        ))}
+                                </ul>
+                            </li>
+                        )}
+
+                        <li>
+                            <strong>Images:</strong>
+                            <div className="newadvert-summary-images">
+                                {images.map((img, idx) => (
+                                    <img
+                                        key={idx}
+                                        src={img.url}
+                                        alt={`preview-${idx}`}
+                                        className="newadvert-summary-thumb"
+                                    />
+                                ))}
+                            </div>
+                        </li>
+
+                    </ul>
+
+                    <div className="newadvert-summary-actions">
+                        <button className="newadvert-btn newadvert-btn-outline" onClick={() => setStep(4)}>
+                            ← Back to Edit
+                        </button>
+                        <button
+                            className="newadvert-btn newadvert-btn-primary"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting
+                                ? (
+                                    <span className="submitting-label">
+        <span className="spinner" /> Submitting…
+      </span>
+                                )
+                                : "Submit Advert"
+                            }
+                        </button>
+
+                    </div>
+                </div>
+            )}
+            {step === 6 && (
+                <div className="newadvert-step newadvert-submitted">
+                    <h2 className="newadvert-subtitle">🎉 Advert Submitted</h2>
+                    <p>
+                        Your advert has been sent for approval. We’ll review it as soon as possible
+                        and let you know once it’s live.
+                    </p>
+                    <div className="newadvert-summary-actions">
+                        <button
+                            className="newadvert-btn newadvert-btn-outline"
+                            onClick={handleStartOver}
+                        >
+                            Create Another Advert
+                        </button>
+                        {/* If you have a listing overview page: */}
+                        {/* <button className="newadvert-btn newadvert-btn-primary" onClick={() => navigate("/my-listings")}>
+        View My Listings
+      </button> */}
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
-
-export default NewAdvert;

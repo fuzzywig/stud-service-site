@@ -1,10 +1,10 @@
 // src/pages/admin/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
 import AdminSidebar from '../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
-import { FaChartLine, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
@@ -13,38 +13,101 @@ export default function AdminDashboard() {
         pendingAds: 0,
         pendingReviews: 0,
         totalUsers: 0,
+        activeUsers: 0,
+        weeklyRegistrations: 0,
+        monthlyRegistrations: 0,
+        newAdsWeekly: 0,
     });
     const [recentAds, setRecentAds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [pendingAdverts, setPendingAdverts] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setIsLoading(true);
 
-                const allAdsSnap = await getDocs(collection(db, 'studAds'));
+                const now = new Date();
+                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+                const allAdsSnap = await getDocs(collection(db, 'allListings'));
+                const usersRef = collection(db, 'users');
+
                 const pendingAdsQuery = query(
-                    collection(db, 'studAds'),
+                    collection(db, 'allListings'),
                     where('approved', '==', false),
                     orderBy('createdAt', 'desc'),
                     limit(5)
                 );
                 const pendingAdsSnap = await getDocs(pendingAdsQuery);
-                const usersSnap = await getDocs(collection(db, 'users'));
-                const reviewsSnap = await getDocs(query(collection(db, 'reviews'), where('approved', '==', false)));
+
+                const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+
+                const activeUsersSnap = await getDocs(
+                    query(
+                        usersRef,
+                        where('lastSeen', '>=', tenMinutesAgo),
+                    )
+
+                );
+
+
+                const weeklyUsersSnap = await getDocs(
+                    query(usersRef, where('createdAt', '>=', oneWeekAgo))
+                );
+
+                const monthlyUsersSnap = await getDocs(
+                    query(usersRef, where('createdAt', '>=', oneMonthAgo))
+                );
+
+                const weeklyAdsSnap = await getDocs(
+                    query(collection(db, 'allListings'), where('createdAt', '>=', oneWeekAgo))
+                );
+
+                const reviewsSnap = await getDocs(
+                    query(collection(db, 'reviews'), where('approved', '==', false))
+                );
+
+                const allUsersSnap = await getDocs(usersRef);
 
                 setStats({
                     totalAds: allAdsSnap.size,
                     pendingAds: pendingAdsSnap.size,
-                    totalUsers: usersSnap.size,
+                    totalUsers: allUsersSnap.size,
                     pendingReviews: reviewsSnap.size,
+                    activeUsers: activeUsersSnap.size,
+                    weeklyRegistrations: weeklyUsersSnap.size,
+                    monthlyRegistrations: monthlyUsersSnap.size,
+                    newAdsWeekly: weeklyAdsSnap.size,
                 });
 
-                const recentUnapproved = pendingAdsSnap.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const recentUnapproved = await Promise.all(
+                    pendingAdsSnap.docs.map(async advertDoc => {
+                        const data = advertDoc.data();
+                        let ownerName = "Unknown";
+
+                        if (data.ownerId) {
+                            const ownerSnap = await getDoc(doc(db, "users", data.ownerId));
+                            if (ownerSnap.exists()) {
+                                const ownerData = ownerSnap.data();
+                                ownerName = ownerData.firstName
+                                    ? `${ownerData.firstName} ${ownerData.lastName?.charAt(0) || ""}.`
+                                    : "Unknown";
+                            }
+                        }
+
+                        return {
+                            id: advertDoc.id,
+                            ...data,
+                            ownerName,
+                        };
+                    })
+                );
+
+
                 setRecentAds(recentUnapproved);
+
             } catch (err) {
                 console.error('🔥 Failed to load stats:', err.message);
             } finally {
@@ -54,6 +117,32 @@ export default function AdminDashboard() {
 
         fetchStats();
     }, []);
+
+    const handleApprove = async (advertId) => {
+        try {
+            const adRef = doc(db, "allListings", advertId);
+            await updateDoc(adRef, { approved: true });
+
+            alert("Advert approved successfully.");
+
+            // Update the visible list of recent unapproved ads
+            setRecentAds(prev => prev.filter(ad => ad.id !== advertId));
+
+            // Decrement the pending ads count
+            setStats(prev => ({
+                ...prev,
+                pendingAds: Math.max(prev.pendingAds - 1, 0),
+            }));
+        } catch (error) {
+            console.error("Error approving advert:", error);
+            alert("Failed to approve advert. Please try again.");
+        }
+    };
+
+
+
+
+
 
     return (
         <div className="admin-dashboard-page">
@@ -77,6 +166,7 @@ export default function AdminDashboard() {
                     <>
                         {/* Stats Cards */}
                         <div className="stats-grid">
+                            {/* First row - your original 4 stats */}
                             <div className="stat-card total-ads">
                                 <div className="stat-icon">
                                     <FaChartLine />
@@ -135,6 +225,47 @@ export default function AdminDashboard() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Second row - new stats you requested */}
+                            <div className="stat-card active-users">
+                                <div className="stat-icon">
+                                    <FaUsers />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Active Users</h3>
+                                    <p className="stat-value">{stats.activeUsers}</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card weekly-registrations">
+                                <div className="stat-icon">
+                                    <FaCalendarWeek />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Weekly Registrations</h3>
+                                    <p className="stat-value">{stats.weeklyRegistrations}</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card monthly-registrations">
+                                <div className="stat-icon">
+                                    <FaCalendarAlt />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">Monthly Registrations</h3>
+                                    <p className="stat-value">{stats.monthlyRegistrations}</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card new-ads-weekly">
+                                <div className="stat-icon">
+                                    <FaAd />
+                                </div>
+                                <div className="stat-content">
+                                    <h3 className="stat-title">New Ads Weekly</h3>
+                                    <p className="stat-value">{stats.newAdsWeekly}</p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Pending Approvals Section */}
@@ -159,9 +290,21 @@ export default function AdminDashboard() {
                                 <div className="approval-list">
                                     {recentAds.map(ad => (
                                         <div key={ad.id} className="approval-item">
+                                            {ad.images && ad.images.length > 0 && (
+                                                <div className="item-image">
+                                                    <img
+                                                        src={ad.images[ad.mainImageIndex || 0]}
+                                                        alt={`${ad.name || 'Stud Dog'} image`}
+                                                        className="approval-thumbnail"
+                                                    />
+                                                </div>
+                                            )}
+
+
+
                                             <div className="item-content">
                                                 <h3 className="item-title">
-                                                    {ad.breed || 'Unknown Breed'}
+                                                    {ad.breedOrType || 'Unknown Breed'}
                                                     {ad.name && <span className="item-subtitle"> — {ad.name}</span>}
                                                 </h3>
                                                 <p className="item-description">
@@ -185,9 +328,10 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="item-actions">
-                                                <Link to={`/stud-details/${ad.id}`} className="action-button view">
+                                                <Link to={`/admin/view-advert/${ad.id}`} className="action-button view">
                                                     <FaEye /> View
                                                 </Link>
+
                                                 <button className="action-button approve" onClick={() => handleApprove(ad.id)}>
                                                     <FaCheck /> Approve
                                                 </button>

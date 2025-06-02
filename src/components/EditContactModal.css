@@ -1,0 +1,215 @@
+/* File: src/components/EditContactModal.css */
+
+/* Modal Overlay */
+.contactedit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+/* Modal Content Container */
+.contactedit-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: contacteditModalFadeIn 0.3s ease-in-out;
+}
+
+@keyframes contacteditModalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar styling */
+.contactedit-modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.contactedit-modal-content::-webkit-scrollbar-track {
+    background-color: rgba(28, 82, 53, 0.05);
+    border-radius: 0 12px 12px 0;
+}
+
+.contactedit-modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(28, 82, 53, 0.3);
+    border-radius: 4px;
+}
+
+.contactedit-modal-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(28, 82, 53, 0.5);
+}
+
+/* Inner Container with Padding */
+.contactedit-container {
+    padding: 2.5rem 2rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Close Button */
+.contactedit-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 10;
+}
+
+.contactedit-modal-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1c5235;
+}
+
+/* Title */
+.contactedit-title {
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1c5235;
+    position: relative;
+}
+
+.contactedit-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #1c5235;
+    border-radius: 2px;
+}
+
+/* Form */
+.contactedit-form {
+    margin-bottom: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.contactedit-form-group {
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.contactedit-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1c5235;
+}
+
+.contactedit-input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+    color: #4b5563;
+}
+
+.contactedit-input:focus {
+    outline: none;
+    border-color: #1c5235;
+    box-shadow: 0 0 0 3px rgba(28, 82, 53, 0.15);
+    background-color: white;
+}
+
+.contactedit-input::placeholder {
+    color: #718096;
+    font-weight: 500;
+}
+
+/* Submit Button */
+.contactedit-submit-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #b83c56;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 1rem;
+    box-shadow: 0 2px 4px rgba(184, 60, 86, 0.2);
+}
+
+.contactedit-submit-button:hover {
+    background-color: #a52c46;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(184, 60, 86, 0.25);
+}
+
+.contactedit-submit-button:active {
+    background-color: #9b1f39;
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(184, 60, 86, 0.3);
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 480px) {
+    .contactedit-modal-content {
+        width: 85%;
+        max-height: 80vh;
+    }
+
+    .contactedit-container {
+        padding: 2rem 1.5rem;
+    }
+
+    .contactedit-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .contactedit-title::after {
+        width: 50px;
+        bottom: -8px;
+    }
+
+    .contactedit-form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Body class for when modal is open to prevent scrolling */
+.contactedit-no-scroll {
+    overflow: hidden;
+}

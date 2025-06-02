@@ -1,0 +1,648 @@
+/* Profile Settings Modal Styles */
+.psm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.psm-modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal Header */
+.psm-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.psm-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.psm-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.psm-close-btn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* Tab Navigation */
+.psm-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 24px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    overflow-x: auto;
+}
+
+.psm-tab {
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3436 ;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.psm-tab:hover {
+    color: #1c5235;
+}
+
+.psm-tab.active {
+    color: #1c5235;
+    border-bottom-color: #1c5235;
+
+}
+
+.psm-tab svg {
+    font-size: 16px;
+}
+
+/* Message Display */
+.psm-message {
+    margin: 16px 24px 0 24px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.psm-message.success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.psm-message.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Tab Content */
+.psm-tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+/* Form Styles */
+.psm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.psm-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.psm-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.psm-form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.psm-form-group label svg {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.psm-form-group input,
+.psm-form-group select,
+.psm-form-group textarea {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s;
+    width: 100%;
+    background-color: #fff;
+    color: #2d3436;
+
+}
+
+.psm-form-group input:focus,
+.psm-form-group select:focus,
+.psm-form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.psm-form-group textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.psm-field-help {
+    font-size: 13px;
+    color: #6b7280;
+    margin: -4px 0 4px 0;
+    line-height: 1.4;
+}
+
+.psm-char-count {
+    text-align: right;
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: -4px;
+}
+
+/* Password Input with Toggle */
+.psm-password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.psm-password-input input {
+    padding-right: 44px;
+}
+
+.psm-toggle-password {
+    position: absolute;
+    right: 4px;
+    background: none;
+    border: none;
+    padding: 8px 10px;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.psm-toggle-password:hover {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+/* Info Box */
+.psm-info-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e40af;
+}
+
+.psm-info-box svg {
+    font-size: 18px;
+    color: #3b82f6;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Modal Actions */
+.psm-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 16px 16px;
+}
+
+.psm-cancel-btn,
+.psm-save-btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+
+}
+
+.psm-cancel-btn {
+    background: #fff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.psm-cancel-btn:hover:not(:disabled) {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.psm-save-btn {
+    background: #256845;
+    color: white;
+    min-width: 120px;
+}
+
+.psm-save-btn:hover:not(:disabled) {
+    background: #256845;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.psm-cancel-btn:disabled,
+.psm-save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .psm-modal-content {
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .psm-modal-header {
+        padding: 20px;
+    }
+
+    .psm-modal-header h2 {
+        font-size: 20px;
+    }
+
+    .psm-tabs {
+        padding: 0 16px;
+        gap: 4px;
+    }
+
+    .psm-tab {
+        padding: 14px 16px;
+        font-size: 13px;
+    }
+
+    .psm-tab span {
+        display: none;
+    }
+
+    .psm-tab svg {
+        font-size: 18px;
+    }
+
+    .psm-tab-content {
+        padding: 20px;
+    }
+
+    .psm-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .psm-modal-actions {
+        padding: 20px;
+        flex-direction: column;
+    }
+
+    .psm-cancel-btn,
+    .psm-save-btn {
+        width: 100%;
+    }
+}
+
+/* UserProfile Button Styles with Brand Colors */
+
+/* Edit Profile Button */
+.up-edit-profile-btn {
+    background: #b83c56;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.up-edit-profile-btn:hover {
+    background: #a03248;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(184, 60, 86, 0.3);
+}
+
+/* Change Password Button */
+.up-change-password-btn {
+    background: transparent;
+    color: #1c5235;
+    border: 1px solid #1c5235;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.up-change-password-btn:hover {
+    background: #1c5235;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(28, 82, 53, 0.2);
+}
+
+/* View All Button */
+.up-view-all-btn {
+    background: none;
+    border: none;
+    color: #b83c56;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.up-view-all-btn:hover {
+    background: rgba(184, 60, 86, 0.08);
+}
+
+/* Show More Button */
+.up-show-more-btn {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    color: #1c5235;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.up-show-more-btn:hover {
+    background: #1c5235;
+    color: white;
+    border-color: #1c5235;
+}
+
+/* Read More Button (in review cards) */
+.up-read-more-btn {
+    background: none;
+    border: none;
+    color: #b83c56;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+    transition: all 0.2s;
+}
+
+.up-read-more-btn:hover {
+    color: #a03248;
+}
+
+/* Respond Button */
+.up-respond-btn {
+    background: #1c5235;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s;
+}
+
+.up-respond-btn:hover {
+    background: #154229;
+    transform: translateY(-1px);
+}
+
+/* Edit Contact Button */
+.up-edit-contact-btn {
+    background: #b83c56;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.up-edit-contact-btn:hover {
+    background: #a03248;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(184, 60, 86, 0.3);
+}
+
+/* Report Button */
+.up-report-button {
+    background: none;
+    border: none;
+    color: #dc2626;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.up-report-button:hover {
+    background: #fee2e2;
+    border-radius: 8px;
+}
+
+/* Navigation Buttons */
+.up-nav-button {
+    background: none;
+    border: none;
+    padding: 16px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.up-nav-button:hover {
+    color: #374151;
+}
+
+.up-nav-button.up-active {
+    color: #b83c56;
+    border-bottom-color: #b83c56;
+}
+
+/* Avatar Change Button */
+.up-avatar-change-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #b83c56;
+    color: white;
+    border: 3px solid white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.up-avatar-change-btn:hover {
+    background: #a03248;
+    transform: scale(1.1);
+}
+
+/* Submit Response Button (in modal) */
+.up-submit-response-btn {
+    background: #b83c56;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+}
+
+.up-submit-response-btn:hover:not(:disabled) {
+    background: #a03248;
+    transform: translateY(-1px);
+}
+
+.up-submit-response-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Toggle switches for visibility settings - SCOPED TO PSM */
+.psm-modal-content .up-checkbox-label input[type="checkbox"] {
+    accent-color: #b83c56;
+}
+
+/* Stars active color - SCOPED TO PSM */
+.psm-modal-content .up-star.up-active {
+    color: #b83c56;
+}
+
+/* REMOVED GENERIC SELECTORS - These were affecting the whole site:
+- input:focus, select:focus, textarea:focus
+- a
+- a:hover
+*/

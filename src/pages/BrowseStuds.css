@@ -1,402 +1,726 @@
-/* ─── Layout ─── */
-.browse-studs-page {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 20px;
+/*
+ * Browse Studs Page - Namespaced CSS
+ * This CSS uses prefixing and high specificity to avoid conflicts with messages.css
+ */
+
+/* ─── CSS Reset for Browse Studs Components ─── */
+/* Add this at the beginning to override any conflicting styles */
+.browse-studs-wrapper *,
+.browse-studs-wrapper *::before,
+.browse-studs-wrapper *::after {
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 20px;
+}
+
+/* Apply !important to critical layout properties */
+.browse-studs-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* ─── Layout ─── */
+.browse-studs-wrapper .browse-studs-page,
+body.browse-studs-view .browse-studs-page {
+    max-width: 1440px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+    display: grid !important;
+    grid-template-columns: 300px 1fr !important; /* Sidebar + Content */
+    gap: 20px !important;
+    box-sizing: border-box !important;
+    align-items: start !important;
 }
 
 @media (max-width: 1024px) {
-    .browse-studs-page {
-        grid-template-columns: 1fr;
+    .browse-studs-wrapper .browse-studs-page,
+    body.browse-studs-view .browse-studs-page {
+        grid-template-columns: 1fr !important; /* Stack on mobile */
+        gap: 0 !important;
     }
 }
 
 /* ─── Sidebar ─── */
-.browse-studs-sidebar {
-    background: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.browse-studs-wrapper .browse-studs-sidebar,
+body.browse-studs-view .browse-studs-sidebar {
+    background: #f9f9f9 !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+    grid-column: 1 !important;
+    align-self: start !important;
+    position: relative !important;
+    top: 0 !important;
 }
 
-.browse-studs-filter-block {
-    margin-bottom: 30px;
+.browse-studs-wrapper .browse-studs-filter-block,
+body.browse-studs-view .browse-studs-filter-block {
+    margin-bottom: 1.5rem !important;
 }
 
-.browse-studs-filter-title {
-    margin: 0 0 8px;
-    font-size: 1.1rem;
-    color: #256845;
+.browse-studs-wrapper .browse-studs-filter-title,
+body.browse-studs-view .browse-studs-filter-title {
+    margin: 0 0 8px !important;
+    font-size: 1.1rem !important;
+    color: #256845 !important;
 }
 
-.browse-studs-filter-select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.browse-studs-wrapper .browse-studs-filter-select,
+.browse-studs-wrapper .panel-select,
+.browse-studs-wrapper .panel-section select,
+.browse-studs-wrapper .panel-section input[type="number"],
+body.browse-studs-view .browse-studs-filter-select,
+body.browse-studs-view .panel-select,
+body.browse-studs-view .panel-section select,
+body.browse-studs-view .panel-section input[type="number"] {
+    width: 100% !important;
+    padding: 0.5rem !important;
+    border-radius: 8px !important;
+    border: 1px solid #ccc !important;
+    font-size: 1rem !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    color: #888888 !important;
+}
+
+.browse-studs-wrapper .browse-studs-filter-block select,
+.browse-studs-wrapper .browse-studs-filter-block input[type="range"],
+body.browse-studs-view .browse-studs-filter-block select,
+body.browse-studs-view .browse-studs-filter-block input[type="range"] {
+    width: 100% !important;
+}
+
+.browse-studs-wrapper .browse-studs-filter-block.checkbox-group,
+body.browse-studs-view .browse-studs-filter-block.checkbox-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    padding-top: 0.5rem !important;
+    color: #fff; !important;
+}
+
+.browse-studs-wrapper .browse-studs-filter-block.checkbox-group label,
+body.browse-studs-view .browse-studs-filter-block.checkbox-group label {
+    display: flex !important;
+    align-items: center !important;
+    font-size: 1rem !important;
+    color: #333 !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
 }
 
 /* ─── Top Breeds List ─── */
-.browse-studs-top-breeds-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.browse-studs-wrapper .browse-studs-top-breeds-list,
+body.browse-studs-view .browse-studs-top-breeds-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-.browse-studs-top-breed {
-    margin-bottom: 6px;
-    font-size: 0.95rem;
-    color: #333;
+.browse-studs-wrapper .browse-studs-top-breed,
+body.browse-studs-view .browse-studs-top-breed {
+    margin-bottom: 6px !important;
+    font-size: 0.95rem !important;
+    color: #333 !important;
 }
 
-.browse-studs-top-breed-count {
-    color: #666;
+.browse-studs-wrapper .browse-studs-top-breed-count,
+body.browse-studs-view .browse-studs-top-breed-count {
+    color: #666 !important;
+}
+
+.browse-studs-wrapper .popular-breeds,
+body.browse-studs-view .popular-breeds {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+}
+
+.browse-studs-wrapper .popular-breed,
+body.browse-studs-view .popular-breed {
+    background: #ccc !important;
+    padding: 0.4rem 0.7rem !important;
+    border-radius: 16px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    color: #1b5e20 !important;
+}
+
+.browse-studs-wrapper .popular-breed:hover,
+body.browse-studs-view .popular-breed:hover {
+    background: #256845 !important;
+    color: #fff !important;
 }
 
 /* ─── Results Column ─── */
-.browse-studs-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.browse-studs-wrapper .browse-studs-content,
+body.browse-studs-view .browse-studs-content {
+    grid-column: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    align-self: start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    top: 0 !important;
+}
+
+/* ─── Active Filters ─── */
+.browse-studs-wrapper .browse-studs-active-filters-text,
+body.browse-studs-view .browse-studs-active-filters-text {
+    grid-column: 1 / -1 !important; /* span both columns */
+    margin: 0 0 1rem !important;
+    font-size: 0.95rem !important;
+    color: #555 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+}
+
+.browse-studs-wrapper .browse-studs-active-filters-text span,
+body.browse-studs-view .browse-studs-active-filters-text span {
+    background-color: #f2f2f2 !important;
+    padding: 6px 10px !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 0.9rem !important;
+}
+
+.browse-studs-wrapper .browse-studs-remove-btn,
+body.browse-studs-view .browse-studs-remove-btn {
+    background: none !important;
+    border: none !important;
+    color: #c00 !important;
+    font-size: 1rem !important;
+    margin-left: 6px !important;
+    cursor: pointer !important;
+}
+
+/* ─── Mobile Toolbar ─── */
+.browse-studs-wrapper .browse-studs-mobile-toolbar,
+body.browse-studs-view .browse-studs-mobile-toolbar {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 1rem !important;
+    background: white !important;
+    border-bottom: 1px solid #eee !important;
+    position: relative !important;
+    z-index: 2 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+.browse-studs-wrapper .browse-studs-mobile-toolbar button,
+body.browse-studs-view .browse-studs-mobile-toolbar button {
+    margin-left: auto !important;
+}
+
+.browse-studs-wrapper .browse-studs-mobile-toolbar .filter-btn,
+body.browse-studs-view .browse-studs-mobile-toolbar .filter-btn {
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.browse-studs-wrapper .filter-btn,
+body.browse-studs-view .filter-btn {
+    background-color: #256845 !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 1rem !important;
+    border-radius: 0.5rem !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.browse-studs-wrapper .filter-btn svg,
+body.browse-studs-view .filter-btn svg {
+    fill: white !important;
+}
+
+/* ─── Summary Section ─── */
+.browse-studs-wrapper .browse-studs-summary-section,
+body.browse-studs-view .browse-studs-summary-section {
+    margin-bottom: 1.5rem !important;
+}
+
+.browse-studs-wrapper .browse-studs-summary,
+body.browse-studs-view .browse-studs-summary {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+.browse-studs-wrapper .browse-studs-divider,
+body.browse-studs-view .browse-studs-divider {
+    height: 1px !important;
+    background-color: #ddd !important;
+    margin: 0.75rem 0 !important;
 }
 
 /* ─── Each Advert Card ─── */
-.browse-studs-card {
-    display: flex;
-    flex-direction: row; /* ➔ Make sure it's row, not column */
-    flex-wrap: nowrap;   /* ➔ Prevent wrapping */
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
+.browse-studs-wrapper .browse-studs-card,
+body.browse-studs-view .browse-studs-card {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    background: #fff !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
     box-shadow: 0 3px 6px rgba(0,0,0,0.2) !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    will-change: transform;
-    z-index: 0;
-    position: relative;
-
-}
-.browse-studs-card:hover {
-    /* lift up */
-    transform: translateY(-4px);
-    /* deeper, softer shadow */
-    box-shadow:
-            0 12px 24px rgba(0,0,0,0.15) !important,
-0 6px 12px rgba(0,0,0,0.10) !important;
-    z-index: 1;
-}
-/* Image side (twice as tall) */
-.browse-studs-card-image {
-    flex: 0 0 300px;
-    background: #eee;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    overflow: hidden;
-    aspect-ratio: 16/9;
-
+    will-change: transform !important;
+    z-index: 0 !important;
+    position: relative !important;
 }
 
-.browse-studs-card-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;;
+.browse-studs-wrapper .browse-studs-card:hover,
+body.browse-studs-view .browse-studs-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+    z-index: 1 !important;
+}
+
+/* Image side */
+.browse-studs-wrapper .browse-studs-card-image,
+body.browse-studs-view .browse-studs-card-image {
+    flex: 0 0 300px !important;
+    background: #eee !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    aspect-ratio: 16/9 !important;
+}
+
+.browse-studs-wrapper .browse-studs-card-img,
+body.browse-studs-view .browse-studs-card-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
 }
 
 /* Details side */
-.browse-studs-card-details {
-    flex: 1;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* ✅ push footer down */
-    overflow: hidden;
-    box-sizing: border-box;
+.browse-studs-wrapper .browse-studs-card-details,
+body.browse-studs-view .browse-studs-card-details {
+    flex: 1 !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
-
-.browse-studs-card-name {
-    margin: 0 0 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #213547;
+.browse-studs-wrapper .browse-studs-card-title,
+body.browse-studs-view .browse-studs-card-title {
+    display: block !important;
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    color: #213547 !important;
+    margin-bottom: 8px !important;
+    white-space: normal !important;
 }
 
-.browse-studs-card-breed,
-.browse-studs-card-age,
-.browse-studs-card-fee {
-    margin: 2px 0;
-    font-size: 0.95rem;
-    color: #555;
+.browse-studs-wrapper .browse-studs-card-name,
+body.browse-studs-view .browse-studs-card-name {
+    margin: 0 0 8px !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: #213547 !important;
 }
 
-/* 2) Force long description text to wrap inside its box */
-.browse-studs-card-description {
-    /* allow wrapping anywhere (even inside long words) */
-    white-space: pre-wrap;       /* respect newlines, but wrap long lines */
-    overflow-wrap: anywhere;     /* break words if needed */
-    word-break: break-word;      /* legacy */
-}
-.browse-studs-card-divider {
-    border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 16px 0;
-}
-.browse-studs-card-title {
-    display: block;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #213547;
-    margin-bottom: 8px;
-    white-space: normal;  /* allow wrapping if needed */
-}
-.browse-studs-card-dogname {
-    margin: 0 0 12px;
-    font-size: 1rem;
-    color: #666;
-    font-weight: 500;
-    line-height: 1.4;
-    white-space: normal; /* allow wrapping */
-}
-/* pill container under title */
-.browse-studs-card-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0 16px;
+.browse-studs-wrapper .browse-studs-card-dogname,
+body.browse-studs-view .browse-studs-card-dogname {
+    margin: 0 0 12px !important;
+    font-size: 1rem !important;
+    color: #666 !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    white-space: normal !important;
 }
 
-/* each pill */
-.browse-studs-pill {
-    display: inline-block;
-    padding: 4px 12px;
-    background-color: #f1f5f9;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    color: #256845;
-    font-weight: 500;
-    white-space: nowrap;
-}
-/* 0. “X ago” styling */
-.browse-studs-card-post-age {
-    margin: 0 0 8px;
-    font-size: 0.85rem;
-    color: #666;
-}
-/* Fee pill */
-.browse-studs-card-fee-pill {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background-color: #256845;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.25rem;
-    white-space: nowrap;
-    z-index: 1;
-}
-.browse-studs-card {
-    display: flex;
-    flex-wrap: wrap; /* ✅ Add wrap */
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2) !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-    will-change: transform;
-    z-index: 0;
-    position: relative;
+.browse-studs-wrapper .browse-studs-card-breed,
+.browse-studs-wrapper .browse-studs-card-age,
+.browse-studs-wrapper .browse-studs-card-fee,
+body.browse-studs-view .browse-studs-card-breed,
+body.browse-studs-view .browse-studs-card-age,
+body.browse-studs-view .browse-studs-card-fee {
+    margin: 2px 0 !important;
+    font-size: 0.95rem !important;
+    color: #555 !important;
 }
 
-/* ── Card footer: owner + favourite icon ── */
-.browse-studs-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.browse-studs-wrapper .browse-studs-card-post-age,
+body.browse-studs-view .browse-studs-card-post-age {
+    margin: 0 0 8px !important;
+    font-size: 0.85rem !important;
+    color: #666 !important;
 }
 
-.browse-studs-card-fav-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.4rem;
-    color: #b83c56;           /* or your accent color */
-    transition: transform 0.2s ease, color 0.2s ease;
-    padding: 4px;
+.browse-studs-wrapper .browse-studs-card-description,
+body.browse-studs-view .browse-studs-card-description {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
 }
 
-.browse-studs-card-fav-btn:hover {
-    transform: scale(1.2);
-    color: #e63946;           /* darker on hover if desired */
+.browse-studs-wrapper .browse-studs-card-divider,
+body.browse-studs-view .browse-studs-card-divider {
+    border: none !important;
+    border-top: 1px solid #e0e0e0 !important;
+    margin: 16px 0 !important;
 }
-@media (max-width: 768px) {
-    .browse-studs-card {
-        flex-direction: column;
+
+/* Card Pills */
+.browse-studs-wrapper .browse-studs-card-pills,
+body.browse-studs-view .browse-studs-card-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin: 8px 0 16px !important;
+}
+
+.browse-studs-wrapper .browse-studs-pill,
+body.browse-studs-view .browse-studs-pill {
+    display: inline-block !important;
+    padding: 4px 12px !important;
+    background-color: #f1f5f9 !important;
+    border-radius: 20px !important;
+    font-size: 0.9rem !important;
+    color: #256845 !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+}
+
+.browse-studs-wrapper .browse-studs-card-fee-pill,
+body.browse-studs-view .browse-studs-card-fee-pill {
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    background-color: #256845 !important;
+    color: #fff !important;
+    padding: 10px 20px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 1.25rem !important;
+    white-space: nowrap !important;
+    z-index: 1 !important;
+}
+
+/* Card Footer */
+.browse-studs-wrapper .browse-studs-card-footer,
+body.browse-studs-view .browse-studs-card-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.browse-studs-wrapper .browse-studs-card-owner-info,
+body.browse-studs-view .browse-studs-card-owner-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.browse-studs-wrapper .browse-studs-owner-avatar,
+body.browse-studs-view .browse-studs-owner-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid #ddd !important;
+}
+
+.browse-studs-wrapper .browse-studs-owner-text,
+body.browse-studs-view .browse-studs-owner-text {
+    display: flex !important;
+    flex-direction: column !important;
+    font-size: 0.9rem !important;
+    color: #333 !important;
+}
+
+.browse-studs-wrapper .browse-studs-owner-name,
+body.browse-studs-view .browse-studs-owner-name {
+    font-weight: 600 !important;
+    color: #213547 !important;
+}
+
+.browse-studs-wrapper .browse-studs-owner-location,
+body.browse-studs-view .browse-studs-owner-location {
+    font-size: 0.8rem !important;
+    color: #777 !important;
+}
+
+/* Favorite Buttons */
+.browse-studs-wrapper .browse-studs-card-fav-btn,
+body.browse-studs-view .browse-studs-card-fav-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 1.4rem !important;
+    color: #b83c56 !important;
+    transition: transform 0.2s ease, color 0.2s ease !important;
+    padding: 4px !important;
+}
+
+.browse-studs-wrapper .browse-studs-card-fav-btn:hover,
+body.browse-studs-view .browse-studs-card-fav-btn:hover {
+    transform: scale(1.2) !important;
+    color: #e63946 !important;
+}
+
+.browse-studs-wrapper .browse-studs-favorite,
+body.browse-studs-view .browse-studs-favorite {
+    background-color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: #999 !important;
+    transition: all 0.2s ease !important;
+}
+
+.browse-studs-wrapper .browse-studs-favorite:hover,
+body.browse-studs-view .browse-studs-favorite:hover {
+    color: #b83c56 !important;
+    transform: scale(1.1) !important;
+}
+
+.browse-studs-wrapper .browse-studs-favorite.active,
+body.browse-studs-view .browse-studs-favorite.active {
+    color: #b83c56 !important;
+}
+
+.browse-studs-wrapper .browse-studs-favorite svg,
+body.browse-studs-view .browse-studs-favorite svg {
+    font-size: 1.2rem !important;
+}
+
+/* Pagination */
+.browse-studs-wrapper .pagination,
+body.browse-studs-view .pagination {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    margin: 2rem auto 3rem !important;
+    flex-wrap: wrap !important;
+}
+
+.browse-studs-wrapper .page-btn,
+body.browse-studs-view .page-btn {
+    padding: 0.5rem 0.9rem !important;
+    background-color: #1c5235 !important;
+    border: 1px solid #ccc !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.browse-studs-wrapper .page-btn svg,
+body.browse-studs-view .page-btn svg {
+    vertical-align: middle !important;
+}
+
+.browse-studs-wrapper .page-btn:hover:not(:disabled),
+body.browse-studs-view .page-btn:hover:not(:disabled) {
+    background-color: #f2f2f2 !important;
+}
+
+.browse-studs-wrapper .page-btn:disabled,
+body.browse-studs-view .page-btn:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
+
+.browse-studs-wrapper .page-btn.active,
+body.browse-studs-view .page-btn.active {
+    background-color: #fff !important;
+    color: #4b5563 !important;
+    border-color: #256845 !important;
+}
+
+/* Buttons */
+.browse-studs-wrapper .reset-btn,
+body.browse-studs-view .reset-btn {
+    background: #b83c56 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    transition: background 0.3s ease !important;
+    width: 100% !important;
+}
+
+.browse-studs-wrapper .reset-btn:hover,
+body.browse-studs-view .reset-btn:hover {
+    background: #962e45 !important;
+}
+
+/* Responsive Design */
+.browse-studs-wrapper .mobile-only,
+body.browse-studs-view .mobile-only {
+    display: none !important;
+}
+
+.browse-studs-wrapper .desktop-only,
+body.browse-studs-view .desktop-only {
+    display: block !important;
+}
+
+@media (max-width: 1024px) {
+    .browse-studs-wrapper .mobile-only,
+    body.browse-studs-view .mobile-only {
+        display: block !important;
     }
 
-    .browse-studs-card-image,
-    .browse-studs-card-details {
-        width: 100%;
-    }
-
-    .browse-studs-card-image {
-        /* let height grow naturally */
-        height: auto;
-    }
-    .browse-studs-card-image {
-        width: 100%;
-        height: 120px; /* ✅ half of desktop (320px) */
-    }
-    .browse-studs-card-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-}
-.browse-studs-card-owner-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.browse-studs-owner-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #ddd;
-}
-
-.browse-studs-owner-text {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.9rem;
-    color: #333;
-}
-
-.browse-studs-owner-name {
-    font-weight: 600;
-    color: #213547;
-}
-
-.browse-studs-owner-location {
-    font-size: 0.8rem;
-    color: #777;
-}
-/* Show only on mobile/tablet */
-.mobile-only {
-    display: block;
-}
-.desktop-only {
-    display: none;
-}
-
-@media (min-width: 1024px) {
-    .mobile-only {
-        display: none;
-    }
-    .desktop-only {
-        display: block;
-    }
-}
-.desktop-only {
-    display: block;
-}
-
-@media (max-width: 768px) {
-    .desktop-only {
+    .browse-studs-wrapper .desktop-only,
+    body.browse-studs-view .desktop-only {
         display: none !important;
     }
 }
 
-.browse-studs-sidebar {
-    width: 250px;
-    padding: 1rem;
-    background: #fafafa;
-    border-right: 1px solid #ddd;
-    flex-shrink: 0;
-}
+@media (max-width: 768px) {
+    .browse-studs-wrapper .browse-studs-card,
+    body.browse-studs-view .browse-studs-card {
+        flex-direction: column !important;
+    }
 
-.browse-studs-filter-block {
-    margin-bottom: 1.5rem;
-}
+    .browse-studs-wrapper .browse-studs-card-image,
+    .browse-studs-wrapper .browse-studs-card-details,
+    body.browse-studs-view .browse-studs-card-image,
+    body.browse-studs-view .browse-studs-card-details {
+        width: 100% !important;
+    }
 
-.browse-studs-filter-block select,
-.browse-studs-filter-block input[type="range"] {
-    width: 100%;
+    .browse-studs-wrapper .browse-studs-card-image,
+    body.browse-studs-view .browse-studs-card-image {
+        height: 120px !important;
+    }
 }
-
-.popular-breeds {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.popular-breed {
-    background: #ccc;
-    padding: 0.4rem 0.7rem;
-    border-radius: 16px;
+.browse-studs-wrapper input[type="checkbox"],
+body.browse-studs-view input[type="checkbox"] {
+    accent-color: #256845 !important;  /* consistent green */
+    background-color: #fff !important; /* ensures white background when not checked */
+    border: 2px solid #256845 !important;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: #1b5e20;
 }
+/* Add these styles to your BrowseStuds.css file */
 
-.popular-breed:hover {
-    background: #256845;
-    color: #fff;
-}
-.panel-select,
-.panel-section select,
-.panel-section input[type="number"],
-.browse-studs-filter-select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    box-sizing: border-box;
-    background: #fff;
-    color: #888888;
-}
-.reset-btn {
-    background: #b83c56;
-    color: #fff;
-    border: none;
-    border-radius: 30px;
-    padding: 0.6rem 1.5rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    width: 100%;
-}
-
-.reset-btn:hover {
-    background: #962e45;
-}
-.browse-studs-filter-block.checkbox-group {
+/* Mobile toolbar styling enhancements */
+.browse-studs-mobile-toolbar {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding-top: 0.5rem;
+    justify-content: flex-end;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.browse-studs-filter-block.checkbox-group label {
+.filter-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.625rem 1.25rem;
     font-size: 1rem;
-    color: #333;
-    gap: 0.5rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-.browse-studs-filter-block.checkbox-group input[type="checkbox"] {
-    accent-color: #b83c56; /* your brand accent */
-    transform: scale(1.2);
+.filter-btn:hover {
+    background-color: #3a80d2;
 }
+
+.filter-btn svg {
+    margin-right: 0.25rem;
+}
+
+/* Making sure our mobile components only show on mobile */
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .desktop-only {
+        display: none;
+    }
+
+    /* Improved card layout for mobile */
+    .browse-studs-card {
+        flex-direction: column;
+    }
+
+    .browse-studs-card-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .browse-studs-card-details {
+        padding: 1rem;
+    }
+
+    /* Pagination adjustments for mobile */
+    .pagination {
+        padding: 1rem;
+        justify-content: center;
+    }
+
+    .page-btn {
+        min-width: 36px;
+        height: 36px;
+    }
+}
+.browse-studs-distance-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fce8e6; /* light pinkish-red */
+    color: #b83c56;            /* your brand accent red */
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+.browse-studs-card-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* limits to 4 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 6em; /* just in case line clamp fails, fallback height */
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+

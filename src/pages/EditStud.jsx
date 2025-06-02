@@ -14,13 +14,12 @@ import {
     getDownloadURL
 } from "firebase/storage";
 import Select from "react-select";
-import { breedOptions } from "../components/breedOptions";
+import { breedOptions } from "../components/breedOptions.js";
 import "./NewAdvert.css";
 
 export default function EditStud() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const fileInputRef = useRef(null);
 
     const [formData, setFormData] = useState({
         title: "",

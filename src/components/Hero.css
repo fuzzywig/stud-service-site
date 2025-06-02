@@ -1,5 +1,5 @@
-/* Keep existing hero section styles */
-.hero {
+/* Hero Section Styles - All classes prefixed with 'hero-' */
+.hero-section {
     background: linear-gradient(to right, #256845, #1e4e36);
     color: #fff;
     width: 100%;
@@ -7,7 +7,7 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
-    padding-bottom: 160px; /* padding-bottom gives room for waves */
+    padding-bottom: 160px;
 }
 
 .hero-container {
@@ -19,9 +19,10 @@
     gap: 60px;
     flex-wrap: wrap;
     position: relative;
-    z-index: 3; /* keeps content above both waves */
+    z-index: 3;
 }
 
+/* Form Container */
 .hero-form-container {
     flex: 1;
     min-width: 300px;
@@ -35,22 +36,27 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* New Enhanced Form Styles */
 .hero-form {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Reduced from 16px to bring elements closer together */
+    gap: 12px;
 }
 
-/* Category toggle styles with icons */
-.category-toggle {
+/* Category Toggle Section */
+.hero-tab-container {
+    flex: 1;
+    display: flex;
+    width: 25%;
+}
+
+.hero-category-toggle {
     display: flex;
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 15px;
 }
 
-.category-button {
+.hero-category-button {
     flex: 1;
     padding: 14px 10px;
     border-radius: 12px;
@@ -66,77 +72,184 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-}
-
-/* Category icon styles */
-.category-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2px;
-}
-
-.cat-icon {
-    width: 20px;
-    height: 20px;
-    display: block;
-}
-
-.category-text {
-    line-height: 1;
-}
-
-/* Default styles for non-active buttons */
-.category-button:not(.active) {
+    gap: 6px;
+    min-width: 0;
     background-color: rgba(255, 255, 255, 0.9);
     color: #256845;
+    width: 100%;
 }
 
-/* Active state for ALL buttons */
-.category-button.active {
+.hero-dropdown-container {
+    flex: 1;
+    width: 100%;
+}
+
+.hero-category-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hero-category-button.hero-active {
     background-color: #a03248 !important;
     color: white;
     transform: translateY(2px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-/* Hover state for all non-active buttons */
-.category-button:hover:not(.active) {
-    background-color: rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+/* Category Icons */
+.hero-category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
 }
 
-.form-field {
+.hero-cat-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* Dropdown Containers */
+.hero-dropdown-container {
+    position: relative;
+    flex: 1;
+}
+
+.hero-more-dropdown-container .hero-more-btn.hero-open,
+.hero-stud-dropdown-container .hero-stud-btn.hero-open {
+    background-color: #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropdown Styles */
+.hero-more-dropdown,
+.hero-stud-dropdown {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    padding: 8px 6px;
+    width: 180px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    scrollbar-width: thin;
+    scrollbar-color: #b83c56 #f0f0f0;
+}
+
+.hero-more-dropdown::-webkit-scrollbar,
+.hero-stud-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.hero-more-dropdown::-webkit-scrollbar-track,
+.hero-stud-dropdown::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.hero-more-dropdown::-webkit-scrollbar-thumb,
+.hero-stud-dropdown::-webkit-scrollbar-thumb {
+    background: #b83c56;
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+}
+
+.hero-more-dropdown::-webkit-scrollbar-thumb:hover,
+.hero-stud-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a03248;
+}
+
+/* Icon styling for FontAwesome */
+.hero-category-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.hero-category-icon i {
+    font-size: 22px;
+}
+
+/* Dropdown icon styling */
+.hero-dropdown-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.hero-dropdown-icon i {
+    font-size: 16px;
+}
+
+/* Dropdown items */
+.hero-dropdown-item {
+    text-align: left;
+    padding: 10px 14px;
+    margin: 2px 0;
+    font-size: 0.9rem;
+    background-color: transparent;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.hero-dropdown-item:hover {
+    background-color: rgba(184, 60, 86, 0.1);
+}
+
+.hero-dropdown-item.hero-active {
+    background-color: #a03248 !important;
+    color: white;
+}
+
+/* Form Field Styles */
+.hero-form-field {
     position: relative;
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    color: #2d3436;
 }
 
-.input-icon {
+.hero-input-icon {
     position: absolute;
     left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 5; /* Lower z-index so it doesn't overlap dropdown menu */
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #256845;
-    pointer-events: none; /* Make sure icon doesn't interfere with clicks */
-    line-height: 0; /* This helps with vertical alignment */
+    pointer-events: none;
+    line-height: 0;
 }
 
-.field-icon {
+.hero-field-icon {
     width: 22px;
     height: 22px;
-    display: block; /* Ensures proper alignment */
-    vertical-align: middle; /* Further improves alignment */
+    display: block;
+    vertical-align: middle;
 }
 
-.form-input {
+.hero-form-input {
     width: 100%;
     padding: 18px 16px 18px 45px;
     font-size: 15px;
@@ -147,27 +260,147 @@
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
     transition: all 0.3s ease;
-    margin-top: 12px;
 }
 
-.form-input:focus {
+.hero-form-input:focus {
     outline: none;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(184, 60, 86, 0.2);
     transform: translateY(-2px);
 }
 
-.form-input::placeholder {
+.hero-form-input::placeholder {
     color: #888;
     font-weight: 500;
 }
 
-/* Style the React Select component to match our form design */
-.form-select {
+/* React Select Styling */
+.hero-form-select {
     width: 100%;
-    position: relative; /* Add position relative */
+    position: relative;
 }
 
-.form-button {
+/* Custom React-Select styling with hero prefix */
+.hero-select__control {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07) !important;
+    padding: 10px !important;
+    padding-left: 40px !important;
+}
+
+.hero-select__control:hover {
+    border: none !important;
+}
+
+.hero-select__control--is-focused {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(184, 60, 86, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+.hero-select__placeholder {
+    color: #888 !important;
+}
+
+.hero-select__indicator-separator {
+    display: none !important;
+}
+
+.hero-select__option--is-selected {
+    background-color: #a03248 !important;
+}
+
+.hero-select__option--is-focused:not(.hero-select__option--is-selected) {
+    background-color: #f8e7ea !important;
+    color: #333 !important;
+}
+
+.hero-select__menu {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    z-index: 20 !important;
+    background: white !important;
+}
+
+.hero-select__menu-list {
+    background: white !important;
+    opacity: 1 !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: #b83c56 #f0f0f0;
+    padding: 6px !important;
+}
+
+.hero-select__menu-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.hero-select__menu-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.hero-select__menu-list::-webkit-scrollbar-thumb {
+    background: #b83c56;
+    border-radius: 10px;
+    border: 2px solid #f0f0f0;
+}
+
+.hero-select__menu-list::-webkit-scrollbar-thumb:hover {
+    background: #a03248;
+}
+
+.hero-select__option {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+    cursor: pointer !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    margin: 2px 0 !important;
+}
+
+/* Fix for double dropdown chevron */
+.hero-select__indicators > :not(:last-child) {
+    display: none !important;
+}
+
+.hero-select__dropdown-indicator {
+    color: #b83c56 !important;
+}
+
+.hero-select__dropdown-indicator:hover {
+    color: #a03248 !important;
+}
+
+.hero-select__clear-indicator {
+    color: #888 !important;
+}
+
+.hero-select__clear-indicator:hover {
+    color: #a03248 !important;
+}
+
+/* Nice transition when opening/closing the dropdown */
+.hero-select__menu {
+    animation: heroSelectDropdownFade 0.15s ease-in-out;
+    transform-origin: top center;
+}
+
+@keyframes heroSelectDropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Submit Button Styles */
+.hero-form-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -187,7 +420,7 @@
     position: relative;
 }
 
-.form-button::after {
+.hero-form-button::after {
     content: '';
     position: absolute;
     top: 0;
@@ -199,38 +432,38 @@
     transition: transform 0.6s ease;
 }
 
-.form-button:hover {
+.hero-form-button:hover {
     background-color: #a03248;
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(184, 60, 86, 0.4);
 }
 
-.form-button:hover::after {
+.hero-form-button:hover::after {
     transform: translateX(100%);
 }
 
-.form-button:active {
+.hero-form-button:active {
     transform: translateY(1px);
     box-shadow: 0 4px 10px rgba(184, 60, 86, 0.3);
 }
 
-.button-text {
+.hero-button-text {
     z-index: 1;
 }
 
-.button-icon {
+.hero-button-icon {
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
 }
 
-.button-icon svg {
+.hero-button-icon svg {
     width: 20px;
     height: 20px;
 }
 
-/* Existing hero text styles */
+/* Hero text styles */
 .hero-text {
     flex: 1;
     min-width: 300px;
@@ -250,7 +483,7 @@
     line-height: 1.6;
 }
 
-/* Existing wave styles */
+/* Wave styles */
 .hero-waves {
     position: absolute;
     bottom: 0;
@@ -268,95 +501,92 @@
     height: 200px;
 }
 
-.wave-front {
+.hero-wave-front {
     z-index: 1;
     transform: translateY(-30px);
 }
 
-.wave-back {
+.hero-wave-back {
     z-index: 2;
     opacity: 1;
-    transform: translateY(1px); /* gently push it down to peek out from behind */
+    transform: translateY(1px);
 }
 
-/* Fix for dropdown menu z-index and layering */
-.react-select__menu {
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-    z-index: 20 !important; /* Much higher z-index to ensure it appears above all other elements */
-    position: relative; /* Add position relative */
-    background: white !important; /* Ensure background is solid */
-    width: 100% !important; /* Ensure menu is constrained to width of parent */
+/* Hero Highlights */
+.hero-highlights {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
 }
 
-/* Make sure the input icon doesn't show through dropdown */
-.react-select__menu-list {
-    background: white !important; /* Solid background color */
-    opacity: 1 !important;
-    overflow-x: hidden !important; /* Prevent horizontal scrolling */
+.hero-highlight-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background-color: #fff;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
-/* Fix text wrapping in select options */
-.react-select__option {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    hyphens: auto !important;
-    cursor: pointer !important;
-    padding: 10px !important;
+.hero-highlight-pill i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 0.9rem;
+    color: #fff;
+    background-color: #66bb6a;
+    border-radius: 50%;
 }
 
-/* React-Select Custom Styles */
-.react-select__control {
-    border-radius: 12px !important;
-    border: none !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07) !important;
+.hero-category-button i {
+    font-size: 1.6rem;
+    vertical-align: middle;
+    color: inherit;
 }
 
-.react-select__control:hover {
-    border: none !important;
-}
-
-.react-select__control--is-focused {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(184, 60, 86, 0.2) !important;
-    transform: translateY(-2px);
-}
-
-.react-select__placeholder {
-    color: #888 !important;
-}
-
-.react-select__indicator-separator {
-    display: none !important;
-}
-
-/* Change selected option color to match toggle */
-.react-select__option--is-selected {
-    background-color: #a03248 !important;
-}
-
-.react-select__option--is-focused:not(.react-select__option--is-selected) {
-    background-color: #f8e7ea !important;
-    color: #333 !important;
-}
-
-/* Responsive adjustments */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
+    .hero-container {
+        gap: 30px;
+    }
+
+    .hero-section {
+        padding-top: 50px;
+    }
+
     .hero-form-container {
         padding: 20px;
     }
 
-    .category-button {
-        font-size: 0.8rem;
-        padding: 12px 8px;
+    .hero-tab-container {
+        width: 25%;
     }
 
-    .form-input, .form-button {
-        padding: 16px 14px;
+    .hero-category-button {
+        font-size: 0.75rem;
+        padding: 10px 5px;
     }
 
-    .form-button {
+    .hero-cat-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .hero-form-input, .hero-form-button {
+        padding: 14px 12px;
+    }
+
+    .hero-form-input {
+        padding-left: 40px;
+    }
+
+    .hero-form-button {
         font-size: 1rem;
     }
 
@@ -368,43 +598,238 @@
         font-size: 1.1rem;
     }
 
-    /* Make icons slightly smaller on mobile */
-    .cat-icon {
-        width: 18px;
-        height: 18px;
+    .hero-more-dropdown, .hero-stud-dropdown {
+        width: 160px;
     }
 
-    /* Ensure the postcode input on mobile keeps proper padding */
-    .form-input {
-        padding-left: 40px; /* Ensure text doesn't overlap the icon */
+    .hero-dropdown-item {
+        padding: 10px 14px;
+        font-size: 0.85rem;
     }
 }
 
-/* Extra small devices */
 @media (max-width: 480px) {
-    .category-button {
-        font-size: 0.7rem;
-        padding: 10px 4px;
+    .hero-category-toggle {
+        flex-wrap: wrap;
+        gap: 6px;
     }
 
-    .cat-icon {
+    .hero-tab-container {
+        width: calc(50% - 3px);
+        min-width: calc(50% - 3px);
+        margin-bottom: 6px;
+    }
+
+    .hero-category-button {
+        font-size: 0.7rem;
+        padding: 8px 5px;
+    }
+
+    .hero-cat-icon {
         width: 16px;
         height: 16px;
     }
 
-    /* Adjust form container padding on very small screens */
     .hero-form-container {
         padding: 15px;
     }
 
-    /* Smaller input fields on tiny screens */
-    .form-input {
-        padding: 14px 14px 14px 36px;
+    .hero-form-input {
+        padding: 12px 12px 12px 36px;
         font-size: 14px;
     }
 
-    /* Ensure the postcode icon stays properly positioned */
-    .input-icon {
+    .hero-input-icon {
         left: 10px;
+    }
+
+    .hero-field-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .hero-form-button {
+        padding: 14px 16px;
+        font-size: 0.9rem;
+    }
+
+    .hero-more-dropdown, .hero-stud-dropdown {
+        width: 140px;
+        max-height: 350px;
+    }
+}
+/* Hero Text Section - Complete Restyle */
+.hero-text {
+    flex: 1;
+    min-width: 300px;
+    text-align: left;
+    position: relative;
+}
+
+/* Badge */
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 24px;
+    letter-spacing: 0.3px;
+}
+
+.hero-badge-dot {
+    width: 8px;
+    height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: heroDotheartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heroDotheartbeat {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Title */
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #ffffff;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+}
+
+.hero-title-accent {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    position: relative;
+}
+
+/* Description */
+.hero-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 40px;
+    max-width: 500px;
+    font-weight: 400;
+}
+
+/* Features Grid */
+.hero-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    max-width: 600px;
+}
+
+.hero-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.hero-feature:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hero-feature-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hero-feature-icon i {
+    font-size: 18px;
+    color: #fbbf24;
+}
+
+.hero-feature-content h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.hero-feature-content p {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-description {
+        font-size: 1.125rem;
+    }
+
+    .hero-features {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+    }
+
+    .hero-badge {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .hero-feature {
+        padding: 12px;
+    }
+
+    .hero-feature-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hero-feature-icon i {
+        font-size: 16px;
+    }
+
+    .hero-feature-content h3 {
+        font-size: 0.9rem;
+    }
+
+    .hero-feature-content p {
+        font-size: 0.8rem;
     }
 }

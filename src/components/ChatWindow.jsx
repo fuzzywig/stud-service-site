@@ -1,48 +1,77 @@
-import React, { useState } from "react";
-import { useMessages } from "../utils/useMessages";
-import { sendMessage } from "../utils/sendMessage";
-import { auth } from "../firebase/firebaseAuth";
-import "./ChatWindow.css"; // <-- new CSS we'll add next
+// src/components/ChatWindow.jsx
+import React, { useEffect, useState, useRef } from "react";
+import { useAuth } from "../firebase/firebaseAuth";
+import {
+    createOrGetConversation,
+    sendMessage,
+    subscribeToMessages,
+} from "../firebase/firestoreChat";
+import "./ChatWindow.css";
 
-function ChatWindow({ conversationId }) {
+export default function ChatWindow({ selectedUser }) {
+    const { currentUser } = useAuth();
+    const [conversationId, setConversationId] = useState(null);
+    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const messages = useMessages(conversationId);
+    const chatEndRef = useRef(null);
 
-    const handleSend = async () => {
-        if (newMessage.trim() === "") return;
-        await sendMessage(conversationId, newMessage);
+    useEffect(() => {
+        if (!selectedUser || !currentUser) return;
+
+        const setup = async () => {
+            const id = await createOrGetConversation(currentUser.uid, selectedUser.uid);
+            setConversationId(id);
+
+            return subscribeToMessages(id, setMessages);
+        };
+
+        const unsubscribePromise = setup();
+
+        return () => {
+            unsubscribePromise.then(unsub => unsub && unsub());
+        };
+    }, [selectedUser, currentUser]);
+
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    const handleSend = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
+
+        await sendMessage(conversationId, currentUser.uid, newMessage.trim());
         setNewMessage("");
     };
 
     return (
         <div className="chat-window">
-            <div className="chat-header">Live Chat</div>
+            <div className="chat-header">
+                <h4>Chat with {selectedUser?.firstName || "User"}</h4>
+            </div>
 
             <div className="chat-messages">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
-                        className={`chat-message ${
-                            msg.senderId === auth.currentUser.uid ? "sent" : "received"
-                        }`}
+                        className={`chat-bubble ${msg.senderId === currentUser.uid ? "sent" : "received"}`}
                     >
                         {msg.text}
                     </div>
                 ))}
+                <div ref={chatEndRef} />
             </div>
 
-            <div className="chat-input">
+            <form className="chat-input-form" onSubmit={handleSend}>
                 <input
                     type="text"
-                    placeholder="Type a message..."
+                    placeholder="Type your message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    className="chat-input"
                 />
-                <button onClick={handleSend}>Send</button>
-            </div>
+                <button type="submit" className="chat-send-btn">Send</button>
+            </form>
         </div>
     );
 }
-
-export default ChatWindow;
