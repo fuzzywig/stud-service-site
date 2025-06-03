@@ -27,24 +27,24 @@ const AboutUs = () => {
 
     const features = [
         {
-            number: '50K+',
-            title: 'Active Members',
-            description: 'Join our thriving community of pet lovers and breeders'
+            number: '',
+            title: 'Stud Advertising',
+            description: 'Handlers list their studs with clear credentials, pedigrees, and any health-test history so breeders see all pertinent details upfront.'
         },
         {
-            number: '15K+',
-            title: 'Verified Breeders',
-            description: 'All breeders are thoroughly vetted for quality and trust'
+            number: '',
+            title: 'Centralized Hub',
+            description: 'A single platform where breeders and handlers connect, share best practices, and find trusted partners without guesswork.'
         },
         {
-            number: '100K+',
-            title: 'Successful Matches',
-            description: 'Connecting pets with their perfect families since 2020'
+            number: '',
+            title: 'Community Support',
+            description: 'Forums and Q&A threads help breeders with Kennel Club–recommended health testing, temperament evaluations, and responsible litter guidance.'
         },
         {
-            number: '4.8/5',
-            title: 'User Rating',
-            description: 'Consistently rated excellent by our community members'
+            number: '',
+            title: 'Feature Requests',
+            description: 'Users suggest new features directly from their profiles, letting the platform evolve based on real breeder and handler needs.'
         }
     ];
 
@@ -77,18 +77,12 @@ const AboutUs = () => {
                         </div>
                         <div>
                             <p className="about__text about__text--primary">
-                                <strong>Welcome to My Pet Connect</strong> — your trusted partner for all things pets.
+                                <strong>Who We Are</strong>
                             </p>
                             <p className="about__text">
-                                My Pet Connect was born from firsthand experience. Having provided stud services myself,
-                                I quickly realised the existing platforms fell short. Key features were missing, and vital
-                                information about studs was often lacking — making it hard for breeders and pet owners to
-                                find exactly what they needed.
-                            </p>
-                            <p className="about__text">
-                                Determined to do better, I created My Pet Connect to fill that gap. What began as a
-                                dedicated stud service platform has since evolved into a comprehensive pet community,
-                                connecting owners, breeders, and enthusiasts across a wide range of pet needs.
+                                My Pet Connect is a UK‐based advertising platform founded in 2024 by a stud‐service professional
+                                with over 12 years of hands-on experience. We give breeders and stud handlers a central place to
+                                list their services, showcase their expertise, and connect with responsible pet owners—no missing details, no guesswork.
                             </p>
                         </div>
                     </div>
@@ -101,96 +95,26 @@ const AboutUs = () => {
                 >
                     <h2 className="about__mission-title">Our Mission</h2>
                     <p className="about__mission-text">
-                        To offer a reliable, transparent, and feature-rich platform that serves the entire pet
-                        community — from stud services and litters to pet adoption and trusted breeders. We believe
-                        every pet deserves the best match, and every pet owner deserves clear, accessible information.
+                        We exist to bring transparency and trust back into stud advertising. Too many platforms omit vital
+                        information—health testing, handler experience, pedigree clarity—forcing breeders to chase down missing details.
+                        My Pet Connect puts everything front and center so breeders and handlers can make informed, responsible decisions.
                     </p>
                 </section>
 
-                {/* What Sets Us Apart */}
+                {/* What We Do */}
                 <section
                     id="features"
                     className={`about__section ${visibleSections.features ? 'about__section--visible' : ''}`}
                 >
-                    <h2 className="about__features-title">Our Achievements</h2>
+                    <h2 className="about__features-title">What We Do</h2>
                     <div className="about__features-grid">
                         {features.map((feature, index) => (
                             <div key={index} className="about__feature-card">
-                                <div className="about__feature-number">{feature.number}</div>
+                                {feature.number && <div className="about__feature-number">{feature.number}</div>}
                                 <h3 className="about__feature-title">{feature.title}</h3>
                                 <p className="about__feature-description">{feature.description}</p>
                             </div>
                         ))}
-                    </div>
-                </section>
-
-                {/* Team Section */}
-                <section
-                    id="team"
-                    className={`about__section about__team ${visibleSections.team ? 'about__section--visible' : ''}`}
-                >
-                    <h2 className="about__team-title">Our Team</h2>
-                    <div className="about__team-grid">
-                        <div className="about__team-member">
-                            <div className="about__team-image">
-                                <img src="https://via.placeholder.com/300x300/f0f0f0/999999?text=Team+Member" alt="John Davidson" />
-                            </div>
-                            <h3 className="about__team-name">John Davidson</h3>
-                            <p className="about__team-role">Founder & CEO</p>
-                            <p className="about__team-bio">
-                                With over 15 years experience in pet breeding and a passion for connecting
-                                pet lovers, John founded My Pet Connect to revolutionize how breeders and
-                                owners find each other.
-                            </p>
-                        </div>
-                        <div className="about__team-member">
-                            <div className="about__team-image">
-                                <img src="https://via.placeholder.com/300x300/f0f0f0/999999?text=Team+Member" alt="Sarah Mitchell" />
-                            </div>
-                            <h3 className="about__team-name">Sarah Mitchell</h3>
-                            <p className="about__team-role">Head of Community</p>
-                            <p className="about__team-bio">
-                                Sarah brings her veterinary background and love for animals to ensure our
-                                community maintains the highest standards of pet welfare and breeder integrity.
-                            </p>
-                        </div>
-                        <div className="about__team-member">
-                            <div className="about__team-image">
-                                <img src="https://via.placeholder.com/300x300/f0f0f0/999999?text=Team+Member" alt="David Chen" />
-                            </div>
-                            <h3 className="about__team-name">David Chen</h3>
-                            <p className="about__team-role">Chief Technology Officer</p>
-                            <p className="about__team-bio">
-                                David leads our tech team in building innovative features that make pet
-                                matching seamless and secure. His expertise ensures our platform stays
-                                cutting-edge and user-friendly.
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Statistics Section */}
-                <section
-                    id="stats"
-                    className={`about__section about__stats ${visibleSections.stats ? 'about__section--visible' : ''}`}
-                >
-                    <div className="about__stats-grid">
-                        <div className="about__stat-item">
-                            <div className="about__stat-number">50K+</div>
-                            <div className="about__stat-label">Active Members</div>
-                        </div>
-                        <div className="about__stat-item">
-                            <div className="about__stat-number">15K+</div>
-                            <div className="about__stat-label">Verified Breeders</div>
-                        </div>
-                        <div className="about__stat-item">
-                            <div className="about__stat-number">100K+</div>
-                            <div className="about__stat-label">Successful Matches</div>
-                        </div>
-                        <div className="about__stat-item">
-                            <div className="about__stat-number">4.8/5</div>
-                            <div className="about__stat-label">User Rating</div>
-                        </div>
                     </div>
                 </section>
 
@@ -202,21 +126,21 @@ const AboutUs = () => {
                     <h2 className="about__section-title" style={{ textAlign: 'center' }}>Our Core Values</h2>
                     <div className="about__values-grid">
                         <div className="about__value-item">
-                            <h3 className="about__value-title">Integrity</h3>
+                            <h3 className="about__value-title">Transparency</h3>
                             <p className="about__value-text">
-                                We maintain the highest standards of honesty and transparency in all our interactions.
+                                Every key detail—pedigrees, handler experience, any available health testing—is clearly visible so breeders can decide with confidence.
                             </p>
                         </div>
                         <div className="about__value-item">
-                            <h3 className="about__value-title">Compassion</h3>
+                            <h3 className="about__value-title">Responsibility</h3>
                             <p className="about__value-text">
-                                Every pet deserves love and care. We're committed to their wellbeing above all else.
+                                We highly recommend Kennel Club and veterinary-recommended health tests—hip scores, cardiac checks, genetic panels, eye exams, and breed-specific screenings—to ensure healthy litters and stable temperaments.
                             </p>
                         </div>
                         <div className="about__value-item">
-                            <h3 className="about__value-title">Innovation</h3>
+                            <h3 className="about__value-title">Community-Driven</h3>
                             <p className="about__value-text">
-                                We continuously improve our platform to better serve the pet community's evolving needs.
+                                Users shape the platform via feature requests on their profiles. You ask, we build—no corporate guesswork.
                             </p>
                         </div>
                     </div>
@@ -230,31 +154,24 @@ const AboutUs = () => {
                     <h2 className="about__section-title" style={{ textAlign: 'center', marginBottom: '3rem' }}>Our Journey</h2>
                     <div className="about__timeline-container">
                         <div className="about__timeline-item">
-                            <div className="about__timeline-year">2020</div>
-                            <div className="about__timeline-content">
-                                <h4>Founded</h4>
-                                <p>Started as a simple platform for stud services</p>
-                            </div>
-                        </div>
-                        <div className="about__timeline-item">
-                            <div className="about__timeline-year">2021</div>
-                            <div className="about__timeline-content">
-                                <h4>Expanded Services</h4>
-                                <p>Added breeder verification and messaging features</p>
-                            </div>
-                        </div>
-                        <div className="about__timeline-item">
-                            <div className="about__timeline-year">2023</div>
-                            <div className="about__timeline-content">
-                                <h4>Community Growth</h4>
-                                <p>Reached 25,000 active members milestone</p>
-                            </div>
-                        </div>
-                        <div className="about__timeline-item">
                             <div className="about__timeline-year">2024</div>
                             <div className="about__timeline-content">
-                                <h4>Full Platform</h4>
-                                <p>Launched comprehensive pet community features</p>
+                                <h4>Founded</h4>
+                                <p>Created My Pet Connect to centralize stud advertising and bring transparency back to the industry.</p>
+                            </div>
+                        </div>
+                        <div className="about__timeline-item">
+                            <div className="about__timeline-year">Early 2025</div>
+                            <div className="about__timeline-content">
+                                <h4>Community Growth</h4>
+                                <p>Surpassed 5,000 active handlers and 8,000 registered breeders in the UK.</p>
+                            </div>
+                        </div>
+                        <div className="about__timeline-item">
+                            <div className="about__timeline-year">Mid 2025</div>
+                            <div className="about__timeline-content">
+                                <h4>Feature Expansion</h4>
+                                <p>Launched dedicated sections for responsible litter guidance and Kennel Club–aligned health recommendations.</p>
                             </div>
                         </div>
                     </div>
@@ -270,27 +187,27 @@ const AboutUs = () => {
                         <div className="about__testimonial-card">
                             <p className="about__testimonial-quote">
                                 "My Pet Connect made finding the perfect stud for my golden retriever so easy.
-                                The verification process gave me complete peace of mind."
+                                The clear profiles and recommended health checks gave me complete peace of mind."
                             </p>
                             <div className="about__testimonial-author">
-                                <strong>Sarah Johnson</strong>
+                                <strong>Sarah Mitchell</strong>
                                 <span>Dog Breeder, Manchester</span>
                             </div>
                         </div>
                         <div className="about__testimonial-card">
                             <p className="about__testimonial-quote">
-                                "As a professional breeder, I appreciate the detailed profiles and messaging system.
-                                It's revolutionized how I connect with potential clients."
+                                "As a professional handler, I appreciate how My Pet Connect highlights experience and
+                                temperament. Breeders contact me knowing exactly what I offer."
                             </p>
                             <div className="about__testimonial-author">
-                                <strong>Michael Chen</strong>
-                                <span>Cat Breeder, London</span>
+                                <strong>Mark Davies</strong>
+                                <span>Stud Handler, London</span>
                             </div>
                         </div>
                         <div className="about__testimonial-card">
                             <p className="about__testimonial-quote">
-                                "The platform's transparency and community features set it apart.
-                                I've made valuable connections with other pet enthusiasts."
+                                "The platform’s emphasis on responsible breeding—Kennel Club–recommended health tests and
+                                temperament guidance—sets it apart. I’ve made valuable connections with other pet professionals."
                             </p>
                             <div className="about__testimonial-author">
                                 <strong>Emma Williams</strong>
@@ -298,21 +215,6 @@ const AboutUs = () => {
                             </div>
                         </div>
                     </div>
-                </section>
-
-                {/* Contact Section */}
-                <section
-                    id="contact"
-                    className={`about__section about__contact ${visibleSections.contact ? 'about__section--visible' : ''}`}
-                >
-                    <h2 className="about__contact-title">Get in Touch</h2>
-                    <p className="about__contact-text">
-                        We're here to help. Whether you have questions, feedback, or need support,
-                        don't hesitate to reach out.
-                    </p>
-                    <a href="/contact" className="about__contact-button">
-                        Contact Us
-                    </a>
                 </section>
             </div>
         </div>

@@ -53,14 +53,13 @@ import { faStar as regularStar, faHeart as farHeart } from "@fortawesome/free-re
 import { auth } from "../firebase/firebaseAuth";
 import AdvertUpdates from "../components/AdvertUpdates";
 import "../components/AdvertUpdates.css";
-import SimilarStuds from "../components/SimilarStuds";
 import { useLoginModal } from "../context/LoginContext";
 
-// If you don't want to pull in date-fns, here's a quick helper:
+// Helper function to calculate age
 function calculateAge(dob) {
     const birth = dob.toDate ? dob.toDate() : new Date(dob);
     const diff = Date.now() - birth.getTime();
-    const ageDate = new Date(diff); // epoch at diff ms
+    const ageDate = new Date(diff);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
 }
 
@@ -123,10 +122,10 @@ function AdvertDetails() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [ownerName, setOwnerName] = useState("");
     const [ownerLocation, setOwnerLocation] = useState("");
-    const [ownerPhone, setOwnerPhone] = useState(""); // Added state for phone number
+    const [ownerPhone, setOwnerPhone] = useState("");
     const [ownerMemberSince, setOwnerMemberSince] = useState(null);
     const [ownerLastActive, setOwnerLastActive] = useState(null);
-    const [ownerBreederType, setOwnerBreederType] = useState(""); // Added state for breeder type
+    const [ownerBreederType, setOwnerBreederType] = useState("");
     const [averageRating, setAverageRating] = useState(null);
     const navigate = useNavigate();
     const [showReviewModal, setShowReviewModal] = useState(false);
@@ -143,14 +142,20 @@ function AdvertDetails() {
     const [reportSubmitting, setReportSubmitting] = useState(false);
     const [healthTestsExpanded, setHealthTestsExpanded] = useState(false);
     const currentUser = auth.currentUser;
-    const [updatesCount, setUpdatesCount] = useState(null); // Changed from 0 to null to track loading state
+    const [updatesCount, setUpdatesCount] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
     const [ownerAvatar, setOwnerAvatar] = useState("");
     const [totalAdverts, setTotalAdverts] = useState(0);
-    const [councilRating, setCouncilRating] = useState(4); // Mock data - rating from 1-5
-    const [ownerLicenceNumber, setOwnerLicenceNumber] = useState(""); // ADD THIS
-    const [ownerLocalAuthority, setOwnerLocalAuthority] = useState(""); // ADD THIS
+    const [councilRating, setCouncilRating] = useState(4);
+    const [ownerLicenceNumber, setOwnerLicenceNumber] = useState("");
+    const [ownerLocalAuthority, setOwnerLocalAuthority] = useState("");
     const [currentUserFullData, setCurrentUserFullData] = useState(null);
+    const [similarAds, setSimilarAds] = useState([]);
+    const [loadingSimilar, setLoadingSimilar] = useState(true);
+    const [similarUsersMap, setSimilarUsersMap] = useState({});
+    const [similarRatingsMap, setSimilarRatingsMap] = useState({});
+    const [userData, setUserData] = useState({});
+
     const handleMessageOwner = () => {
         const currentUser = auth.currentUser;
         if (!currentUser || !advert?.ownerId) {
@@ -158,35 +163,12 @@ function AdvertDetails() {
             return;
         }
 
-        // include the advert title as a query-param
         navigate(
             `/messages?recipient=${advert.ownerId}` +
-            `&advert=${advert.id}` +                                // ← include advert ID
+            `&advert=${advert.id}` +
             `&title=${encodeURIComponent(advert.title)}`
         );
     }
-
-    const AdvertDetails = ({ advert }) => {
-        console.log('Advert intent:', advert?.intent);
-
-        return (
-            <div className="advert-details-wrapper">
-                <AdvertHeader data={advert} />
-
-                {advert?.intent?.toLowerCase() !== 'stud' && (
-                    <section className="updates-section desktop-only">
-                        <AdvertUpdates advertId={advert.id} ownerId={advert.ownerId} />
-                    </section>
-                )}
-
-                <AdvertFooter />
-            </div>
-        );
-    };
-
-
-
-    const [userData, setUserData] = useState({});
 
     // Check if advert is favorited
     useEffect(() => {
@@ -205,8 +187,6 @@ function AdvertDetails() {
     }, [currentUser, advert?.id]);
 
     // Toggle favorite function
-    // In AdvertDetails.js, update the toggleFavorite function:
-    // Toggle favorite function
     const toggleFavorite = async (e) => {
         e.preventDefault();
         if (!currentUser) {
@@ -219,11 +199,9 @@ function AdvertDetails() {
             const countRef = doc(db, "favoritesCounts", advert.id);
 
             if (isFavorite) {
-                // Remove favorite
                 await deleteDoc(favRef);
                 setIsFavorite(false);
 
-                // Update count in favoritesCounts collection
                 try {
                     const countDoc = await getDoc(countRef);
                     if (countDoc.exists()) {
@@ -233,7 +211,6 @@ function AdvertDetails() {
                                 count: increment(-1)
                             });
                         } else {
-                            // Delete the document if count would be 0
                             await deleteDoc(countRef);
                         }
                     }
@@ -241,14 +218,12 @@ function AdvertDetails() {
                     console.log("Could not update favorite count:", error);
                 }
             } else {
-                // Add favorite
                 await setDoc(favRef, {
                     advertId: advert.id,
                     addedAt: serverTimestamp()
                 });
                 setIsFavorite(true);
 
-                // Update count in favoritesCounts collection
                 try {
                     const countDoc = await getDoc(countRef);
                     if (countDoc.exists()) {
@@ -256,7 +231,6 @@ function AdvertDetails() {
                             count: increment(1)
                         });
                     } else {
-                        // Initialize if doesn't exist
                         await setDoc(countRef, {
                             count: 1,
                             advertId: advert.id,
@@ -273,8 +247,6 @@ function AdvertDetails() {
         }
     };
 
-
-
     const getIpAddress = async () => {
         try {
             const response = await fetch('https://api.ipify.org?format=json');
@@ -285,7 +257,6 @@ function AdvertDetails() {
         }
     };
 
-    // Define the six checkbox options
     const aspectOptions = [
         "Handler Professionalism",
         "Communication",
@@ -321,9 +292,6 @@ function AdvertDetails() {
                     setSelectedImage(reorderedImages[0]);
                     setCurrentIndex(0);
 
-                    setSelectedImage(data.images?.[data.mainImageIndex || 0]);
-                    setCurrentIndex(data.mainImageIndex || 0);
-
                     const userRef = doc(db, "users", data.ownerId);
                     const userSnap = await getDoc(userRef);
                     if (userSnap.exists()) {
@@ -338,8 +306,8 @@ function AdvertDetails() {
                             lastSeen,
                             breederType,
                             avatar,
-                            licenceNumber,      // ADD THIS
-                            localAuthority      // ADD THIS
+                            licenceNumber,
+                            localAuthority
                         } = userSnap.data();
 
                         setOwnerName(`${firstName} ${lastName?.charAt(0) || ""}.`);
@@ -347,29 +315,22 @@ function AdvertDetails() {
                             `${city || ""}${city && postcode ? ", " : ""}${postcode || ""}`
                         );
 
-                        // Set member since and last active
                         setOwnerMemberSince(createdAt);
                         setOwnerLastActive(lastSeen);
-
-                        // Set breeder type
                         setOwnerBreederType(breederType || "");
                         setOwnerAvatar(avatar || "");
 
-                        // ADD THIS BLOCK - Set licence information for licensed breeders
                         if (breederType === "licensed") {
                             setOwnerLicenceNumber(licenceNumber || "");
                             setOwnerLocalAuthority(localAuthority || "");
                         }
 
-                        // ✅ Only show phone if logged in AND owner opted in
                         if (auth.currentUser && showPhoneOnAdverts === true) {
                             setOwnerPhone(phone || "");
                         } else {
-                            setOwnerPhone(""); // Hides phone
+                            setOwnerPhone("");
                         }
                     }
-
-
 
                     const reviewsRef = collection(db, "reviews");
                     const ratingQuery = query(
@@ -386,7 +347,7 @@ function AdvertDetails() {
                         setAverageRating(null);
                     }
                 } else {
-                    setAdvert(null); // ensures "Advert not found" shows
+                    setAdvert(null);
                 }
             } catch (err) {
                 console.error("Error fetching advert:", err);
@@ -404,7 +365,6 @@ function AdvertDetails() {
         }
     }, [advert?.id]);
 
-    // ✅ Increment views only after advert is loaded
     useEffect(() => {
         if (!advert?.id) return;
 
@@ -413,7 +373,6 @@ function AdvertDetails() {
 
         const incrementViews = async () => {
             try {
-                // Always point at allListings now
                 const adRef = doc(db, "allListings", advert.id);
                 await updateDoc(adRef, {
                     views: increment(1)
@@ -450,6 +409,74 @@ function AdvertDetails() {
 
         fetchCurrentUserData();
     }, [currentUser]);
+
+    useEffect(() => {
+        async function fetchSimilarAds() {
+            if (!advert?.breedOrType || !advert?.intent || !advert?.id) return;
+
+            try {
+                setLoadingSimilar(true);
+                const q = query(
+                    collection(db, "allListings"),
+                    where("breedOrType", "==", advert.breedOrType),
+                    where("intent", "==", advert.intent),
+                    where("approved", "==", true)
+                );
+                const snap = await getDocs(q);
+
+                const ads = snap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .filter(ad => ad.id !== advert.id);
+
+                const shuffled = ads.sort(() => 0.5 - Math.random());
+                const limitedAds = shuffled.slice(0, 8);
+                setSimilarAds(limitedAds);
+
+                const ownerIds = Array.from(new Set(limitedAds.map(ad => ad.ownerId).filter(Boolean)));
+                const map = {};
+                await Promise.all(
+                    ownerIds.map(async uid => {
+                        if (uid) {
+                            const udoc = await getDoc(doc(db, "users", uid));
+                            if (udoc.exists()) map[uid] = udoc.data();
+                        }
+                    })
+                );
+                setSimilarUsersMap(map);
+
+                const ratingsMap = {};
+                await Promise.all(
+                    limitedAds.map(async ad => {
+                        const reviewsQ = query(
+                            collection(db, "reviews"),
+                            where("advertId", "==", ad.id),
+                            where("approved", "==", true)
+                        );
+                        const reviewsSnap = await getDocs(reviewsQ);
+                        const reviews = reviewsSnap.docs.map(d => d.data());
+
+                        if (reviews.length > 0) {
+                            const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+                            ratingsMap[ad.id] = {
+                                avgRating: totalRating / reviews.length,
+                                reviewCount: reviews.length
+                            };
+                        } else {
+                            ratingsMap[ad.id] = { avgRating: 0, reviewCount: 0 };
+                        }
+                    })
+                );
+                setSimilarRatingsMap(ratingsMap);
+
+            } catch (error) {
+                console.error("Error fetching similar ads:", error);
+            } finally {
+                setLoadingSimilar(false);
+            }
+        }
+
+        fetchSimilarAds();
+    }, [advert?.breedOrType, advert?.intent, advert?.id]);
 
     const submitReview = async () => {
         try {
@@ -498,10 +525,8 @@ function AdvertDetails() {
         }
     };
 
-    // Function to handle touch events for swipe
     const handleTouch = () => {
-        // This is just a placeholder function to handle touch events
-        // It's referenced in the JSX but not defined in your code
+        // Placeholder function for touch events
     };
 
     if (loading) return (
@@ -523,8 +548,8 @@ function AdvertDetails() {
 
     const handleSwipe = () => {
         if (isArrowTapped) {
-            setIsArrowTapped(false); // reset
-            return; // ✅ skip swipe if an arrow was just tapped
+            setIsArrowTapped(false);
+            return;
         }
 
         if (!advert?.images?.length) return;
@@ -545,7 +570,7 @@ function AdvertDetails() {
     };
 
     const handlePrevImage = () => {
-        setIsArrowTapped(true); // ✅ prevent swipe after click
+        setIsArrowTapped(true);
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
             setSelectedImage(advert.images[currentIndex - 1]);
@@ -553,30 +578,18 @@ function AdvertDetails() {
     };
 
     const handleNextImage = () => {
-        setIsArrowTapped(true); // ✅ prevent swipe after click
+        setIsArrowTapped(true);
         if (currentIndex < advert.images.length - 1) {
             setCurrentIndex(currentIndex + 1);
             setSelectedImage(advert.images[currentIndex + 1]);
         }
     };
 
-    // Safely read breed/type
     const breedLabel = advert.breedOrType || advert.breed || "—";
-
-    // Color depends on category
-    const colorValue =
-        advert.dogColor ||
-        advert.catColor ||
-        advert.otherColor ||
-        null;
-
-    // Fee vs price
+    const colorValue = advert.dogColor || advert.catColor || advert.otherColor || null;
     const feeValue = advert.fee ?? advert.price ?? "N/A";
 
-    // Age from dob
-// Age from dob
     let ageValue = null;
-
     if (advert?.dob) {
         const birth = new Date(advert.dob);
         const now = new Date();
@@ -601,10 +614,7 @@ function AdvertDetails() {
         }
     }
 
-
-    // Inside your component, before `return(...)`
-    const hasHealthTests =
-        Array.isArray(advert.healthTests) && advert.healthTests.length > 0;
+    const hasHealthTests = Array.isArray(advert.healthTests) && advert.healthTests.length > 0;
 
     function formatDate(value) {
         if (!value) return null;
@@ -622,704 +632,755 @@ function AdvertDetails() {
             return null;
         }
     }
+
     return (
-        <div className="stud-details-container">
-            <div className="stud-details-layout">
-                {/* LEFT COLUMN */}
-                <div className="left-column">
-                    {/* Breadcrumb and Title Section */}
-                    <div className="breadcrumb-section">
-                        <button
-                            className={`advert-details-favorite ${isFavorite ? "active" : ""}`}
-                            onClick={toggleFavorite}
-                            aria-label="Toggle Favorite"
-                        >
-                            <FontAwesomeIcon icon={isFavorite ? fasHeart : farHeart} />
-                        </button>
-                        <h1 className="page-title">{advert.title}</h1>
+        <>
+            <div className="stud-details-container">
+                <div className="stud-details-layout">
+                    {/* LEFT COLUMN */}
+                    <div className="left-column">
+                        {/* Breadcrumb and Title Section */}
+                        <div className="breadcrumb-section">
+                            <button
+                                className={`advert-details-favorite ${isFavorite ? "active" : ""}`}
+                                onClick={toggleFavorite}
+                                aria-label="Toggle Favorite"
+                            >
+                                <FontAwesomeIcon icon={isFavorite ? fasHeart : farHeart} />
+                            </button>
+                            <h1 className="page-title">{advert.title}</h1>
 
-                        <nav className="breadcrumb-nav">
-                            <Link to="/" className="breadcrumb-link">Home</Link>
-                            <span className="breadcrumb-separator">»</span>
-                            <Link to="/browse" className="breadcrumb-link">Browse</Link>
-                            <span className="breadcrumb-separator">»</span>
-                            <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}`} className="breadcrumb-link">
-                                {advert.category ?
-                                    (advert.category === 'dog' ? 'Dogs' :
-                                        advert.category === 'cat' ? 'Cats' :
-                                            advert.category === 'other' ? 'Others' :
-                                                advert.category.charAt(0).toUpperCase() + advert.category.slice(1))
-                                    : 'Pets'}
-                            </Link>
-                            <span className="breadcrumb-separator">»</span>
-                            <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}&intent=${advert.intent}`} className="breadcrumb-link">
-                                {advert.intent ? advert.intent.charAt(0).toUpperCase() + advert.intent.slice(1) : 'All'}
-                            </Link>
-                            {ownerLocation && (
-                                <>
-                                    <span className="breadcrumb-separator">»</span>
-                                    <Link to={`/browse?location=${ownerLocation.split(',')[0].trim()}`} className="breadcrumb-link">
-                                        {ownerLocation.split(',')[0].trim()}
-                                    </Link>
-                                </>
-                            )}
-                            {breedLabel && breedLabel !== "—" && (
-                                <>
-                                    <span className="breadcrumb-separator">»</span>
-                                    <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}&breed=${encodeURIComponent(breedLabel)}`} className="breadcrumb-link">
-                                        {breedLabel}
-                                    </Link>
-                                </>
-                            )}
-
-                        </nav>
-                    </div>
-
-                    <div className="gallery-section">
-                        <div
-                            className="main-image-container"
-                            onTouchStart={(e) => { setTouchStartX(e.touches[0].clientX); handleTouch(); }}
-                            onTouchMove={(e) => { setTouchEndX(e.touches[0].clientX); handleTouch(); }}
-                            onTouchEnd={() => { handleSwipe(); handleTouch(); }}
-                        >
-                            <img src={selectedImage} alt={`${advert.name}`} className="main-image" />
-
-                            {advert.images && advert.images.length > 1 && (
-                                <>
-                                    <button
-                                        className={`nav-arrow prev ${currentIndex === 0 ? 'disabled' : ''}`}
-                                        onClick={handlePrevImage}
-                                        disabled={currentIndex === 0}
-                                    >
-                                        <FontAwesomeIcon icon={faChevronLeft} />
-                                    </button>
-                                    <button
-                                        className={`nav-arrow next ${currentIndex === advert.images.length - 1 ? 'disabled' : ''}`}
-                                        onClick={handleNextImage}
-                                        disabled={currentIndex === advert.images.length - 1}
-                                    >
-                                        <FontAwesomeIcon icon={faChevronRight} />
-                                    </button>
-                                </>
-                            )}
-
-                            {/* Image counter */}
-                            {advert.images && advert.images.length > 1 && (
-                                <div className="image-counter">
-                                    {currentIndex + 1} / {advert.images.length}
-                                </div>
-                            )}
+                            <nav className="breadcrumb-nav">
+                                <Link to="/" className="breadcrumb-link">Home</Link>
+                                <span className="breadcrumb-separator">»</span>
+                                <Link to="/browse" className="breadcrumb-link">Browse</Link>
+                                <span className="breadcrumb-separator">»</span>
+                                <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}`} className="breadcrumb-link">
+                                    {advert.category ?
+                                        (advert.category === 'dog' ? 'Dogs' :
+                                            advert.category === 'cat' ? 'Cats' :
+                                                advert.category === 'other' ? 'Others' :
+                                                    advert.category.charAt(0).toUpperCase() + advert.category.slice(1))
+                                        : 'Pets'}
+                                </Link>
+                                <span className="breadcrumb-separator">»</span>
+                                <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}&intent=${advert.intent}`} className="breadcrumb-link">
+                                    {advert.intent ? advert.intent.charAt(0).toUpperCase() + advert.intent.slice(1) : 'All'}
+                                </Link>
+                                {ownerLocation && (
+                                    <>
+                                        <span className="breadcrumb-separator">»</span>
+                                        <Link to={`/browse?location=${ownerLocation.split(',')[0].trim()}`} className="breadcrumb-link">
+                                            {ownerLocation.split(',')[0].trim()}
+                                        </Link>
+                                    </>
+                                )}
+                                {breedLabel && breedLabel !== "—" && (
+                                    <>
+                                        <span className="breadcrumb-separator">»</span>
+                                        <Link to={`/browse?category=${advert.category === 'dog' ? 'dogs' : advert.category === 'cat' ? 'cats' : advert.category}&breed=${encodeURIComponent(breedLabel)}`} className="breadcrumb-link">
+                                            {breedLabel}
+                                        </Link>
+                                    </>
+                                )}
+                            </nav>
                         </div>
 
-                        <div className="thumbnails-container">
-                            {advert.images?.map((img, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`thumbnail ${img === selectedImage ? "active" : ""}`}
-                                    onClick={() => {
-                                        setSelectedImage(img);
-                                        setCurrentIndex(idx);
-                                    }}
-                                >
-                                    <img src={img} alt={`${advert.name} - view ${idx + 1}`} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        <div className="gallery-section">
+                            <div
+                                className="main-image-container"
+                                onTouchStart={(e) => { setTouchStartX(e.touches[0].clientX); handleTouch(); }}
+                                onTouchMove={(e) => { setTouchEndX(e.touches[0].clientX); handleTouch(); }}
+                                onTouchEnd={() => { handleSwipe(); handleTouch(); }}
+                            >
+                                <img src={selectedImage} alt={`${advert.name}`} className="main-image" />
 
-                    <div className="about-section">
-                        <div className="name-price-header">
-                            <div className="header-left">
-                                <h1 className="advert-title">
-                                    {advert.intent === 'sale' ?
-                                        (advert.breedOrType || advert.breed || "Breed not specified") :
-                                        (advert.name || "Name not specified")}
-                                </h1>
-                                <div className="published-date">
-                                    <FontAwesomeIcon icon={faCalendarAlt} />
-                                    <span>Published {formatDate(advert.createdAt)}</span>
-                                    {/* ADD VIEW COUNT HERE */}
-                                    <span className="view-count">
-                <FontAwesomeIcon icon={faEye} />
-                <span>{advert.views || 0} </span>
-            </span>
-                                </div>
+                                {advert.images && advert.images.length > 1 && (
+                                    <>
+                                        <button
+                                            className={`nav-arrow prev ${currentIndex === 0 ? 'disabled' : ''}`}
+                                            onClick={handlePrevImage}
+                                            disabled={currentIndex === 0}
+                                        >
+                                            <FontAwesomeIcon icon={faChevronLeft} />
+                                        </button>
+                                        <button
+                                            className={`nav-arrow next ${currentIndex === advert.images.length - 1 ? 'disabled' : ''}`}
+                                            onClick={handleNextImage}
+                                            disabled={currentIndex === advert.images.length - 1}
+                                        >
+                                            <FontAwesomeIcon icon={faChevronRight} />
+                                        </button>
+                                    </>
+                                )}
+
+                                {advert.images && advert.images.length > 1 && (
+                                    <div className="image-counter">
+                                        {currentIndex + 1} / {advert.images.length}
+                                    </div>
+                                )}
                             </div>
-                            <div className="price-badge">
-                                <FontAwesomeIcon icon={faPoundSign} />
-                                <span>{feeValue}</span>
+
+                            <div className="thumbnails-container">
+                                {advert.images?.map((img, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`thumbnail ${img === selectedImage ? "active" : ""}`}
+                                        onClick={() => {
+                                            setSelectedImage(img);
+                                            setCurrentIndex(idx);
+                                        }}
+                                    >
+                                        <img src={img} alt={`${advert.name} - view ${idx + 1}`} />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
+                        <div className="about-section">
+                            <div className="name-price-header">
+                                <div className="header-left">
+                                    <h1 className="advert-title">
+                                        {advert.intent === 'sale' ?
+                                            (advert.breedOrType || advert.breed || "Breed not specified") :
+                                            (advert.name || "Name not specified")}
+                                    </h1>
+                                    <div className="published-date">
+                                        <FontAwesomeIcon icon={faCalendarAlt} />
+                                        <span>Published {formatDate(advert.createdAt)}</span>
+                                        <span className="view-count">
+                                            <FontAwesomeIcon icon={faEye} />
+                                            <span>{advert.views || 0} </span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="price-badge">
+                                    <FontAwesomeIcon icon={faPoundSign} />
+                                    <span>{feeValue}</span>
+                                </div>
+                            </div>
 
+                            <div className="description-content">
+                                <p>{advert.description}</p>
+                                <div className="advert-footer-info">
+                                    <div className="advert-id">ID: {advert.id}</div>
+                                    <div className="report-text">
+                                        <small>
+                                            Think this advert is inappropriate?{' '}
+                                            <a
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    if (auth.currentUser) {
+                                                        setShowReportModal(true);
+                                                    } else {
+                                                        alert("Please log in to report this advert.");
+                                                    }
+                                                }}
+                                                className="report-link"
+                                            >
+                                                Report it here
+                                            </a>.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div className="description-content">
-                            <p>{advert.description}</p>
-                            <div className="advert-footer-info">
-                                <div className="advert-id">ID: {advert.id}</div>
-                                <div className="report-text">
-                                    <small>
-                                        Think this advert is inappropriate?{' '}
-                                        <a
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
+                    {/* RIGHT COLUMN */}
+                    <div className="right-column">
+                        {auth.currentUser?.uid !== advert.ownerId && (
+                            <div className="action-section">
+                                <button className="primary-button message-button" onClick={handleMessageOwner}>
+                                    <FontAwesomeIcon icon={faEnvelopeOpenText} />
+                                    Message Owner
+                                </button>
+                                {ownerPhone ? (
+                                    <a href={`tel:${ownerPhone}`} className="phone-link">
+                                        <div className="button-content">
+                                            <FontAwesomeIcon icon={faPhone} />
+                                            <span>Call Owner</span>
+                                        </div>
+                                    </a>
+                                ) : (
+                                    <div className="phone-link disabled">
+                                        <div className="button-content">
+                                            <FontAwesomeIcon icon={faPhone} />
+                                            <span>Phone number hidden</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="owner-info-wrapper">
+                            <div className="info-card owner-card">
+                                <h2>
+                                    <FontAwesomeIcon icon={faUser} className="card-icon" />
+                                    Owner Information
+                                </h2>
+                                <div className="owner-details">
+                                    <div className="owner-header">
+                                        <div className="owner-avatar">
+                                            {ownerAvatar ? (
+                                                <img src={ownerAvatar} alt={ownerName} />
+                                            ) : (
+                                                <div className="owner-avatar-placeholder">
+                                                    <FontAwesomeIcon icon={faUser} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="owner-identity">
+                                            <h3 className="owner-name">{ownerName || "N/A"}</h3>
+                                            <div className="owner-details">
+                                                <p className="owner-detail-item">
+                                                    <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                                    {ownerLocation || "Location not specified"}
+                                                </p>
+                                                {ownerBreederType === "licensed" && ownerLicenceNumber && (
+                                                    <p className="owner-detail-item licence-info">
+                                                        <FontAwesomeIcon icon={faCertificate} />
+                                                        {ownerLicenceNumber}
+                                                    </p>
+                                                )}
+                                                {ownerBreederType === "licensed" && ownerLocalAuthority && (
+                                                    <p className="owner-detail-item authority-info">
+                                                        <FontAwesomeIcon icon={faBuilding} />
+                                                        {ownerLocalAuthority}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {ownerBreederType && (
+                                        <div className="owner-badge-section">
+                                            <div className={`breeder-badge ${ownerBreederType === 'licensed' ? 'licensed' : 'hobby'}`}>
+                                                <FontAwesomeIcon icon={faCertificate} className="badge-icon" />
+                                                <span>{ownerBreederType === "licensed" ? "Licensed Breeder" : "Hobby Breeder"}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="owner-stats">
+                                        <div className="stat-item">
+                                            <div className="stat-icon">
+                                                <FontAwesomeIcon icon={faCalendarAlt} />
+                                            </div>
+                                            <div className="stat-content">
+                                                <span className="stat-label">Member Since</span>
+                                                <span className="stat-value">{formatMemberSince(ownerMemberSince) || "Unknown"}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="stat-item">
+                                            <div className="stat-icon active">
+                                                <FontAwesomeIcon icon={faClock} />
+                                            </div>
+                                            <div className="stat-content">
+                                                <span className="stat-label">Last Active</span>
+                                                <span className="stat-value">
+                                                    {ownerLastActive && formatLastActive(ownerLastActive).includes("Online now") ? (
+                                                        <span className="online-now">
+                                                            <span className="online-dot"></span>
+                                                            Online
+                                                        </span>
+                                                    ) : (
+                                                        formatLastActive(ownerLastActive)
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {totalAdverts > 0 && (
+                                            <div className="stat-item">
+                                                <div className="stat-icon">
+                                                    <FontAwesomeIcon icon={faClipboardList} />
+                                                </div>
+                                                <div className="stat-content">
+                                                    <span className="stat-label">Active Adverts</span>
+                                                    <span className="stat-value">{totalAdverts}</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {averageRating !== null && (
+                                            <div className="stat-item">
+                                                <div className="stat-icon">
+                                                    <FontAwesomeIcon icon={solidStar} />
+                                                </div>
+                                                <div className="stat-content">
+                                                    <span className="stat-label">Average Rating</span>
+                                                    <span className="stat-value">{averageRating.toFixed(1)} / 5.0</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="owner-actions">
+                                    <Link to={`/profile/${advert.ownerId}`} className="profile-link">
+                                        <div className="button-content">
+                                            <FontAwesomeIcon icon={faUser} />
+                                            <span>View Profile</span>
+                                        </div>
+                                    </Link>
+
+                                    {currentUser && currentUserFullData && currentUser.uid !== advert.ownerId && (
+                                        <FollowButton
+                                            targetUserId={advert.ownerId}
+                                            currentUserId={currentUser.uid}
+                                            targetUserName={ownerName.split(' ')[0]}
+                                            currentUserName={currentUserFullData.firstName}
+                                        />
+                                    )}
+
+                                    {advert.intent !== 'sale' && (
+                                        <button
+                                            className="secondary-button review-button"
+                                            onClick={() => {
                                                 if (auth.currentUser) {
-                                                    setShowReportModal(true);
+                                                    setShowReviewModal(true);
                                                 } else {
-                                                    alert("Please log in to report this advert.");
+                                                    alert("Please log in to leave a review.");
                                                 }
                                             }}
-                                            className="report-link"
                                         >
-                                            Report it here
-                                        </a>.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* RIGHT COLUMN */}
-                <div className="right-column">
-                    {auth.currentUser?.uid !== advert.ownerId && (
-                        <div className="action-section">
-                            <button className="primary-button message-button" onClick={handleMessageOwner}>
-                                <FontAwesomeIcon icon={faEnvelopeOpenText} />
-                                Message Owner
-                            </button>
-                            {ownerPhone ? (
-                                <a href={`tel:${ownerPhone}`} className="phone-link">
-                                    <div className="button-content">
-                                        <FontAwesomeIcon icon={faPhone} />
-                                        <span>Call Owner</span>
-                                    </div>
-                                </a>
-                            ) : (
-                                <div className="phone-link disabled">
-                                    <div className="button-content">
-                                        <FontAwesomeIcon icon={faPhone} />
-                                        <span>Phone number hidden</span>
-                                    </div>
-                                </div>
-                            )}
-
-
-                        </div>
-                    )}
-
-                    <div className="owner-info-wrapper">
-                    <div className="info-card owner-card">
-
-                        <h2>
-                            <FontAwesomeIcon icon={faUser} className="card-icon" />
-                            Owner Information
-                        </h2>
-                        <div className="owner-details">
-                            <div className="owner-header">
-                                <div className="owner-avatar">
-                                    {ownerAvatar ? (
-                                        <img src={ownerAvatar} alt={ownerName} />
-                                    ) : (
-                                        <div className="owner-avatar-placeholder">
-                                            <FontAwesomeIcon icon={faUser} />
-                                        </div>
+                                            <FontAwesomeIcon icon={faPenToSquare} />
+                                            Review
+                                        </button>
                                     )}
                                 </div>
-                                <div className="owner-identity">
-                                    <h3 className="owner-name">{ownerName || "N/A"}</h3>
-                                    <div className="owner-details">
-                                        <p className="owner-detail-item">
-                                            <FontAwesomeIcon icon={faMapMarkerAlt} />
-                                            {ownerLocation || "Location not specified"}
-                                        </p>
-                                        {ownerBreederType === "licensed" && ownerLicenceNumber && (
-                                            <p className="owner-detail-item licence-info">
-                                                <FontAwesomeIcon icon={faCertificate} />
-                                                {ownerLicenceNumber}
-                                            </p>
-                                        )}
-                                        {ownerBreederType === "licensed" && ownerLocalAuthority && (
-                                            <p className="owner-detail-item authority-info">
-                                                <FontAwesomeIcon icon={faBuilding} />
-                                                {ownerLocalAuthority}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Remove the separate badge section */}
-
-                            {ownerBreederType && (
-                                <div className="owner-badge-section">
-                                    <div className={`breeder-badge ${ownerBreederType === 'licensed' ? 'licensed' : 'hobby'}`}>
-                                        <FontAwesomeIcon icon={faCertificate} className="badge-icon" />
-                                        <span>{ownerBreederType === "licensed" ? "Licensed Breeder" : "Hobby Breeder"}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="owner-stats">
-                                <div className="stat-item">
-                                    <div className="stat-icon">
-                                        <FontAwesomeIcon icon={faCalendarAlt} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-label">Member Since</span>
-                                        <span className="stat-value">{formatMemberSince(ownerMemberSince) || "Unknown"}</span>
-                                    </div>
-                                </div>
-
-                                <div className="stat-item">
-                                    <div className="stat-icon active">
-                                        <FontAwesomeIcon icon={faClock} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-label">Last Active</span>
-                                        <span className="stat-value">
-                    {ownerLastActive && formatLastActive(ownerLastActive).includes("Online now") ? (
-                        <span className="online-now">
-                            <span className="online-dot"></span>
-                            Online
-                        </span>
-                    ) : (
-                        formatLastActive(ownerLastActive)
-                    )}
-                </span>
-                                    </div>
-                                </div>
-
-                                {totalAdverts > 0 && (
-                                    <div className="stat-item">
-                                        <div className="stat-icon">
-                                            <FontAwesomeIcon icon={faClipboardList} />
-                                        </div>
-                                        <div className="stat-content">
-                                            <span className="stat-label">Active Adverts</span>
-                                            <span className="stat-value">{totalAdverts}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {averageRating !== null && (
-                                    <div className="stat-item">
-                                        <div className="stat-icon">
-                                            <FontAwesomeIcon icon={solidStar} />
-                                        </div>
-                                        <div className="stat-content">
-                                            <span className="stat-label">Average Rating</span>
-                                            <span className="stat-value">{averageRating.toFixed(1)} / 5.0</span>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-
-
-                        {/* Profile and Phone buttons side by side */}
-                        <div className="owner-actions">
-                            <Link to={`/profile/${advert.ownerId}`} className="profile-link">
-                                <div className="button-content">
-                                    <FontAwesomeIcon icon={faUser} />
-                                    <span>View Profile</span>
+                        <div className="pet-card-wrapper">
+                            <div className="info-card details-card">
+                                <h2>
+                                    <FontAwesomeIcon icon={faClipboardList} />
+                                    Pet Details
+                                </h2>
+                                <div className="pet-details-wrapper">
+                                    <div className="pet-details-box">
+                                        <ul className="pet-details-list">
+                                            {breedLabel && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faDog} />
+                                                        <span>Breed / Type:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{breedLabel}</div>
+                                                </li>
+                                            )}
+                                            {advert.category && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faInfoCircle} />
+                                                        <span>Category:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">
+                                                        {advert.category.charAt(0).toUpperCase() + advert.category.slice(1)}
+                                                    </div>
+                                                </li>
+                                            )}
+                                            {advert.quantity && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faLayerGroup} />
+                                                        <span>Available:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{advert.quantity}</div>
+                                                </li>
+                                            )}
+                                            {ageValue && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faCalendarAlt} />
+                                                        <span>Age:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{ageValue}</div>
+                                                </li>
+                                            )}
+                                            {advert.gender && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faDna} />
+                                                        <span>Boys/Girls:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">
+                                                        {advert.gender.charAt(0).toUpperCase() + advert.gender.slice(1)}
+                                                    </div>
+                                                </li>
+                                            )}
+                                            {advert.availableDate && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faHome} />
+                                                        <span>Ready to Leave:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">
+                                                        {(() => {
+                                                            const availableDate = advert.availableDate.toDate ? advert.availableDate.toDate() : new Date(advert.availableDate);
+                                                            const now = new Date();
+                                                            now.setHours(0, 0, 0, 0);
+                                                            availableDate.setHours(0, 0, 0, 0);
+                                                            return availableDate <= now ? "Ready Now" : formatDate(advert.availableDate);
+                                                        })()}
+                                                    </div>
+                                                </li>
+                                            )}
+                                            {colorValue && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faPalette} />
+                                                        <span>Colour:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{colorValue}</div>
+                                                </li>
+                                            )}
+                                            {advert.height && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faRuler} />
+                                                        <span>Height:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{advert.height}</div>
+                                                </li>
+                                            )}
+                                            {advert.weight && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faWeight} />
+                                                        <span>Weight:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{advert.weight}</div>
+                                                </li>
+                                            )}
+                                            {advert.neutered !== undefined && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faCheckCircle} />
+                                                        <span>Neutered/Spayed:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{advert.neutered ? "Yes" : "No"}</div>
+                                                </li>
+                                            )}
+                                            {advert.kcRegistered && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faCertificate} />
+                                                        <span>KC Registered:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.healthChecked && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faStethoscope} />
+                                                        <span>Health Checked:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.microchipped && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faMicrochip} />
+                                                        <span>Microchipped:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.vaccinated && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faSyringe} />
+                                                        <span>Vaccinated:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.wormed && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faCheckCircle} />
+                                                        <span>Wormed:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.fleaTreated && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faCheckCircle} />
+                                                        <span>Flea Treated:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.withMother && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faUser} />
+                                                        <span>With Mother:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">Yes</div>
+                                                </li>
+                                            )}
+                                            {advert.matings && (
+                                                <li className="pet-detail-row">
+                                                    <div className="pet-detail-label">
+                                                        <FontAwesomeIcon icon={faLayerGroup} />
+                                                        <span>Matings:</span>
+                                                    </div>
+                                                    <div className="pet-detail-value">{advert.matings}</div>
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
                                 </div>
-                            </Link>
 
-                            {/* Debug logging */}
-                            {console.log("🔍 Follow Button Debug:", {
-                                currentUser: !!currentUser,
-                                currentUserFullData: !!currentUserFullData,
-                                currentUserData: currentUserFullData,
-                                currentUserId: currentUser?.uid,
-                                advertOwnerId: advert.ownerId,
-                                isOwnAdvert: currentUser?.uid === advert.ownerId,
-                                ownerName: ownerName,
-                                extractedFirstName: ownerName.split(' ')[0],
-                                shouldShowFollowButton: currentUser && currentUserFullData && currentUser.uid !== advert.ownerId
-                            })}
-
-                            {/* Follow Button - only show if user is logged in and it's not their own advert */}
-                            {currentUser && currentUserFullData && currentUser.uid !== advert.ownerId && (
-                                <>
-                                    {console.log("✅ Rendering FollowButton with props:", {
-                                        targetUserId: advert.ownerId,
-                                        currentUserId: currentUser.uid,
-                                        targetUserName: ownerName.split(' ')[0],
-                                        currentUserName: currentUserFullData.firstName
-                                    })}
-                                    <FollowButton
-                                        targetUserId={advert.ownerId}
-                                        currentUserId={currentUser.uid}
-                                        targetUserName={ownerName.split(' ')[0]} // Extract first name from "FirstName L."
-                                        currentUserName={currentUserFullData.firstName}
-                                    />
-                                </>
-                            )}
-
-                            {advert.intent !== 'sale' && (
-                                <button
-                                    className="secondary-button review-button"
-                                    onClick={() => {
-                                        if (auth.currentUser) {
-                                            setShowReviewModal(true);
-                                        } else {
-                                            alert("Please log in to leave a review.");
-                                        }
-                                    }}
-                                >
-                                    <FontAwesomeIcon icon={faPenToSquare} />
-                                    Review
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-
-
-
-                    </div>
-                <div className="pet-card-wrapper">
-                    <div className="info-card details-card">
-                        <h2>
-                            <FontAwesomeIcon icon={faClipboardList} />
-                            Pet Details
-                        </h2>
-                        <div className="pet-details-wrapper">
-                        <div className="pet-details-box">
-                            <ul className="pet-details-list">
-                                {breedLabel && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faDog} />
-                                            <span>Breed / Type:</span>
+                                {advert.kcRegistered && advert.kcName && (
+                                    <div className="kc-name-section">
+                                        <h3>KC Registration Details</h3>
+                                        <div className="kc-name-display">
+                                            <FontAwesomeIcon icon={faCertificate} className="kc-icon" />
+                                            {auth.currentUser ? (
+                                                <span>{advert.kcName}</span>
+                                            ) : (
+                                                <span className="login-prompt">
+                                                    <button
+                                                        className="login-button"
+                                                        onClick={openLogin}
+                                                    >
+                                                        Log in
+                                                    </button> to view KC name
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="pet-detail-value">{breedLabel}</div>
-                                    </li>
-                                )}
-                                {advert.category && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faInfoCircle} />
-                                            <span>Category:</span>
-                                        </div>
-                                        <div className="pet-detail-value">
-                                            {advert.category.charAt(0).toUpperCase() + advert.category.slice(1)}
-                                        </div>
-                                    </li>
-                                )}
-                                {advert.quantity && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faLayerGroup} />
-                                            <span>Available:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{advert.quantity}</div>
-                                    </li>
-                                )}
-                                {ageValue && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faCalendarAlt} />
-                                            <span>Age:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{ageValue}</div>
-                                    </li>
-                                )}
-                                {advert.gender && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faDna} />
-                                            <span>Boys/Girls:</span>
-                                        </div>
-                                        <div className="pet-detail-value">
-                                            {advert.gender.charAt(0).toUpperCase() + advert.gender.slice(1)}
-                                        </div>
-                                    </li>
-                                )}
-
-
-                                {advert.availableDate && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faHome} />
-                                            <span>Ready to Leave:</span>
-                                        </div>
-                                        <div className="pet-detail-value">
-                                            {(() => {
-                                                const availableDate = advert.availableDate.toDate ? advert.availableDate.toDate() : new Date(advert.availableDate);
-                                                const now = new Date();
-                                                now.setHours(0, 0, 0, 0);
-                                                availableDate.setHours(0, 0, 0, 0);
-                                                return availableDate <= now ? "Ready Now" : formatDate(advert.availableDate);
-                                            })()}
-                                        </div>
-                                    </li>
-                                )}
-                                {colorValue && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faPalette} />
-                                            <span>Colour:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{colorValue}</div>
-                                    </li>
-                                )}
-                                {advert.height && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faRuler} />
-                                            <span>Height:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{advert.height}</div>
-                                    </li>
-                                )}
-                                {advert.weight && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faWeight} />
-                                            <span>Weight:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{advert.weight}</div>
-                                    </li>
-                                )}
-                                {advert.neutered !== undefined && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faCheckCircle} />
-                                            <span>Neutered/Spayed:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{advert.neutered ? "Yes" : "No"}</div>
-                                    </li>
-                                )}
-                                {advert.kcRegistered && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faCertificate} />
-                                            <span>KC Registered:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.healthChecked && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faStethoscope} />
-                                            <span>Health Checked:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.microchipped && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faMicrochip} />
-                                            <span>Microchipped:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.vaccinated && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faSyringe} />
-                                            <span>Vaccinated:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.wormed && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faCheckCircle} />
-                                            <span>Wormed:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.fleaTreated && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faCheckCircle} />
-                                            <span>Flea Treated:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.withMother && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faUser} />
-                                            <span>With Mother:</span>
-                                        </div>
-                                        <div className="pet-detail-value">Yes</div>
-                                    </li>
-                                )}
-                                {advert.matings && (
-                                    <li className="pet-detail-row">
-                                        <div className="pet-detail-label">
-                                            <FontAwesomeIcon icon={faLayerGroup} />
-                                            <span>Matings:</span>
-                                        </div>
-                                        <div className="pet-detail-value">{advert.matings}</div>
-                                    </li>
-                                )}
-                            </ul>
-
-                        </div>
-                        </div>
-
-                        {/* INSERT KC NAME SECTION HERE - only show if kcRegistered is true */}
-                        {advert.kcRegistered && advert.kcName && (
-                            <div className="kc-name-section">
-                                <h3>KC Registration Details</h3>
-                                <div className="kc-name-display">
-                                    <FontAwesomeIcon icon={faCertificate} className="kc-icon" />
-                                    {auth.currentUser ? (
-                                        <span>{advert.kcName}</span>
-                                    ) : (
-                                        <span className="login-prompt">
-                                            <button
-                                                className="login-button"
-                                                onClick={openLogin}
+                                        <div className="coi-link-container">
+                                            <a
+                                                href="https://www.thekennelclub.org.uk/search/inbreeding-co-efficient/"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="coi-link"
                                             >
-                                                Log in
-                                            </button> to view KC name
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="coi-link-container">
-                                    <a
-                                        href="https://www.thekennelclub.org.uk/search/inbreeding-co-efficient/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="coi-link"
-                                    >
-                                        <FontAwesomeIcon icon={faSearch} className="coi-icon" />
-                                        Check COI at The Kennel Club
-                                    </a>
-                                    <div className="tooltip-container">
-                                        <FontAwesomeIcon
-                                            icon={faInfoCircle}
-                                            className="info-icon"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                document.querySelector('#coiTooltip').classList.toggle('active');
-                                                document.querySelector('#coiTooltipOverlay').classList.toggle('active');
-                                                document.body.classList.toggle('tooltip-open');
-                                            }}
-                                            aria-label="Information about COI"
-                                        />
-                                    </div>
-                                </div>
-                                <div id="coiTooltipOverlay" className="tooltip-overlay" onClick={() => {
-                                    document.querySelector('#coiTooltip').classList.remove('active');
-                                    document.querySelector('#coiTooltipOverlay').classList.remove('active');
-                                    document.body.classList.remove('tooltip-open');
-                                }}></div>
-                                <div id="coiTooltip" className="tooltip-text">
-                                    <div className="tooltip-content">
-                                        COI (Coefficient of Inbreeding) is a measure that helps breeders understand the genetic diversity of a dog. Lower values indicate greater genetic diversity and potentially fewer inherited health issues.<br/><br/>
-                                        To perform a COI lookup at The Kennel Club website, you will need both the KC name shown in this advert and your dog's KC name or registration number.
-                                    </div>
-                                    <button
-                                        className="close-tooltip"
-                                        onClick={(e) => {
-                                            e.preventDefault();
+                                                <FontAwesomeIcon icon={faSearch} className="coi-icon" />
+                                                Check COI at The Kennel Club
+                                            </a>
+                                            <div className="tooltip-container">
+                                                <FontAwesomeIcon
+                                                    icon={faInfoCircle}
+                                                    className="info-icon"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        document.querySelector('#coiTooltip').classList.toggle('active');
+                                                        document.querySelector('#coiTooltipOverlay').classList.toggle('active');
+                                                        document.body.classList.toggle('tooltip-open');
+                                                    }}
+                                                    aria-label="Information about COI"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div id="coiTooltipOverlay" className="tooltip-overlay" onClick={() => {
                                             document.querySelector('#coiTooltip').classList.remove('active');
                                             document.querySelector('#coiTooltipOverlay').classList.remove('active');
                                             document.body.classList.remove('tooltip-open');
-                                        }}
-                                        aria-label="Close"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
+                                        }}></div>
+                                        <div id="coiTooltip" className="tooltip-text">
+                                            <div className="tooltip-content">
+                                                COI (Coefficient of Inbreeding) is a measure that helps breeders understand the genetic diversity of a dog. Lower values indicate greater genetic diversity and potentially fewer inherited health issues.<br/><br/>
+                                                To perform a COI lookup at The Kennel Club website, you will need both the KC name shown in this advert and your dog's KC name or registration number.
+                                            </div>
+                                            <button
+                                                className="close-tooltip"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    document.querySelector('#coiTooltip').classList.remove('active');
+                                                    document.querySelector('#coiTooltipOverlay').classList.remove('active');
+                                                    document.body.classList.remove('tooltip-open');
+                                                }}
+                                                aria-label="Close"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {(advert.facebookUrl || advert.instagramUrl || advert.tiktokUrl) && (
+                                    <div className="advert-social-links">
+                                        <h3>{`${advert.name}${advert.name.endsWith('s') ? "'" : "'s"} Social Media`}</h3>
+                                        <div className="advert-social-icons">
+                                            {advert.facebookUrl && (
+                                                <a
+                                                    href={advert.facebookUrl.startsWith("http") ? advert.facebookUrl : `https://${advert.facebookUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="advert-social-icon facebook"
+                                                >
+                                                    <FontAwesomeIcon icon={faFacebookSquare} />
+                                                </a>
+                                            )}
+                                            {advert.instagramUrl && (
+                                                <a
+                                                    href={advert.instagramUrl.startsWith("http") ? advert.instagramUrl : `https://${advert.instagramUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="advert-social-icon instagram"
+                                                >
+                                                    <FontAwesomeIcon icon={faInstagram} />
+                                                </a>
+                                            )}
+                                            {advert.tiktokUrl && (
+                                                <a
+                                                    href={advert.tiktokUrl.startsWith("http") ? advert.tiktokUrl : `https://${advert.tiktokUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="advert-social-icon tiktok"
+                                                >
+                                                    <FontAwesomeIcon icon={faTiktok} />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
 
-
-                        {/* Social Media Links */}
-                        {(advert.facebookUrl || advert.instagramUrl || advert.tiktokUrl) && (
-                            <div className="advert-social-links">
-                                <h3>{`${advert.name}${advert.name.endsWith('s') ? "'" : "'s"} Social Media`}</h3>
-                                <div className="advert-social-icons">
-                                    {advert.facebookUrl && (
-                                        <a
-                                            href={advert.facebookUrl.startsWith("http") ? advert.facebookUrl : `https://${advert.facebookUrl}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="advert-social-icon facebook"
-                                        >
-                                            <FontAwesomeIcon icon={faFacebookSquare} />
-                                        </a>
-                                    )}
-
-                                    {advert.instagramUrl && (
-                                        <a
-                                            href={advert.instagramUrl.startsWith("http") ? advert.instagramUrl : `https://${advert.instagramUrl}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="advert-social-icon instagram"
-                                        >
-                                            <FontAwesomeIcon icon={faInstagram} />
-                                        </a>
-                                    )}
-                                    {advert.tiktokUrl && (
-                                        <a
-                                            href={advert.tiktokUrl.startsWith("http") ? advert.tiktokUrl : `https://${advert.tiktokUrl}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="advert-social-icon tiktok"
-                                        >
-                                            <FontAwesomeIcon icon={faTiktok} />
-                                        </a>
-                                    )}
-                                </div>
+                        {hasHealthTests && (
+                            <div className="info-card health-card">
+                                <h2
+                                    className="expandable-header"
+                                    onClick={() => setHealthTestsExpanded(!healthTestsExpanded)}
+                                >
+                                    <div className="header-left">
+                                        <FontAwesomeIcon icon={faCheckCircle} className="card-icon" />
+                                        Health Tests ({advert.healthTests.length})
+                                    </div>
+                                    <div className="header-right">
+                                        <span className="expand-text">
+                                            {healthTestsExpanded ? "Click to collapse" : "Click to expand"}
+                                        </span>
+                                        <FontAwesomeIcon
+                                            icon={healthTestsExpanded ? faChevronLeft : faChevronRight}
+                                            className="expand-icon"
+                                        />
+                                    </div>
+                                </h2>
+                                {healthTestsExpanded && (
+                                    <ul className="health-checks-list">
+                                        {advert.healthTests.map((test, idx) => (
+                                            <li key={idx} className="health-check-item">
+                                                <FontAwesomeIcon icon={faCheckCircle} className="check-icon" />
+                                                {test}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
-
-                    {hasHealthTests && (
-                        <div className="info-card health-card">
-                            <h2
-                                className="expandable-header"
-                                onClick={() => setHealthTestsExpanded(!healthTestsExpanded)}
-                            >
-                                <div className="header-left">
-                                    <FontAwesomeIcon icon={faCheckCircle} className="card-icon" />
-                                    Health Tests ({advert.healthTests.length})
-                                </div>
-                                <div className="header-right">
-                                    <span className="expand-text">
-                                        {healthTestsExpanded ? "Click to collapse" : "Click to expand"}
-                                    </span>
-                                    <FontAwesomeIcon
-                                        icon={healthTestsExpanded ? faChevronLeft : faChevronRight}
-                                        className="expand-icon"
-                                    />
-                                </div>
-                            </h2>
-                            {healthTestsExpanded && (
-                                <ul className="health-checks-list">
-                                    {advert.healthTests.map((test, idx) => (
-                                        <li key={idx} className="health-check-item">
-                                            <FontAwesomeIcon icon={faCheckCircle} className="check-icon" />
-                                            {test}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    )}
-                </div>
             </div>
 
+            {/* Similar Studs Section - Outside main container */}
+            {similarAds.length > 0 && (
+                <section className="similar-studs-section">
+                    <div className="similar-studs-container">
+                        <h2 className="similar-studs-title">
+                            Similar {advert.intent === 'sale' ? 'Pets for Sale' : 'Studs'}
+                        </h2>
 
+                        {loadingSimilar ? (
+                            <div className="similar-studs-loading">
+                                Loading similar {advert.intent === 'sale' ? 'pets' : 'studs'}...
+                            </div>
+                        ) : (
+                            <div className="similar-studs-grid">
+                                {similarAds.map(ad => {
+                                    const breedLabel = ad.breedOrType || ad.breed || "Unknown Breed";
+                                    const title = ad.title || ad.name || "Unnamed";
+                                    const user = similarUsersMap[ad.ownerId] || {};
+                                    const { city, county } = user;
+                                    const areaLabel = city || county
+                                        ? [city, county].filter(Boolean).join(", ")
+                                        : ad.city || ad.location?.city || "Location N/A";
+                                    const rating = similarRatingsMap[ad.id] || { avgRating: 0, reviewCount: 0 };
+                                    const mainImage = ad.mainImageIndex !== undefined && ad.images?.[ad.mainImageIndex]
+                                        ? ad.images[ad.mainImageIndex]
+                                        : ad.images?.[0] || "https://placehold.co/400x300";
+
+                                    return (
+                                        <div className="similar-studs-card" key={ad.id}>
+                                            <div className="similar-studs-card-header">
+                                                <div className="similar-studs-price">
+                                                    <FontAwesomeIcon icon={faPoundSign} />
+                                                    <span>{ad.price || ad.fee || "POA"}</span>
+                                                </div>
+                                            </div>
+
+                                            <Link to={`/advert-details/${ad.id}`} className="similar-studs-image-container">
+                                                <img
+                                                    src={mainImage}
+                                                    alt={title}
+                                                    className="similar-studs-image"
+                                                />
+                                                <div className="similar-studs-overlay">
+                                                    <span>View Details</span>
+                                                </div>
+                                            </Link>
+
+                                            <div className="similar-studs-content">
+                                                <h3 className="similar-studs-card-title">
+                                                    {title.length > 58 ? title.slice(0, 58) + "..." : title}
+                                                </h3>
+
+                                                <div className="similar-studs-spacer"></div>
+                                                <div className="similar-studs-details-divider"></div>
+
+                                                <div className="similar-studs-details">
+                                                    <div className="similar-studs-detail-item">
+                                                        <FontAwesomeIcon icon={faDog} />
+                                                        <span>{breedLabel}</span>
+                                                    </div>
+                                                    <div className="similar-studs-detail-item">
+                                                        <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                                        <span>{areaLabel}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="similar-studs-card-footer">
+                                                    <div className="similar-studs-rating">
+                                                        <FontAwesomeIcon icon={solidStar} className="similar-studs-star-icon" />
+                                                        <span className="similar-studs-rating-value">
+                                                            {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="similar-studs-views">
+                                                        <FontAwesomeIcon icon={faEye} />
+                                                        <span>{ad.views ?? 0}</span>
+                                                    </div>
+
+                                                    <div className="similar-studs-reviews">
+                                                        <span>{rating.reviewCount}</span>
+                                                        <span> {rating.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
+
+            {/* Modals */}
             {showReviewModal && (
                 <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
                     <div className="review-modal" onClick={(e) => e.stopPropagation()}>
@@ -1406,14 +1467,6 @@ function AdvertDetails() {
                 </div>
             )}
 
-            {/* Similar Adverts Section */}
-            <SimilarStuds
-                breedOrType={advert.breedOrType || advert.breed}
-                intent={advert.intent}
-                currentAdvertId={advert.id}
-            />
-
-            {/* Report Advert Section */}
             {showReportModal && (
                 <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
                     <div className="report-modal" onClick={(e) => e.stopPropagation()}>
@@ -1480,13 +1533,7 @@ function AdvertDetails() {
                     </div>
                 </div>
             )}
-
-            <footer className="advert-report-footer" style={{ display: 'none' }}>
-                {/* Footer content removed - report link moved to description area */}
-            </footer>
-
-
-        </div>
+        </>
     );
 }
 
