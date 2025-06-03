@@ -825,11 +825,12 @@ export default function BrowseStuds() {
 
                                     <p className="browse-studs-card-description">
                                         {(ad.description || "")
-                                            .replace(/[\r\n]+/g, " ")       // convert all newlines to spaces
-                                            .replace(/\s\s+/g, " ")         // collapse multiple spaces
-                                            .trim()                         // remove leading/trailing whitespace
-                                            .slice(0, 0) + (ad.description?.length > 200 ? "…" : "")}
+                                            .replace(/[\r\n]+/g, " ")
+                                            .replace(/\s\s+/g, " ")
+                                            .trim()
+                                            .slice(0, 400) + (ad.description?.length > 200 ? "…" : "")}
                                     </p>
+
 
                                     <hr className="browse-studs-card-divider"/>
                                     <div className="browse-studs-card-footer">
