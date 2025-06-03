@@ -135,16 +135,17 @@
 .icon-link.has-notification::after {
     content: "";
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
     background-color: #b83c56;
     border-radius: 50%;
     border: 2px solid #256845;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Dropdown menu */
+/* Dropdown menu - UPDATED WIDTH */
 .dropdown-wrapper {
     position: relative;
 }
@@ -153,7 +154,7 @@
     position: absolute;
     top: 48px;
     right: 0;
-    min-width: 180px;
+    min-width: 240px; /* Increased from 180px to 240px */
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -175,7 +176,9 @@
     }
 }
 
-.user-dropdown a {
+/* Updated dropdown item styles to prevent wrapping */
+.user-dropdown a,
+.user-dropdown .dropdown-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -184,21 +187,54 @@
     color: #333;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.user-dropdown a:hover {
+.user-dropdown a:hover,
+.user-dropdown .dropdown-item:hover {
     background-color: #f4f9fd;
     color: #256845;
 }
 
 .dropdown-icon {
     color: #666;
-    margin-right: 8px;
-
+    flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
-.user-dropdown a:hover {
-    color: #256845;
+/* Ensure text doesn't wrap */
+.dropdown-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis if text is too long */
+}
+
+/* Notification badge styling - UPDATED */
+.dropdown-notification-badge {
+    background-color: #b83c56;
+    color: white;
+    font-size: 0.7rem; /* Slightly smaller font */
+    font-weight: 600;
+    padding: 0;
+    border-radius: 50%;
+    margin-left: auto;
+    width: 20px; /* Fixed width */
+    height: 20px; /* Fixed height - same as width */
+    min-width: 20px; /* Prevent shrinking */
+    max-width: 20px; /* Prevent expanding */
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Reset line height */
 }
 
 /* Mobile responsive */
@@ -685,12 +721,6 @@
     font-size: 20px;
 }
 
-/* Improve dropdown visibility */
-.dropdown-wrapper {
-    position: relative;
-}
-
-
 /* reset any global button styles for our navbar icon-buttons */
 button.icon-link {
     all: unset; /* strip out background, padding, border, etc */
@@ -735,37 +765,6 @@ button.icon-link svg {
     display: block;
 }
 
-.dropdown-wrapper {
-    position: relative;
-}
-
-
-.user-dropdown .dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px 12px;
-    background: none;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
-    transition: background 0.2s ease;
-}
-
-.user-dropdown .dropdown-item:hover {
-    background-color: #f5f5f5;
-}
-
-.dropdown-item:hover {
-    background-color: #f4f4f4;
-}
-
-.dropdown-item:hover {
-    background-color: #f5f5f5;
-}
 /* === Scoped styles for New Advert button in navbar === */
 .navbar-new-advert-btn {
     background: none;

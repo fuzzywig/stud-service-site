@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { updatedFieldConfigurations } from "../data/breedOptions"; // or wherever it is
+import { updatedFieldConfigurations } from "../data/breedOptions";
 
 import {
     doc,
@@ -64,7 +64,7 @@ import {
     FaFlag,
     FaShare
 } from "react-icons/fa";
-import "./AdminViewAdvert.css"; // Contains all our renamed styles
+import "./AdminViewAdvert.css";
 import AdminNotesModal from "../../components/admin/AdminNotesModal";
 import { useAuth } from "../../firebase/firebaseAuth";
 
@@ -86,8 +86,22 @@ export default function AdminViewAdvert() {
     const [noteCount, setNoteCount] = useState(0);
     const [activeSection, setActiveSection] = useState("images");
 
+    // New states for edit mode
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editedAdvert, setEditedAdvert] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [hasBannedTerms, setHasBannedTerms] = useState(false);
 
     const { userData } = useAuth();
+
+    // Define banned terms at the top
+    const bannedTerms = [
+        "xl bully", "pit bull", "dogo argentino", "fila brasileiro", "japanese tosa",
+        "f1 savannah", "serval", "caracal", "raccoon dog", "prohibited species",
+        "invasive species", "cropped", "docked", "pregnant", "live", "food",
+        "wild caught", "exotic pet", "no papers", "dangerous dog", "fighting dog",
+    ];
 
     // Standard templates for quick replies/rejections
     const rejectTemplates = [
@@ -116,41 +130,25 @@ export default function AdminViewAdvert() {
         return match?.label || colourValue;
     };
 
-    const bannedTerms = [
-        // Dogs - Dangerous Dogs Act
-        "xl bully",
-        "pit bull",
-        "dogo argentino",
-        "fila brasileiro",
-        "japanese tosa",
+    // Helper function to highlight banned terms in text
+    const highlightBannedTerms = (text) => {
+        if (!text) return text;
 
-        // Wild/Hybrid cats
-        "f1 savannah",
-        "serval",
-        "caracal",
+        let highlightedText = text;
 
-        // Invasive species
-        "raccoon dog",
-        "prohibited species",
-        "invasive species",
+        // Sort terms by length (longest first) to prevent partial replacements
+        const sortedTerms = [...bannedTerms].sort((a, b) => b.length - a.length);
 
-        // Unethical or inappropriate keywords
-        "cropped",         // implies ear cropping – illegal in the UK
-        "docked",          // tail docking, restricted
-        "pregnant",        // may breach welfare and sale regulations
-        "live",            // "live food" – banned for vertebrates
-        "food",            // e.g. “snake food”, “feeder mice” – should be blocked
+        sortedTerms.forEach(term => {
+            // Escape special regex characters in the term
+            const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Create regex with word boundaries where appropriate
+            const regex = new RegExp(`(${escapedTerm})`, 'gi');
+            highlightedText = highlightedText.replace(regex, '<span class="advert-view-banned-term">$1</span>');
+        });
 
-        // Other concerning terms
-        "wild caught",     // generally not suitable/legal for sale
-        "exotic pet",      // vague, often includes restricted animals
-        "no papers",       // red flag for unregistered/backyard breeding
-        "dangerous dog",   // general alert
-        "fighting dog",    // obvious red flag
-    ];
-
-
-
+        return highlightedText;
+    };
 
     useEffect(() => {
         const fetchAdvertAndOwner = async () => {
@@ -161,12 +159,16 @@ export default function AdminViewAdvert() {
                 if (adSnap.exists()) {
                     const advertData = { id: adSnap.id, ...adSnap.data() };
                     setAdvert(advertData);
+                    setEditedAdvert(advertData); // Initialize edited version
                     setActiveImageIndex(advertData.mainImageIndex || 0);
 
-                    console.log("Health Checks:", advertData.healthChecks);
-                    console.log("hasHealthTests:", Array.isArray(advertData.healthChecks) && advertData.healthChecks.length > 0);
+                    // Check for banned terms
+                    if (advertData.description) {
+                        const lowerDesc = advertData.description.toLowerCase();
+                        const foundTerms = bannedTerms.some(term => lowerDesc.includes(term.toLowerCase()));
+                        setHasBannedTerms(foundTerms);
+                    }
 
-                    // Fetch owner details
                     if (advertData.ownerId) {
                         const ownerRef = doc(db, "users", advertData.ownerId);
                         const ownerSnap = await getDoc(ownerRef);
@@ -186,8 +188,6 @@ export default function AdminViewAdvert() {
     }, [advertId]);
 
     const hasHealthTests = Array.isArray(advert?.healthTests) && advert.healthTests.length > 0;
-
-
 
     useEffect(() => {
         const fetchUpdates = async () => {
@@ -222,34 +222,36 @@ export default function AdminViewAdvert() {
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Only apply shortcuts when not in a text field
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
             switch(e.key) {
-                case 'a': // Approve with 'a'
+                case 'a':
                     if (!isProcessing) handleApprove();
                     break;
-                case 'r': // Reject dialog with 'r'
+                case 'r':
                     if (!isProcessing) setShowRejectBox(true);
                     break;
-                case 'i': // Navigate to images with 'i'
+                case 'e': // Edit mode toggle
+                    if (!isProcessing) handleEditToggle();
+                    break;
+                case 'i':
                     setActiveSection("images");
                     break;
-                case 'o': // Navigate to owner info with 'o'
+                case 'o':
                     setActiveSection("owner");
                     break;
-                case 'u': // Navigate to updates with 'u'
+                case 'u':
                     setActiveSection("updates");
                     break;
-                case 'n': // Open notes with 'n'
+                case 'n':
                     if (ownerInfo) setShowNotesModal(true);
                     break;
-                case 'ArrowRight': // Next image
+                case 'ArrowRight':
                     if (advert?.images && activeImageIndex < advert.images.length - 1) {
                         setActiveImageIndex(activeImageIndex + 1);
                     }
                     break;
-                case 'ArrowLeft': // Previous image
+                case 'ArrowLeft':
                     if (activeImageIndex > 0) {
                         setActiveImageIndex(activeImageIndex - 1);
                     }
@@ -263,7 +265,7 @@ export default function AdminViewAdvert() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [activeImageIndex, advert, isProcessing, ownerInfo]);
+    }, [activeImageIndex, advert, isProcessing, ownerInfo, isEditMode]);
 
     useEffect(() => {
         const fetchOwnerAds = async () => {
@@ -271,7 +273,7 @@ export default function AdminViewAdvert() {
             const q = query(
                 collection(db, "allListings"),
                 where("ownerId", "==", ownerInfo.uid),
-                where("approved", "==", true) // Only approved ads = active
+                where("approved", "==", true)
             );
             const snap = await getDocs(q);
             setOwnerAds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -280,6 +282,66 @@ export default function AdminViewAdvert() {
         fetchOwnerAds();
     }, [ownerInfo]);
 
+    // Edit mode handlers
+    const handleEditToggle = () => {
+        if (isEditMode && hasChanges) {
+            if (window.confirm("You have unsaved changes. Do you want to discard them?")) {
+                setEditedAdvert(advert);
+                setIsEditMode(false);
+                setHasChanges(false);
+            }
+        } else {
+            setIsEditMode(!isEditMode);
+        }
+    };
+
+    const handleFieldChange = (field, value) => {
+        setEditedAdvert(prev => ({
+            ...prev,
+            [field]: value
+        }));
+        setHasChanges(true);
+    };
+
+    const handleSaveChanges = async () => {
+        if (!hasChanges || isSaving) return;
+
+        try {
+            setIsSaving(true);
+            const adRef = doc(db, "allListings", advertId);
+
+            // Prepare update data (excluding id and system fields)
+            const updateData = { ...editedAdvert };
+            delete updateData.id;
+            delete updateData.createdAt;
+            delete updateData.ownerId;
+
+            await updateDoc(adRef, {
+                ...updateData,
+                lastModified: serverTimestamp(),
+                modifiedBy: userData?.uid || "admin"
+            });
+
+            setAdvert(editedAdvert);
+            setIsEditMode(false);
+            setHasChanges(false);
+            alert("Changes saved successfully!");
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            alert("Failed to save changes. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        if (hasChanges && !window.confirm("Are you sure you want to discard your changes?")) {
+            return;
+        }
+        setEditedAdvert(advert);
+        setIsEditMode(false);
+        setHasChanges(false);
+    };
 
     const handleReplySubmit = async (e, updateId) => {
         e.preventDefault();
@@ -322,7 +384,6 @@ export default function AdminViewAdvert() {
             try {
                 setIsProcessing(true);
 
-                // 1. Mark advert as rejected (approved: false)
                 const adRef = doc(db, "allListings", advertId);
                 await updateDoc(adRef, {
                     approved: false,
@@ -330,7 +391,6 @@ export default function AdminViewAdvert() {
                     rejectionDate: serverTimestamp(),
                 });
 
-                // 2. Optional: Store message in separate admin feedback/messages collection
                 if (ownerInfo?.uid) {
                     await addDoc(collection(db, "adminMessages"), {
                         toUserId: ownerInfo.uid,
@@ -342,7 +402,6 @@ export default function AdminViewAdvert() {
                     });
                 }
 
-                // 3. Navigate away after rejection
                 alert("Advert rejected. Message sent to user.");
                 navigate("/admin");
             } catch (error) {
@@ -360,21 +419,16 @@ export default function AdminViewAdvert() {
         }
 
         const lowerDesc = advert.description.toLowerCase();
-        const foundTerms = bannedTerms.filter(term => lowerDesc.includes(term));
-        const fieldsToScan = [
-            advert.title,
-            advert.description,
-            advert.breedOrType
-        ].join(" ").toLowerCase();
+        const foundTerms = bannedTerms.filter(term => lowerDesc.includes(term.toLowerCase()));
 
         if (foundTerms.length > 0) {
-            alert(`⚠️ Warning: Found banned term(s):\n\n${foundTerms.join(", ")}`);
+            alert(`⚠️ Warning: Found banned term(s):\n\n${foundTerms.join(", ")}\n\nThese terms are now highlighted in yellow in the description.`);
+            // Scroll to description section if not visible
+            setActiveSection("details");
         } else {
             alert("✅ No banned terms detected in the description.");
         }
     };
-
-
 
     const handleToggleBlacklist = async () => {
         if (!ownerInfo?.uid) return;
@@ -419,17 +473,14 @@ export default function AdminViewAdvert() {
         setShowFullImage(!showFullImage);
     };
 
-    // For quick navigation
     const handleSectionChange = (section) => {
         setActiveSection(section);
     };
 
-    // Apply template for reject reason
     const applyRejectTemplate = (template) => {
         setRejectReason(template);
     };
 
-    // Copy owner contact to clipboard
     const copyOwnerContact = () => {
         if (!ownerInfo) return;
 
@@ -444,7 +495,6 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
         alert("Contact information copied to clipboard");
     };
 
-    // Handle quick reply to all updates
     const handleQuickReply = (template) => {
         const updatedReplies = {};
         updates.forEach(update => {
@@ -480,31 +530,57 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                 <span className="advert-view-id">ID: {advert.id}</span>
                             </div>
                             <div className="advert-view-action-bar-right">
-                                <button
-                                    onClick={handleApprove}
-                                    className="advert-view-approve-button"
-                                    disabled={isProcessing}
-                                >
-                                    <FaCheck /> Approve
-                                </button>
-
-                                <button
-                                    onClick={() => setShowRejectBox(true)}
-                                    className="advert-view-reject-button"
-                                    disabled={isProcessing || showRejectBox}
-                                >
-                                    <FaTimes /> Reject
-                                </button>
-
-                                <button
-                                    onClick={handleScanForBannedTerms}
-                                    className="advert-view-flag-button"
-                                    title="Scan description for banned terms"
-                                >
-                                    <FaShieldAlt /> Scan Terms
-                                </button>
+                                {isEditMode ? (
+                                    <>
+                                        <button
+                                            onClick={handleSaveChanges}
+                                            className="advert-view-save-button"
+                                            disabled={isSaving || !hasChanges}
+                                        >
+                                            <FaSave /> Save Changes
+                                        </button>
+                                        <button
+                                            onClick={handleCancelEdit}
+                                            className="advert-view-cancel-edit-button"
+                                            disabled={isSaving}
+                                        >
+                                            <FaTimes /> Cancel
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={handleEditToggle}
+                                            className="advert-view-edit-button"
+                                            disabled={isProcessing}
+                                            title="Shortcut: Press 'E'"
+                                        >
+                                            <FaEdit /> Edit
+                                        </button>
+                                        <button
+                                            onClick={handleApprove}
+                                            className="advert-view-approve-button"
+                                            disabled={isProcessing}
+                                        >
+                                            <FaCheck /> Approve
+                                        </button>
+                                        <button
+                                            onClick={() => setShowRejectBox(true)}
+                                            className="advert-view-reject-button"
+                                            disabled={isProcessing || showRejectBox}
+                                        >
+                                            <FaTimes /> Reject
+                                        </button>
+                                        <button
+                                            onClick={handleScanForBannedTerms}
+                                            className={`advert-view-flag-button ${hasBannedTerms ? 'has-banned-terms' : ''}`}
+                                            title={hasBannedTerms ? "Banned terms detected!" : "Scan description for banned terms"}
+                                        >
+                                            <FaShieldAlt /> {hasBannedTerms ? 'Banned Terms Found!' : 'Scan Terms'}
+                                        </button>
+                                    </>
+                                )}
                             </div>
-
                         </div>
 
                         {/* Content Layout */}
@@ -539,7 +615,7 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
 
                             {/* Main and Side Content */}
                             <div className="advert-view-two-column-layout">
-                                {/* Main Content Area - Changes based on active section */}
+                                {/* Main Content Area */}
                                 <div className="advert-view-main-content">
                                     {/* Images Section */}
                                     {activeSection === "images" && (
@@ -645,22 +721,67 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                     <div className="advert-view-detail-column">
                                                         <div className="advert-view-detail-section">
                                                             <h3 className="advert-view-section-heading"><FaInfoCircle /> Basic Information</h3>
+
+                                                            <div className="advert-view-detail-item">
+                                                                <FaPaw className="advert-view-detail-icon" />
+                                                                <span className="advert-view-detail-label">Name:</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.name || ""}
+                                                                        onChange={(e) => handleFieldChange('name', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.name || "Not specified"}</span>
+                                                                )}
+                                                            </div>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaPalette className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Breed:</span>
-                                                                <span className="advert-view-detail-value">{advert.breedOrType || "Not specified"}</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.breedOrType || ""}
+                                                                        onChange={(e) => handleFieldChange('breedOrType', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.breedOrType || "Not specified"}</span>
+                                                                )}
                                                             </div>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaRegCalendarAlt className="advert-view-detail-icon" />
-                                                                <span className="advert-view-detail-label">Age:</span>
-                                                                <span className="advert-view-detail-value">{advert.dob || "Not specified"}</span>
+                                                                <span className="advert-view-detail-label">Age/DOB:</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.dob || ""}
+                                                                        onChange={(e) => handleFieldChange('dob', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.dob || "Not specified"}</span>
+                                                                )}
                                                             </div>
 
                                                             <div className="advert-view-detail-item">
                                                                 <FaPoundSign className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Fee:</span>
-                                                                <span className="advert-view-detail-value">£{advert.price || "0"}</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="number"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.price || ""}
+                                                                        onChange={(e) => handleFieldChange('price', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">£{advert.price || "0"}</span>
+                                                                )}
                                                             </div>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaMapMarkerAlt className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Location:</span>
@@ -670,37 +791,78 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                                         : ownerInfo?.city || ownerInfo?.county || "Not specified"}
                                                                 </span>
                                                             </div>
-
                                                         </div>
 
                                                         <div className="advert-view-detail-section">
                                                             <h3 className="advert-view-section-heading"><FaRuler /> Physical Attributes</h3>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaPalette className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Colour:</span>
-                                                                <span className="advert-view-detail-value">
-        {resolveColourLabel(advert) || "N/A"}
-    </span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.dogColor || editedAdvert.catColor || editedAdvert.colour || ""}
+                                                                        onChange={(e) => {
+                                                                            const field = editedAdvert.dogColor ? 'dogColor' :
+                                                                                editedAdvert.catColor ? 'catColor' : 'colour';
+                                                                            handleFieldChange(field, e.target.value);
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">
+                                                                        {resolveColourLabel(advert) || "N/A"}
+                                                                    </span>
+                                                                )}
                                                             </div>
-
-
 
                                                             <div className="advert-view-detail-item">
                                                                 <FaRuler className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Height:</span>
-                                                                <span className="advert-view-detail-value">{advert.height || "N/A"}</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.height || ""}
+                                                                        onChange={(e) => handleFieldChange('height', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.height || "N/A"}</span>
+                                                                )}
                                                             </div>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaWeight className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Weight:</span>
-                                                                <span className="advert-view-detail-value">{advert.weight || "N/A"}</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.weight || ""}
+                                                                        onChange={(e) => handleFieldChange('weight', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.weight || "N/A"}</span>
+                                                                )}
                                                             </div>
+
                                                             <div className="advert-view-detail-item">
                                                                 <FaHistory className="advert-view-detail-icon" />
                                                                 <span className="advert-view-detail-label">Mating History:</span>
-                                                                <span className="advert-view-detail-value">{advert.matings ? `${advert.matings} Matings Included` : "N/A"}</span>
+                                                                {isEditMode ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        className="advert-view-edit-input"
+                                                                        value={editedAdvert.matings || ""}
+                                                                        onChange={(e) => handleFieldChange('matings', e.target.value)}
+                                                                    />
+                                                                ) : (
+                                                                    <span className="advert-view-detail-value">{advert.matings ? `${advert.matings} Matings Included` : "N/A"}</span>
+                                                                )}
                                                             </div>
                                                         </div>
+
                                                         {Array.isArray(advert.healthTests) && advert.healthTests.length > 0 && (
                                                             <div className="advert-view-detail-section">
                                                                 <h3 className="advert-view-section-heading"><FaVial /> Health Tests</h3>
@@ -713,17 +875,26 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                                 ))}
                                                             </div>
                                                         )}
-
-
-
                                                     </div>
 
-
                                                     <div className="advert-view-detail-column">
-                                                        {advert.description && (
+                                                        {(advert.description || isEditMode) && (
                                                             <div className="advert-view-detail-section">
                                                                 <h3 className="advert-view-section-heading"><FaEdit /> Description</h3>
-                                                                <p className="advert-view-description-text">{advert.description}</p>
+                                                                {isEditMode ? (
+                                                                    <textarea
+                                                                        className="advert-view-edit-textarea"
+                                                                        value={editedAdvert.description || ""}
+                                                                        onChange={(e) => handleFieldChange('description', e.target.value)}
+                                                                        rows={8}
+                                                                    />
+                                                                ) : (
+                                                                    <p className="advert-view-description-text"
+                                                                       dangerouslySetInnerHTML={{
+                                                                           __html: highlightBannedTerms(advert.description)
+                                                                       }}
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
 
@@ -732,58 +903,103 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                             <div className="advert-view-health-status-grid">
                                                                 <div className="advert-view-status-item">
                                                                     <span className="advert-view-status-label"><FaShieldAlt /> KC Registered:</span>
-                                                                    <span className="advert-view-status-value">
-                                                                        {advert.kcRegistered ?
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span> :
-                                                                            <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
-                                                                        }
-                                                                    </span>
+                                                                    {isEditMode ? (
+                                                                        <label className="advert-view-checkbox-label">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={editedAdvert.kcRegistered || false}
+                                                                                onChange={(e) => handleFieldChange('kcRegistered', e.target.checked)}
+                                                                            />
+                                                                            <span>{editedAdvert.kcRegistered ? "Yes" : "No"}</span>
+                                                                        </label>
+                                                                    ) : (
+                                                                        <span className="advert-view-status-value">
+                                                                            {advert.kcRegistered ?
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span> :
+                                                                                <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
+                                                                            }
+                                                                        </span>
+                                                                    )}
                                                                 </div>
+
                                                                 <div className="advert-view-status-item">
                                                                     <span className="advert-view-status-label"><FaVial /> Health Tested:</span>
                                                                     <span className="advert-view-status-value">
-  {hasHealthTests ? (
-      <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span>
-  ) : (
-      <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
-  )}
-</span>
-
+                                                                        {hasHealthTests ? (
+                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span>
+                                                                        ) : (
+                                                                            <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
+                                                                        )}
+                                                                    </span>
                                                                 </div>
+
                                                                 <div className="advert-view-status-item">
                                                                     <span className="advert-view-status-label"><FaPrescriptionBottleAlt /> Vaccinations:</span>
-                                                                    <span className="advert-view-status-value">
-                                                                        {advert.vacsUpToDate === true ? (
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> Up to date</span>
-                                                                        ) : advert.vacsUpToDate === false ? (
-                                                                            <span className="advert-view-status-badge negative"><FaTimesCircle /> Not up to date</span>
-                                                                        ) : (
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> N/A</span>
-                                                                        )}
-
-                                                                    </span>
+                                                                    {isEditMode ? (
+                                                                        <label className="advert-view-checkbox-label">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={editedAdvert.vacsUpToDate === true}
+                                                                                onChange={(e) => handleFieldChange('vacsUpToDate', e.target.checked)}
+                                                                            />
+                                                                            <span>{editedAdvert.vacsUpToDate ? "Up to date" : "Not up to date"}</span>
+                                                                        </label>
+                                                                    ) : (
+                                                                        <span className="advert-view-status-value">
+                                                                            {advert.vacsUpToDate === true ? (
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> Up to date</span>
+                                                                            ) : advert.vacsUpToDate === false ? (
+                                                                                <span className="advert-view-status-badge negative"><FaTimesCircle /> Not up to date</span>
+                                                                            ) : (
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> N/A</span>
+                                                                            )}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
+
                                                                 <div className="advert-view-status-item">
                                                                     <span className="advert-view-status-label"><FaBug /> Flea/Worm:</span>
-                                                                    <span className="advert-view-status-value">
-                                                                        {advert.fleaWormed === true ? (
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span>
-                                                                        ) : advert.fleaWormed === false ? (
-                                                                            <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
-                                                                        ) : (
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> N/A</span>
-                                                                        )}
-
-                                                                    </span>
+                                                                    {isEditMode ? (
+                                                                        <label className="advert-view-checkbox-label">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={editedAdvert.fleaWormed === true}
+                                                                                onChange={(e) => handleFieldChange('fleaWormed', e.target.checked)}
+                                                                            />
+                                                                            <span>{editedAdvert.fleaWormed ? "Yes" : "No"}</span>
+                                                                        </label>
+                                                                    ) : (
+                                                                        <span className="advert-view-status-value">
+                                                                            {advert.fleaWormed === true ? (
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span>
+                                                                            ) : advert.fleaWormed === false ? (
+                                                                                <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
+                                                                            ) : (
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> N/A</span>
+                                                                            )}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
+
                                                                 <div className="advert-view-status-item">
                                                                     <span className="advert-view-status-label"><FaMedal /> Proven Stud:</span>
-                                                                    <span className="advert-view-status-value">
-                                                                        {advert.proven ?
-                                                                            <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span> :
-                                                                            <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
-                                                                        }
-                                                                    </span>
+                                                                    {isEditMode ? (
+                                                                        <label className="advert-view-checkbox-label">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={editedAdvert.proven || false}
+                                                                                onChange={(e) => handleFieldChange('proven', e.target.checked)}
+                                                                            />
+                                                                            <span>{editedAdvert.proven ? "Yes" : "No"}</span>
+                                                                        </label>
+                                                                    ) : (
+                                                                        <span className="advert-view-status-value">
+                                                                            {advert.proven ?
+                                                                                <span className="advert-view-status-badge positive"><FaCheckCircle /> Yes</span> :
+                                                                                <span className="advert-view-status-badge negative"><FaTimesCircle /> No</span>
+                                                                            }
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -799,31 +1015,58 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                             </div>
                                                         )}
 
-                                                        {(advert.facebookUrl || advert.instagramUrl) && (
+                                                        {(advert.facebookUrl || advert.instagramUrl || isEditMode) && (
                                                             <div className="advert-view-detail-section">
                                                                 <h3 className="advert-view-section-heading"><FaShare /> Social Media</h3>
-                                                                <div className="advert-view-social-buttons">
-                                                                    {advert.facebookUrl && (
-                                                                        <a
-                                                                            href={advert.facebookUrl}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="advert-view-social-button facebook"
-                                                                        >
-                                                                            <FaFacebook /> Facebook
-                                                                        </a>
-                                                                    )}
-                                                                    {advert.instagramUrl && (
-                                                                        <a
-                                                                            href={advert.instagramUrl}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="advert-view-social-button instagram"
-                                                                        >
-                                                                            <FaInstagram /> Instagram
-                                                                        </a>
-                                                                    )}
-                                                                </div>
+                                                                {isEditMode ? (
+                                                                    <div>
+                                                                        <div className="advert-view-detail-item">
+                                                                            <FaFacebook className="advert-view-detail-icon" />
+                                                                            <span className="advert-view-detail-label">Facebook:</span>
+                                                                            <input
+                                                                                type="text"
+                                                                                className="advert-view-edit-input"
+                                                                                value={editedAdvert.facebookUrl || ""}
+                                                                                onChange={(e) => handleFieldChange('facebookUrl', e.target.value)}
+                                                                                placeholder="Facebook URL"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="advert-view-detail-item">
+                                                                            <FaInstagram className="advert-view-detail-icon" />
+                                                                            <span className="advert-view-detail-label">Instagram:</span>
+                                                                            <input
+                                                                                type="text"
+                                                                                className="advert-view-edit-input"
+                                                                                value={editedAdvert.instagramUrl || ""}
+                                                                                onChange={(e) => handleFieldChange('instagramUrl', e.target.value)}
+                                                                                placeholder="Instagram URL"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="advert-view-social-buttons">
+                                                                        {advert.facebookUrl && (
+                                                                            <a
+                                                                                href={advert.facebookUrl}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="advert-view-social-button facebook"
+                                                                            >
+                                                                                <FaFacebook /> Facebook
+                                                                            </a>
+                                                                        )}
+                                                                        {advert.instagramUrl && (
+                                                                            <a
+                                                                                href={advert.instagramUrl}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="advert-view-social-button instagram"
+                                                                            >
+                                                                                <FaInstagram /> Instagram
+                                                                            </a>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -924,14 +1167,12 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                                     <FaUserAlt /> View Full Profile
                                                                 </Link>
 
-
                                                                 <button
                                                                     className={`advert-view-action-button blacklist ${ownerInfo.blacklisted ? "active" : ""}`}
                                                                     onClick={handleToggleBlacklist}
                                                                 >
                                                                     <FaExclamationTriangle /> {ownerInfo.blacklisted ? "Unblacklist" : "Blacklist"}
                                                                 </button>
-
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1018,7 +1259,7 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                     )}
                                 </div>
 
-                                {/* Right Sidebar - Always visible summary and quick actions */}
+                                {/* Right Sidebar */}
                                 <div className="advert-view-sidebar">
                                     <div className="advert-view-sidebar-section advert-view-quick-summary">
                                         <h3 className="advert-view-sidebar-heading">
@@ -1053,7 +1294,6 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                                 </span>
                                             </div>
 
-
                                             <div className="advert-view-summary-divider"></div>
 
                                             {ownerInfo && (
@@ -1078,30 +1318,59 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                         </div>
                                     </div>
 
-
-
                                     <div className="advert-view-sidebar-section advert-view-quick-actions">
                                         <h3 className="advert-view-sidebar-heading">
                                             <FaList /> Quick Actions
                                         </h3>
                                         <div className="advert-view-action-buttons">
-                                            <button
-                                                className="advert-view-sidebar-action-button approve"
-                                                onClick={handleApprove}
-                                                disabled={isProcessing}
-                                                title="Shortcut: Press 'A'"
-                                            >
-                                                <FaThumbsUp /> Approve Advert
-                                            </button>
+                                            {!isEditMode ? (
+                                                <>
+                                                    <button
+                                                        className="advert-view-sidebar-action-button edit"
+                                                        onClick={handleEditToggle}
+                                                        disabled={isProcessing}
+                                                        title="Shortcut: Press 'E'"
+                                                    >
+                                                        <FaEdit /> Edit Advert
+                                                    </button>
 
-                                            <button
-                                                className="advert-view-sidebar-action-button reject"
-                                                onClick={() => setShowRejectBox(true)}
-                                                disabled={isProcessing || showRejectBox}
-                                                title="Shortcut: Press 'R'"
-                                            >
-                                                <FaThumbsDown /> Reject Advert
-                                            </button>
+                                                    <button
+                                                        className="advert-view-sidebar-action-button approve"
+                                                        onClick={handleApprove}
+                                                        disabled={isProcessing}
+                                                        title="Shortcut: Press 'A'"
+                                                    >
+                                                        <FaThumbsUp /> Approve Advert
+                                                    </button>
+
+                                                    <button
+                                                        className="advert-view-sidebar-action-button reject"
+                                                        onClick={() => setShowRejectBox(true)}
+                                                        disabled={isProcessing || showRejectBox}
+                                                        title="Shortcut: Press 'R'"
+                                                    >
+                                                        <FaThumbsDown /> Reject Advert
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        className="advert-view-sidebar-action-button save"
+                                                        onClick={handleSaveChanges}
+                                                        disabled={isSaving || !hasChanges}
+                                                    >
+                                                        <FaSave /> Save Changes
+                                                    </button>
+
+                                                    <button
+                                                        className="advert-view-sidebar-action-button cancel"
+                                                        onClick={handleCancelEdit}
+                                                        disabled={isSaving}
+                                                    >
+                                                        <FaTimes /> Cancel Edit
+                                                    </button>
+                                                </>
+                                            )}
 
                                             <button
                                                 className="advert-view-sidebar-action-button pause"
@@ -1134,7 +1403,6 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                             </button>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>

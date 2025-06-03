@@ -1,11 +1,13 @@
 import React, {useEffect} from "react";
 import { Routes, Route } from "react-router-dom";
 import {onAuthStateChanged} from "firebase/auth";
-import {doc, updateDoc, setDoc, serverTimestamp, getDoc} from "firebase/firestore";import {auth, db} from "./firebase/firebase";
+import {doc, updateDoc, setDoc, serverTimestamp, getDoc} from "firebase/firestore";
+import {auth, db} from "./firebase/firebase";
 import useIdleLogout from "./hooks/useIdleLogout";
 import './index.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+import { NotificationProvider } from "./context/NotificationContext"; // Add this import
 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -28,7 +30,7 @@ import RequireAdmin from "./components/RequireAdmin";
 import LoginModal from "./components/LoginModal";
 import AdminViewAdvert from "./pages/admin/AdminViewAdvert";
 import MinimalLayout from "./components/MinimalLayout";
-import ReportedUsers from "./pages/admin/ReportedUsers"; // ← make sure it's imported
+import ReportedUsers from "./pages/admin/ReportedUsers";
 import TopStuds from "./pages/TopStudsPage";
 import { useLoginModal } from "./context/LoginContext";
 import HelpSupport from "./pages/HelpSupport";
@@ -40,16 +42,12 @@ import CookieConsentBanner from "./components/CookieConsentBanner"
 import CookiePolicyPage from "./pages/CookiePolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import AboutUs from './pages/AboutUs';
-
-
-
-
+import FollowingFeed from "./pages/FollowingFeed";
 
 function App() {
     const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
 
     useIdleLogout(); // 👈 Call useIdleLogout at the top level of the component
-
 
     useEffect(() => {
         let interval;
@@ -112,13 +110,10 @@ function App() {
         setShowCookieBanner(true);
     };
 
-
     return (
-        <>
+        <NotificationProvider>
             <LoginModal isOpen={isLoginOpen} onClose={closeLogin} />
-
             <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner} />
-
 
             <Routes>
                 {/* Admin routes */}
@@ -177,6 +172,7 @@ function App() {
                     <Route path="cookie-policy" element={<CookiePolicyPage />} />
                     <Route path="terms-of-service" element={<TermsOfServicePage />} />
                     <Route path="about" element={<AboutUs />} />
+                    <Route path="following-feed" element={<FollowingFeed />} />
                     <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
                 </Route>
 
@@ -192,9 +188,8 @@ function App() {
                 {/* Standalone auth routes */}
                 <Route path="register" element={<Register />} />
             </Routes>
-        </>
+        </NotificationProvider>
     );
-
 }
 
 export default App;

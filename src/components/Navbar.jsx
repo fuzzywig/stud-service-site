@@ -6,6 +6,7 @@ import { getPopularBreeds } from "../utils/getPopularBreeds";
 import {
     FaBars,
     FaUser,
+    FaUsers,
     FaCat,
     FaEnvelope,
     FaTimes,
@@ -31,6 +32,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import "./Navbar.css"; // Replace with the new CSS file
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { useNotifications } from "../context/NotificationContext";
 
 
 function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(false);
@@ -46,10 +48,10 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
     const [topBreeds, setTopBreeds]     = useState([]);
     const [topCategories, setTopCategories] = useState([]);
     const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
-
+    const { newAdvertsCount, hasNewFollowingAdverts } = useNotifications();
     const listingsRef = collection(db, "allListings");
 
-    // Update active item whenever the URL changes
+
 
     // after: const [topBreeds, setTopBreeds] = useState([]);
     useEffect(() => {
@@ -267,7 +269,11 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
 
 
                         <div className="dropdown-wrapper" ref={dropdownRef}>
-                            <button className="icon-link" onClick={toggleDropdown} aria-label="User menu">
+                            <button
+                                className={`icon-link ${hasNewFollowingAdverts ? "has-notification" : ""}`}
+                                onClick={toggleDropdown}
+                                aria-label="User menu"
+                            >
                                 <FaUser />
                             </button>
 
@@ -285,6 +291,23 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                             >
                                                 <FaUser className="dropdown-icon" />
                                                 <span>My Profile</span>
+                                            </Link>
+                                            <Link
+                                                to="/following-feed"
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem('/following-feed');
+                                                    // Don't clear notifications here anymore - they clear when adverts are viewed
+                                                }}
+                                            >
+                                                <FaUsers className="dropdown-icon" />
+                                                <span>Following Feed</span>
+                                                {newAdvertsCount > 0 && (
+                                                    <span className="dropdown-notification-badge">
+            {newAdvertsCount > 99 ? '99+' : newAdvertsCount}
+        </span>
+                                                )}
                                             </Link>
 
                                             <Link
@@ -547,6 +570,12 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                     <Link to="/messages" onClick={() => handleMenuItemClick('/messages')}>
                                         <FaComments className="menu-icon" />
                                         <span>Messages</span>
+                                    </Link>
+                                </li>
+                                <li className="menu-item">
+                                    <Link to="/following-feed" onClick={() => handleMenuItemClick('/following-feed')}>
+                                        <FaUsers className="menu-icon" />
+                                        <span>Following Feed</span>
                                     </Link>
                                 </li>
                                 <li className="menu-item">

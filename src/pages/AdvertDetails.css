@@ -386,6 +386,11 @@
     padding: 24px;
     background-color: white;
     position: relative;
+    /* Add overflow handling */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .description-content p {
@@ -397,6 +402,15 @@
     position: relative;
     padding-left: 10px;
     padding-right: 10px;
+    /* Add overflow handling for the paragraph */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    /* Ensure long unbroken strings don't overflow */
+    max-width: 100%;
+    overflow-x: hidden;
+
 }
 
 /* Footer Info */
@@ -1012,6 +1026,85 @@
     cursor: not-allowed;
     border: 1px dashed var(--gray-dark);
     pointer-events: none;
+}
+
+/* FollowButton styles within owner-actions */
+.owner-actions .follow-button {
+    flex: 1;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: var(--transition);
+    text-align: center;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 16px;
+    border: 2px solid var(--primary-color);
+    background-color: white;
+    color: var(--primary-color);
+    cursor: pointer;
+}
+
+.owner-actions .follow-button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.owner-actions .follow-button.following {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.owner-actions .follow-button.following:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: #fff;
+}
+
+/* Review button - match the secondary button style */
+.owner-actions .review-button {
+    flex: 1;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Layout adjustments for different button combinations */
+/* Default layout - all children take equal space */
+.owner-actions > * {
+    flex: 1;
+}
+
+/* Desktop layout adjustments */
+@media (min-width: 576px) {
+    /* When only profile link and follow button (no review for sale items) */
+    .owner-actions:has(.profile-link):has(.follow-button):not(:has(.review-button)) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    /* When all three buttons are present */
+    .owner-actions:has(.profile-link):has(.follow-button):has(.review-button) {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* Ensure follow button always fills its container */
+.owner-actions .follow-button {
+    width: 100%;
 }
 
 /* Rating Card Specific */
@@ -2119,6 +2212,16 @@ body.tooltip-open {
     .breeder-badge {
         font-size: 13px;
         padding: 6px 16px;
+    }
+
+    /* Owner actions on mobile - stack vertically */
+    .owner-actions {
+        flex-direction: column !important;
+        display: flex !important;
+    }
+
+    .owner-actions > * {
+        width: 100%;
     }
 
     /* Health card */

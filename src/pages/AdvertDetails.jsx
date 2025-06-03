@@ -3,7 +3,7 @@ import "./AdvertDetails.css";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { db } from "../firebase/firebase";
 import { updateDoc, increment } from "firebase/firestore";
-
+import FollowButton from '../components/FollowButton';
 import {
     doc,
     getDoc,
@@ -150,6 +150,7 @@ function AdvertDetails() {
     const [councilRating, setCouncilRating] = useState(4); // Mock data - rating from 1-5
     const [ownerLicenceNumber, setOwnerLicenceNumber] = useState(""); // ADD THIS
     const [ownerLocalAuthority, setOwnerLocalAuthority] = useState(""); // ADD THIS
+    const [currentUserFullData, setCurrentUserFullData] = useState(null);
     const handleMessageOwner = () => {
         const currentUser = auth.currentUser;
         if (!currentUser || !advert?.ownerId) {
@@ -425,6 +426,30 @@ function AdvertDetails() {
 
         incrementViews();
     }, [advert]);
+
+    useEffect(() => {
+        const fetchCurrentUserData = async () => {
+            console.log("🔍 fetchCurrentUserData called, currentUser:", currentUser);
+            if (currentUser) {
+                try {
+                    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        setCurrentUserFullData(userData);
+                        console.log("✅ Current user data loaded:", userData);
+                    } else {
+                        console.log("❌ User document does not exist");
+                    }
+                } catch (error) {
+                    console.error("❌ Error fetching current user data:", error);
+                }
+            } else {
+                console.log("⚠️ No current user");
+            }
+        };
+
+        fetchCurrentUserData();
+    }, [currentUser]);
 
     const submitReview = async () => {
         try {
@@ -903,6 +928,38 @@ function AdvertDetails() {
                                     <span>View Profile</span>
                                 </div>
                             </Link>
+
+                            {/* Debug logging */}
+                            {console.log("🔍 Follow Button Debug:", {
+                                currentUser: !!currentUser,
+                                currentUserFullData: !!currentUserFullData,
+                                currentUserData: currentUserFullData,
+                                currentUserId: currentUser?.uid,
+                                advertOwnerId: advert.ownerId,
+                                isOwnAdvert: currentUser?.uid === advert.ownerId,
+                                ownerName: ownerName,
+                                extractedFirstName: ownerName.split(' ')[0],
+                                shouldShowFollowButton: currentUser && currentUserFullData && currentUser.uid !== advert.ownerId
+                            })}
+
+                            {/* Follow Button - only show if user is logged in and it's not their own advert */}
+                            {currentUser && currentUserFullData && currentUser.uid !== advert.ownerId && (
+                                <>
+                                    {console.log("✅ Rendering FollowButton with props:", {
+                                        targetUserId: advert.ownerId,
+                                        currentUserId: currentUser.uid,
+                                        targetUserName: ownerName.split(' ')[0],
+                                        currentUserName: currentUserFullData.firstName
+                                    })}
+                                    <FollowButton
+                                        targetUserId={advert.ownerId}
+                                        currentUserId={currentUser.uid}
+                                        targetUserName={ownerName.split(' ')[0]} // Extract first name from "FirstName L."
+                                        currentUserName={currentUserFullData.firstName}
+                                    />
+                                </>
+                            )}
+
                             {advert.intent !== 'sale' && (
                                 <button
                                     className="secondary-button review-button"
@@ -918,7 +975,6 @@ function AdvertDetails() {
                                     Review Stud
                                 </button>
                             )}
-
                         </div>
                     </div>
 
