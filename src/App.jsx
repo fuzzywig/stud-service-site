@@ -43,6 +43,7 @@ import CookiePolicyPage from "./pages/CookiePolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import AboutUs from './pages/AboutUs';
 import FollowingFeed from "./pages/FollowingFeed";
+import DogRescueDashboard from './pages/DogRescueDashboard';
 
 function App() {
     const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
@@ -173,6 +174,8 @@ function App() {
                     <Route path="terms-of-service" element={<TermsOfServicePage />} />
                     <Route path="about" element={<AboutUs />} />
                     <Route path="following-feed" element={<FollowingFeed />} />
+                    <Route path="dog-rescue" element={<DogRescueDashboard />} />
+
                     <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
                 </Route>
 

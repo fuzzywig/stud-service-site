@@ -12,19 +12,16 @@ import {
     arrayRemove,
     setDoc,
     deleteDoc,
-    increment,          // Add this
-    serverTimestamp     // Add this
+    increment,
+    serverTimestamp
 } from "firebase/firestore";
-// at the top of BrowseStuds.jsx
 import { updatedFieldConfigurations } from "./data/breedOptions.js";
-
 import {db} from "../firebase/firebase";
 import {getAuth, onAuthStateChanged} from "firebase/auth";
 import {FaChevronLeft, FaChevronRight} from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
-
 import MobileFilterPanel from "../components/MobileFilterPanel";
 import "./BrowseStuds.css";
 
@@ -38,7 +35,18 @@ export default function BrowseStuds() {
     const [maxFee, setMaxFee] = useState("");
     const [selectedColour, setSelectedColour] = useState("");
     const [selectedAgeRange, setSelectedAgeRange] = useState("");
-    const [filters, setFilters] = useState({kc: false, healthTested: false, proven: false});
+    const [selectedRegistrationBody, setSelectedRegistrationBody] = useState("");
+    const [searchKeywords, setSearchKeywords] = useState("");
+    const [selectedGender, setSelectedGender] = useState("");
+    const [selectedBreederType, setSelectedBreederType] = useState("");
+    const [searchPostcode, setSearchPostcode] = useState("");
+    const [isLoadingPostcode, setIsLoadingPostcode] = useState(false);
+    const [filters, setFilters] = useState({
+        kc: false,
+        healthTested: false,
+        healthChecked: false,
+        proven: false
+    });
     const [user, setUser] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -75,7 +83,47 @@ export default function BrowseStuds() {
         if (radiusParam) {
             setSearchRadius(radiusParam);
         }
-    }, [categoryParam, breedParam, intentParam, radiusParam]);
+        if (postcodeParam) {
+            setSearchPostcode(postcodeParam);
+        }
+    }, [categoryParam, breedParam, intentParam, radiusParam, postcodeParam]);
+
+    // Handle postcode search
+    const handlePostcodeSearch = async () => {
+        if (!searchPostcode) {
+            alert("Please enter a postcode.");
+            return;
+        }
+
+        setIsLoadingPostcode(true);
+        try {
+            const apiKey = "pP8O9JNud0upxRnM9Fbs3w45793";
+            const response = await fetch(`https://api.getAddress.io/find/${searchPostcode}?api-key=${apiKey}`);
+            const data = await response.json();
+
+            if (!data || !data.latitude || !data.longitude) {
+                alert("Could not retrieve coordinates for that postcode.");
+                return;
+            }
+
+            // Update URL with new location data
+            const params = new URLSearchParams(location.search);
+            params.set("postcode", searchPostcode);
+            params.set("lat", data.latitude);
+            params.set("lng", data.longitude);
+            params.set("radius", searchRadius);
+
+            navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+
+            // Force a page reload to trigger the location-based filtering
+            window.location.reload();
+        } catch (error) {
+            console.error("Postcode lookup failed", error);
+            alert("Something went wrong fetching location. Please try again.");
+        } finally {
+            setIsLoadingPostcode(false);
+        }
+    };
 
     // helper: human-readable age
     function getAdAge(seconds) {
@@ -126,7 +174,12 @@ export default function BrowseStuds() {
         setSelectedColour("");
         setSelectedAgeRange("");
         setSelectedCategory("all");
-        setFilters({ kc: false, healthTested: false, proven: false });
+        setSelectedRegistrationBody("");
+        setSearchKeywords("");
+        setSelectedGender("");
+        setSelectedBreederType("");
+        setSearchPostcode("");
+        setFilters({ kc: false, healthTested: false, healthChecked: false, proven: false });
         setSearchRadius(50);
         setSelectedIntent("");
 
@@ -217,11 +270,18 @@ export default function BrowseStuds() {
                         }
                     }
 
+                    // Normalize color field - check all possible color field names
+                    let normalizedColor = "";
+                    if (ad.colour) normalizedColor = ad.colour;
+                    else if (ad.color) normalizedColor = ad.color;
+                    else if (ad.dogColor) normalizedColor = ad.dogColor;
+                    else if (ad.catColor) normalizedColor = ad.catColor;
+
                     return {
                         ...ad,
                         fee: ad.fee || ad.price || 0,
                         breed: ad.breed || ad.breedOrType || "Unknown",
-                        colour: ad.colour || ad.color || ad.dogColor || "",
+                        colour: normalizedColor, // Use the normalized color
                         images: Array.isArray(ad.images) ? ad.images : [],
                         ageLabel,
                         age,
@@ -235,6 +295,7 @@ export default function BrowseStuds() {
                         ownerLocation: owner.city
                             ? `${owner.city}${owner.postcode ? `, ${owner.postcode}` : ""}`
                             : "",
+                        breederType: owner.breederType || "", // Add breeder type from owner data
                         sourceCollection: "allListings",
                     };
                 })
@@ -261,6 +322,14 @@ export default function BrowseStuds() {
         const list = ads
             .filter(ad => {
                 if (ad.paused || ad.sold) return false;
+
+                // Keywords filter - search in title and description
+                if (searchKeywords) {
+                    const keywords = searchKeywords.toLowerCase();
+                    const inTitle = ad.title?.toLowerCase().includes(keywords);
+                    const inDescription = ad.description?.toLowerCase().includes(keywords);
+                    if (!inTitle && !inDescription) return false;
+                }
 
                 // Filter by intent - only if explicitly set
                 if (selectedIntent && ad.intent !== selectedIntent) {
@@ -303,7 +372,28 @@ export default function BrowseStuds() {
 
                 // Other filters
                 if (maxFee && ad.fee > parseInt(maxFee)) return false;
-                if (selectedColour && (ad.colour !== selectedColour && ad.color !== selectedColour)) return false;
+
+                // Simplified color filter using normalized color field
+                if (selectedColour && ad.colour !== selectedColour) {
+                    return false;
+                }
+
+                // Registration body filter for cats
+                if (selectedRegistrationBody && selectedCategory === "cats" &&
+                    ad.registrationBody !== selectedRegistrationBody) {
+                    return false;
+                }
+
+                // Gender filter - only applies to sale adverts
+                if (selectedGender && selectedIntent === "sale" &&
+                    ad.gender !== selectedGender) {
+                    return false;
+                }
+
+                // Breeder type filter
+                if (selectedBreederType && ad.breederType !== selectedBreederType) {
+                    return false;
+                }
 
                 if (selectedAgeRange) {
                     const age = ad.age;
@@ -315,6 +405,7 @@ export default function BrowseStuds() {
 
                 if (filters.kc && !ad.kcRegistered) return false;
                 if (filters.healthTested && !ad.healthTested) return false;
+                if (filters.healthChecked && !ad.healthChecked) return false;
                 if (filters.proven && !ad.proven) return false;
 
                 return true;
@@ -350,8 +441,13 @@ export default function BrowseStuds() {
         selectedColour,
         selectedAgeRange,
         selectedCategory,
+        selectedRegistrationBody,
+        searchKeywords,
+        selectedGender,
+        selectedBreederType,
         filters.kc,
         filters.healthTested,
+        filters.healthChecked,
         filters.proven
     ]);
 
@@ -366,7 +462,6 @@ export default function BrowseStuds() {
         .sort(([, a], [, b]) => b - a)
         .slice(0, 20);
 
-    // favourite/unfavourite handlers
     // favourite/unfavourite handlers
     async function handleUnfavourite(id) {
         if (!user) return alert("Please log in");
@@ -405,8 +500,6 @@ export default function BrowseStuds() {
             console.error("Error removing favorite:", err);
         }
     }
-
-
 
     async function handleFavourite(id) {
         if (!user) return alert("Please log in");
@@ -470,6 +563,10 @@ export default function BrowseStuds() {
         // Only reset if we're changing categories (not on initial load)
         if (selectedCategory && !categoryParam) {
             setSelectedBreed("");
+            // Also reset colour when changing categories
+            setSelectedColour("");
+            // Reset registration body when changing categories
+            setSelectedRegistrationBody("");
         }
     }, [selectedCategory]);
 
@@ -483,8 +580,6 @@ export default function BrowseStuds() {
         // fallback
         return [{ value: "", label: "Any colour" }];
     }, [selectedCategory]);
-
-
 
     return (
         <>
@@ -510,6 +605,19 @@ export default function BrowseStuds() {
                             setSelectedCategory={setSelectedCategory}
                             selectedIntent={selectedIntent}
                             setSelectedIntent={setSelectedIntent}
+                            selectedRegistrationBody={selectedRegistrationBody}
+                            setSelectedRegistrationBody={setSelectedRegistrationBody}
+                            searchKeywords={searchKeywords}
+                            setSearchKeywords={setSearchKeywords}
+                            selectedGender={selectedGender}
+                            setSelectedGender={setSelectedGender}
+                            selectedBreederType={selectedBreederType}
+                            setSelectedBreederType={setSelectedBreederType}
+                            searchPostcode={searchPostcode}
+                            setSearchPostcode={setSearchPostcode}
+                            handlePostcodeSearch={handlePostcodeSearch}
+                            isLoadingPostcode={isLoadingPostcode}
+                            postcodeParam={postcodeParam}
                             filters={filters}
                             setFilters={setFilters}
                             topBreeds={topBreeds}
@@ -522,32 +630,22 @@ export default function BrowseStuds() {
 
                     {/* Desktop sidebar */}
                     <aside className="browse-studs-sidebar desktop-only">
+                        {/* Advert Type */}
                         <div className="browse-studs-filter-block">
-                            <div className="browse-studs-filter-block">
-                                <h3>Advert Type</h3>
-                                <select
-                                    className="panel-select"
-                                    value={selectedIntent}
-                                    onChange={e => setSelectedIntent(e.target.value)}
-                                >
-                                    <option value="">All Types</option>
-                                    <option value="sale">For Sale</option>
-                                    <option value="stud">For Stud</option>
-                                </select>
-                            </div>
-                            <div className="browse-studs-filter-block">
-                                <label>Distance: {searchRadius} mi</label>
-                                <input
-                                    type="range"
-                                    className="panel-slider"
-                                    min="50"
-                                    max="1000"
-                                    step="1"
-                                    value={searchRadius}
-                                    onChange={(e) => setSearchRadius(Number(e.target.value))}
-                                />
-                            </div>
+                            <h3>Advert Type</h3>
+                            <select
+                                className="panel-select"
+                                value={selectedIntent}
+                                onChange={e => setSelectedIntent(e.target.value)}
+                            >
+                                <option value="">All Types</option>
+                                <option value="sale">For Sale</option>
+                                <option value="stud">For Stud</option>
+                            </select>
+                        </div>
 
+                        {/* Pet Category */}
+                        <div className="browse-studs-filter-block">
                             <h3>Pet Category</h3>
                             <select
                                 className="panel-select"
@@ -568,6 +666,7 @@ export default function BrowseStuds() {
                             </select>
                         </div>
 
+                        {/* Filter by Breed */}
                         <div className="browse-studs-filter-block">
                             <h3>
                                 Filter by {selectedCategory === "livestock" ? "Type" : "Breed"}
@@ -586,6 +685,79 @@ export default function BrowseStuds() {
                             </select>
                         </div>
 
+                        {/* Location Search */}
+                        <div className="browse-studs-filter-block">
+                            <h3>Location Search</h3>
+                            <input
+                                type="text"
+                                className="panel-select"
+                                placeholder="Enter postcode..."
+                                value={searchPostcode}
+                                onChange={e => setSearchPostcode(e.target.value)}
+                                onKeyPress={e => e.key === 'Enter' && handlePostcodeSearch()}
+                                style={{
+                                    width: '100%',
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit',
+                                    marginBottom: '8px'
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handlePostcodeSearch}
+                                disabled={isLoadingPostcode}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 16px',
+                                    cursor: isLoadingPostcode ? 'wait' : 'pointer',
+                                    backgroundColor: '#a03248',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'background-color 0.2s'
+                                }}
+                                onMouseEnter={e => !isLoadingPostcode && (e.target.style.backgroundColor = '#8a2a3e')}
+                                onMouseLeave={e => !isLoadingPostcode && (e.target.style.backgroundColor = '#a03248')}
+                            >
+                                {isLoadingPostcode ? 'Loading...' : 'Search Location'}
+                            </button>
+                            {postcodeParam && (
+                                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px', marginBottom: 0 }}>
+                                    Searching near: {postcodeParam}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Distance */}
+                        <div className="browse-studs-filter-block">
+                            <label>Distance: {searchRadius} mi</label>
+                            <input
+                                type="range"
+                                className="panel-slider"
+                                min="50"
+                                max="1000"
+                                step="50"
+                                value={searchRadius}
+                                onChange={(e) => setSearchRadius(Number(e.target.value))}
+                            />
+                        </div>
+
+                        {/* Price */}
+                        <div className="browse-studs-filter-block">
+                            <label>Max Price: £{maxFee || 1000}</label>
+                            <input
+                                type="range"
+                                className="panel-slider"
+                                min="0" max="10000" step="25"
+                                value={maxFee || 0}
+                                onChange={e => setMaxFee(Number(e.target.value))}
+                            />
+                        </div>
+
+                        {/* Sort By */}
                         <div className="browse-studs-filter-block">
                             <h3>Sort By</h3>
                             <select
@@ -602,39 +774,112 @@ export default function BrowseStuds() {
                             </select>
                         </div>
 
+                        {/* Search Keywords */}
                         <div className="browse-studs-filter-block">
-                            <label>Max Price: £{maxFee || 1000}</label>
+                            <h3>Search Keywords</h3>
                             <input
-                                type="range"
-                                className="panel-slider"
-                                min="0" max="10000" step="25"
-                                value={maxFee || 0}
-                                onChange={e => setMaxFee(Number(e.target.value))}
+                                type="text"
+                                className="panel-select"
+                                placeholder="Search in title and description..."
+                                value={searchKeywords}
+                                onChange={e => setSearchKeywords(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    fontFamily: 'inherit'
+                                }}
                             />
                         </div>
 
+                        {/* Age Range */}
                         <div className="browse-studs-filter-block">
-                            <label>Colour</label>
+                            <h3>Age Range</h3>
                             <select
                                 className="panel-select"
-                                value={selectedColour}
-                                onChange={e => setSelectedColour(e.target.value)}
+                                value={selectedAgeRange}
+                                onChange={e => setSelectedAgeRange(e.target.value)}
                             >
-                                <option value="">All Colours</option>
-                                {colourOptions.map(({ value, label }) => (
-                                    <option key={value} value={value}>{label}</option>
-                                ))}
+                                <option value="">Any Age</option>
+                                <option value="Under 1 year">Under 1 year</option>
+                                <option value="1 - 2 years">1 - 2 years</option>
+                                <option value="2 - 4 years">2 - 4 years</option>
+                                <option value="4+ years">4+ years</option>
                             </select>
                         </div>
 
+                        {/* Breeder Type */}
+                        <div className="browse-studs-filter-block">
+                            <h3>Breeder Type</h3>
+                            <select
+                                className="panel-select"
+                                value={selectedBreederType}
+                                onChange={e => setSelectedBreederType(e.target.value)}
+                            >
+                                <option value="">All Breeders</option>
+                                <option value="licensed">Licensed Breeders</option>
+                                <option value="hobby">Hobby Breeders</option>
+                            </select>
+                        </div>
+
+                        {(selectedCategory === "dogs" || selectedCategory === "cats") && (
+                            <div className="browse-studs-filter-block">
+                                <label>Colour</label>
+                                <select
+                                    className="panel-select"
+                                    value={selectedColour}
+                                    onChange={e => setSelectedColour(e.target.value)}
+                                >
+                                    <option value="">All Colours</option>
+                                    {colourOptions.map(({ value, label }) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {selectedCategory === "cats" && (
+                            <div className="browse-studs-filter-block">
+                                <label>Registration Body</label>
+                                <select
+                                    className="panel-select"
+                                    value={selectedRegistrationBody}
+                                    onChange={e => setSelectedRegistrationBody(e.target.value)}
+                                >
+                                    <option value="">All Registrations</option>
+                                    <option value="GCCF">GCCF</option>
+                                    <option value="TICA">TICA</option>
+                                    <option value="FIFe">FIFe</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {selectedIntent === "sale" && (
+                            <div className="browse-studs-filter-block">
+                                <label>Gender</label>
+                                <select
+                                    className="panel-select"
+                                    value={selectedGender}
+                                    onChange={e => setSelectedGender(e.target.value)}
+                                >
+                                    <option value="">Any Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="both">Both Available</option>
+                                </select>
+                            </div>
+                        )}
+
                         <div className="browse-studs-filter-block checkbox-group">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={filters.kc}
-                                    onChange={() => setFilters(f => ({...f, kc: !f.kc}))}
-                                /> KC Registered
-                            </label>
+                            {selectedCategory === "dogs" && (
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.kc}
+                                        onChange={() => setFilters(f => ({...f, kc: !f.kc}))}
+                                    /> KC Registered
+                                </label>
+                            )}
                             <label>
                                 <input
                                     type="checkbox"
@@ -645,10 +890,19 @@ export default function BrowseStuds() {
                             <label>
                                 <input
                                     type="checkbox"
-                                    checked={filters.proven}
-                                    onChange={() => setFilters(f => ({...f, proven: !f.proven}))}
-                                /> Proven
+                                    checked={filters.healthChecked}
+                                    onChange={() => setFilters(f => ({...f, healthChecked: !f.healthChecked}))}
+                                /> Health Checked
                             </label>
+                            {selectedIntent === "stud" && (
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.proven}
+                                        onChange={() => setFilters(f => ({...f, proven: !f.proven}))}
+                                    /> Proven
+                                </label>
+                            )}
                         </div>
 
                         <div className="browse-studs-filter-block">
@@ -693,7 +947,7 @@ export default function BrowseStuds() {
                             </button>
                         </div>
 
-                        {(filteredAds.length > 0 || selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.proven) && (
+                        {(filteredAds.length > 0 || selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.healthChecked || filters.proven || selectedRegistrationBody || searchKeywords || selectedGender || selectedBreederType) && (
                             <div className="browse-studs-summary-section">
                                 {filteredAds.length > 0 && (
                                     <div className="browse-studs-summary">
@@ -703,11 +957,18 @@ export default function BrowseStuds() {
                                     </div>
                                 )}
 
-                                {(selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.proven) && (
+                                {(selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.healthChecked || filters.proven || selectedRegistrationBody || searchKeywords || selectedGender || selectedBreederType) && (
                                     <>
                                         <div className="browse-studs-divider" />
                                         <div className="browse-studs-active-filters-text">
                                             <strong>Active filters:</strong>&nbsp;
+
+                                            {searchKeywords && (
+                                                <span>
+                                                    Keywords: "{searchKeywords}"
+                                                    <button onClick={() => setSearchKeywords("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
 
                                             {selectedCategory !== "all" && (
                                                 <span>
@@ -758,10 +1019,38 @@ export default function BrowseStuds() {
                                                 </span>
                                             )}
 
+                                            {filters.healthChecked && (
+                                                <span>
+                                                    Health Checked
+                                                    <button onClick={() => setFilters(f => ({ ...f, healthChecked: false }))} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
                                             {filters.proven && (
                                                 <span>
                                                     Proven
                                                     <button onClick={() => setFilters(f => ({ ...f, proven: false }))} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedRegistrationBody && (
+                                                <span>
+                                                    Registration: {selectedRegistrationBody}
+                                                    <button onClick={() => setSelectedRegistrationBody("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedGender && (
+                                                <span>
+                                                    Gender: {selectedGender === "both" ? "Both Available" : selectedGender.charAt(0).toUpperCase() + selectedGender.slice(1)}
+                                                    <button onClick={() => setSelectedGender("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedBreederType && (
+                                                <span>
+                                                    Breeder: {selectedBreederType.charAt(0).toUpperCase() + selectedBreederType.slice(1)}
+                                                    <button onClick={() => setSelectedBreederType("")} className="browse-studs-remove-btn">×</button>&nbsp;
                                                 </span>
                                             )}
                                         </div>
@@ -830,7 +1119,6 @@ export default function BrowseStuds() {
                                             .trim()
                                             .slice(0, 400) + (ad.description?.length > 200 ? "…" : "")}
                                     </p>
-
 
                                     <hr className="browse-studs-card-divider"/>
                                     <div className="browse-studs-card-footer">

@@ -93,6 +93,11 @@ export default function AdminViewAdvert() {
     const [hasChanges, setHasChanges] = useState(false);
     const [hasBannedTerms, setHasBannedTerms] = useState(false);
 
+    // New states for search functionality
+    const [searchId, setSearchId] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState("");
+
     const { userData } = useAuth();
 
     // Define banned terms at the top
@@ -150,41 +155,74 @@ export default function AdminViewAdvert() {
         return highlightedText;
     };
 
-    useEffect(() => {
-        const fetchAdvertAndOwner = async () => {
-            try {
-                setIsLoading(true);
-                const adRef = doc(db, "allListings", advertId);
-                const adSnap = await getDoc(adRef);
-                if (adSnap.exists()) {
-                    const advertData = { id: adSnap.id, ...adSnap.data() };
-                    setAdvert(advertData);
-                    setEditedAdvert(advertData); // Initialize edited version
-                    setActiveImageIndex(advertData.mainImageIndex || 0);
+    // Search handler
+    const handleSearch = async (e) => {
+        e.preventDefault();
 
-                    // Check for banned terms
-                    if (advertData.description) {
-                        const lowerDesc = advertData.description.toLowerCase();
-                        const foundTerms = bannedTerms.some(term => lowerDesc.includes(term.toLowerCase()));
-                        setHasBannedTerms(foundTerms);
-                    }
+        if (!searchId.trim()) {
+            setSearchError("Please enter an advert ID");
+            return;
+        }
 
-                    if (advertData.ownerId) {
-                        const ownerRef = doc(db, "users", advertData.ownerId);
-                        const ownerSnap = await getDoc(ownerRef);
-                        if (ownerSnap.exists()) {
-                            setOwnerInfo({ uid: ownerSnap.id, ...ownerSnap.data() });
-                        }
+        setIsSearching(true);
+        setSearchError("");
+
+        try {
+            const searchedAdvertRef = doc(db, "allListings", searchId.trim());
+            const searchedAdvertSnap = await getDoc(searchedAdvertRef);
+
+            if (searchedAdvertSnap.exists()) {
+                // Navigate to the new advert URL
+                navigate(`/admin/view-advert/${searchId.trim()}`);
+                setSearchId("");
+            } else {
+                setSearchError("No advert found with this ID");
+            }
+        } catch (error) {
+            console.error("Error searching advert:", error);
+            setSearchError("Error searching for advert. Please check the ID and try again.");
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const fetchAdvertData = async (id) => {
+        try {
+            setIsLoading(true);
+            const adRef = doc(db, "allListings", id);
+            const adSnap = await getDoc(adRef);
+            if (adSnap.exists()) {
+                const advertData = { id: adSnap.id, ...adSnap.data() };
+                setAdvert(advertData);
+                setEditedAdvert(advertData); // Initialize edited version
+                setActiveImageIndex(advertData.mainImageIndex || 0);
+
+                // Check for banned terms
+                if (advertData.description) {
+                    const lowerDesc = advertData.description.toLowerCase();
+                    const foundTerms = bannedTerms.some(term => lowerDesc.includes(term.toLowerCase()));
+                    setHasBannedTerms(foundTerms);
+                }
+
+                if (advertData.ownerId) {
+                    const ownerRef = doc(db, "users", advertData.ownerId);
+                    const ownerSnap = await getDoc(ownerRef);
+                    if (ownerSnap.exists()) {
+                        setOwnerInfo({ uid: ownerSnap.id, ...ownerSnap.data() });
                     }
                 }
-            } catch (error) {
-                console.error("Error fetching advert or owner info:", error);
-            } finally {
-                setIsLoading(false);
             }
-        };
+        } catch (error) {
+            console.error("Error fetching advert or owner info:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        fetchAdvertAndOwner();
+    useEffect(() => {
+        if (advertId) {
+            fetchAdvertData(advertId);
+        }
     }, [advertId]);
 
     const hasHealthTests = Array.isArray(advert?.healthTests) && advert.healthTests.length > 0;
@@ -528,6 +566,38 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                             <div className="advert-view-action-bar-left">
                                 <h1 className="advert-view-title">{advert.title || "Untitled Advert"}</h1>
                                 <span className="advert-view-id">ID: {advert.id}</span>
+                            </div>
+                            <div className="advert-view-action-bar-center">
+                                {/* Search Form */}
+                                <form onSubmit={handleSearch} className="advert-view-search-form">
+                                    <div className="advert-view-search-wrapper">
+                                        <input
+                                            type="text"
+                                            value={searchId}
+                                            onChange={(e) => {
+                                                setSearchId(e.target.value);
+                                                setSearchError("");
+                                            }}
+                                            placeholder="Search by Advert ID..."
+                                            className="advert-view-search-input"
+                                            disabled={isSearching}
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="advert-view-search-button"
+                                            disabled={isSearching || !searchId.trim()}
+                                        >
+                                            {isSearching ? (
+                                                <div className="advert-view-search-spinner"></div>
+                                            ) : (
+                                                <FaSearch />
+                                            )}
+                                        </button>
+                                    </div>
+                                    {searchError && (
+                                        <div className="advert-view-search-error">{searchError}</div>
+                                    )}
+                                </form>
                             </div>
                             <div className="advert-view-action-bar-right">
                                 {isEditMode ? (

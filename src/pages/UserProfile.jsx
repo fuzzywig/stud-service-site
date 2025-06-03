@@ -26,7 +26,8 @@ import {
     faLightbulb,
     faPlus,
     faCheckCircle,
-    faSpinner
+    faSpinner,
+    faFingerprint
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -1020,6 +1021,13 @@ export default function UserProfile() {
                                 <span className="up-stat-value">{followingCount}</span>
                                 <span className="up-stat-label">Following</span>
                             </div>
+                        </div>
+
+                        {/* User ID Display */}
+                        <div className="up-profile-uid">
+                            <FontAwesomeIcon icon={faFingerprint} className="up-uid-icon" />
+                            <span className="up-uid-label">User ID:</span>
+                            <span className="up-uid-value">{uid}</span>
                         </div>
                     </div>
                 </div>
