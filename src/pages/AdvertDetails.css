@@ -2508,3 +2508,25 @@ body.tooltip-open {
         font-size: 11px;
     }
 }
+/* Global fix for all containers */
+* {
+    box-sizing: border-box;
+}
+
+.stud-details-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 50px 20px 20px;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    width: 100%; /* Ensure it doesn't exceed viewport */
+}
+
+/* Ensure all major sections respect boundaries */
+.left-column,
+.right-column,
+.gallery-section,
+.about-section,
+.info-card {
+    max-width: 100%;
+    overflow-x: hidden;
+}

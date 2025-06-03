@@ -972,7 +972,7 @@ function AdvertDetails() {
                                     }}
                                 >
                                     <FontAwesomeIcon icon={faPenToSquare} />
-                                    Review Stud
+                                    Review
                                 </button>
                             )}
                         </div>
