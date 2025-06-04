@@ -14,7 +14,8 @@ import {
     doc,
     updateDoc,
     setDoc,
-    where
+    where,
+    limit
 } from 'firebase/firestore';
 import './ManageUsers.css';
 import {
@@ -34,7 +35,8 @@ import {
     FaExclamationTriangle,
     FaCheckCircle,
     FaCopy,
-    FaFilter
+    FaFilter,
+    FaClock
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
@@ -122,10 +124,31 @@ const ManageUsers = () => {
 
     const fetchUserStats = async (userData) => {
         try {
-            const [advertsSnap, reviewsSnap, notesSnap] = await Promise.all([
+            // Fetch notes separately to handle potential query errors
+            let notesCount = 0;
+            try {
+                const notesSnap = await getDocs(
+                    query(
+                        collection(db, 'adminNotes'),
+                        where('userId', '==', userData.id)
+                    )
+                );
+                notesCount = notesSnap.size;
+            } catch (notesError) {
+                console.log('Error fetching notes, trying without query:', notesError);
+                // If query fails, try to get all notes and filter manually
+                try {
+                    const allNotesSnap = await getDocs(collection(db, 'adminNotes'));
+                    notesCount = allNotesSnap.docs.filter(doc => doc.data().userId === userData.id).length;
+                } catch (fallbackError) {
+                    console.error('Failed to fetch notes:', fallbackError);
+                }
+            }
+
+            const [advertsSnap, reviewsSnap, recentAdvertsSnap] = await Promise.all([
                 getDocs(
                     query(
-                        collection(db, 'studAds'),
+                        collection(db, 'allListings'),
                         where('ownerId', '==', userData.id),
                         where('approved', '==', true)
                     )
@@ -139,17 +162,28 @@ const ManageUsers = () => {
                 ),
                 getDocs(
                     query(
-                        collection(db, 'adminNotes'),
-                        where('userId', '==', userData.id)
+                        collection(db, 'allListings'),
+                        where('ownerId', '==', userData.id),
+                        where('approved', '==', true),
+                        orderBy('createdAt', 'desc'),
+                        limit(3)
                     )
                 )
             ]);
+
+            const recentAdverts = recentAdvertsSnap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            console.log(`User ${userData.id} has ${notesCount} notes`);
 
             return {
                 ...userData,
                 advertCount: advertsSnap.size,
                 reviewCount: reviewsSnap.size,
-                notesCount: notesSnap.size
+                notesCount: notesCount,
+                recentAdverts: recentAdverts
             };
         } catch (error) {
             console.error('Error fetching user stats:', error);
@@ -157,7 +191,8 @@ const ManageUsers = () => {
                 ...userData,
                 advertCount: 0,
                 reviewCount: 0,
-                notesCount: 0
+                notesCount: 0,
+                recentAdverts: []
             };
         }
     };
@@ -247,6 +282,13 @@ const ManageUsers = () => {
         try {
             await deleteDoc(doc(db, 'adminNotes', noteId));
             await openNotesPopup(selectedUserForNotes);
+
+            // Update the notes count in the user list
+            setUsers(prev => prev.map(user =>
+                user.id === selectedUserForNotes
+                    ? { ...user, notesCount: Math.max(0, user.notesCount - 1) }
+                    : user
+            ));
         } catch (error) {
             console.error('Error deleting note:', error);
         }
@@ -299,15 +341,31 @@ const ManageUsers = () => {
         return duplicateGroups.some(group => group.originalUser.id === userId);
     };
 
+    const formatTimeAgo = (timestamp) => {
+        if (!timestamp) return 'Unknown time';
+
+        const now = new Date();
+        const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+        return `${Math.floor(diffDays / 365)} years ago`;
+    };
+
     // Show loading while auth is being checked
     if (authLoading) {
         return (
-            <div className="admin-manage-users-page">
+            <div className="mu-admin-page">
                 <AdminSidebar />
-                <div className="content-area">
-                    <div className="loading-container">
-                        <div className="loading-animation">
-                            <div className="loading-circle"></div>
+                <div className="mu-content-area">
+                    <div className="mu-loading-container">
+                        <div className="mu-loading-animation">
+                            <div className="mu-loading-circle"></div>
                             <p>Checking authentication...</p>
                         </div>
                     </div>
@@ -319,10 +377,10 @@ const ManageUsers = () => {
     // Show error if not authorized
     if (!userData?.isAdmin) {
         return (
-            <div className="admin-manage-users-page">
+            <div className="mu-admin-page">
                 <AdminSidebar />
-                <div className="content-area">
-                    <div className="error-container" style={{ padding: '40px', textAlign: 'center' }}>
+                <div className="mu-content-area">
+                    <div className="mu-error-container">
                         <h2>Access Denied</h2>
                         <p>You do not have permission to view this page.</p>
                     </div>
@@ -332,34 +390,34 @@ const ManageUsers = () => {
     }
 
     return (
-        <div className="admin-manage-users-page">
+        <div className="mu-admin-page">
             <AdminSidebar />
 
-            <div className="content-area">
-                <div className="page-header">
-                    <h1 className="page-title">Manage Users</h1>
-                    <div className="page-actions">
-                        <div className="filter-controls">
+            <div className="mu-content-area">
+                <div className="mu-page-header">
+                    <h1 className="mu-page-title">Manage Users</h1>
+                    <div className="mu-page-actions">
+                        <div className="mu-filter-controls">
                             <button
-                                className={`filter-button ${filterStatus === 'all' ? 'active' : ''}`}
+                                className={`mu-filter-button ${filterStatus === 'all' ? 'mu-active' : ''}`}
                                 onClick={() => handleFilterChange('all')}
                             >
                                 All Users
                             </button>
                             <button
-                                className={`filter-button ${filterStatus === 'active' ? 'active' : ''}`}
+                                className={`mu-filter-button ${filterStatus === 'active' ? 'mu-active' : ''}`}
                                 onClick={() => handleFilterChange('active')}
                             >
                                 Active
                             </button>
                             <button
-                                className={`filter-button ${filterStatus === 'blacklisted' ? 'active' : ''}`}
+                                className={`mu-filter-button ${filterStatus === 'blacklisted' ? 'mu-active' : ''}`}
                                 onClick={() => handleFilterChange('blacklisted')}
                             >
                                 Blacklisted
                             </button>
                             <button
-                                className={`filter-button duplicate-filter ${showDuplicatesOnly ? 'active' : ''}`}
+                                className={`mu-filter-button mu-duplicate-filter ${showDuplicatesOnly ? 'mu-active' : ''}`}
                                 onClick={() => setShowDuplicatesOnly(!showDuplicatesOnly)}
                             >
                                 <FaCopy /> Duplicates Only
@@ -368,21 +426,21 @@ const ManageUsers = () => {
                     </div>
                 </div>
 
-                <div className="search-section">
-                    <div className="search-container">
-                        <FaSearch className="search-icon" />
+                <div className="mu-search-section">
+                    <div className="mu-search-container">
+                        <FaSearch className="mu-search-icon" />
                         <input
                             type="text"
                             placeholder="Search users by name, email, phone, or ID..."
                             value={searchTerm}
                             onChange={handleSearchChange}
-                            className="search-input"
+                            className="mu-search-input"
                         />
                     </div>
-                    <div className="search-results-count">
+                    <div className="mu-search-results-count">
                         <span>{filteredUsers.length} users found</span>
                         {duplicateGroups.length > 0 && (
-                            <span className="duplicate-count">
+                            <span className="mu-duplicate-count">
                                 • {duplicateGroups.length} duplicate groups detected
                             </span>
                         )}
@@ -390,38 +448,32 @@ const ManageUsers = () => {
                 </div>
 
                 {error && (
-                    <div className="error-banner" style={{
-                        background: '#f8d7da',
-                        color: '#721c24',
-                        padding: '12px',
-                        borderRadius: '4px',
-                        marginBottom: '20px'
-                    }}>
+                    <div className="mu-error-banner">
                         {error}
                     </div>
                 )}
 
                 {isLoading ? (
-                    <div className="loading-container">
-                        <div className="loading-animation">
-                            <div className="loading-circle"></div>
-                            <div className="loading-lines">
-                                <div className="loading-line"></div>
-                                <div className="loading-line"></div>
-                                <div className="loading-line"></div>
+                    <div className="mu-loading-container">
+                        <div className="mu-loading-animation">
+                            <div className="mu-loading-circle"></div>
+                            <div className="mu-loading-lines">
+                                <div className="mu-loading-line"></div>
+                                <div className="mu-loading-line"></div>
+                                <div className="mu-loading-line"></div>
                             </div>
                         </div>
                     </div>
                 ) : (
                     <>
                         {duplicateGroups.length > 0 && !showDuplicatesOnly && (
-                            <div className="duplicate-alert-banner">
-                                <FaExclamationTriangle className="alert-icon" />
+                            <div className="mu-duplicate-alert-banner">
+                                <FaExclamationTriangle className="mu-alert-icon" />
                                 <span>
                                     {duplicateGroups.length} duplicate account group{duplicateGroups.length > 1 ? 's' : ''} detected
                                 </span>
                                 <button
-                                    className="view-duplicates-btn"
+                                    className="mu-view-duplicates-btn"
                                     onClick={() => setShowDuplicatesOnly(true)}
                                 >
                                     View Duplicates
@@ -430,7 +482,7 @@ const ManageUsers = () => {
                         )}
 
                         {filteredUsers.length > 0 ? (
-                            <div className="users-list">
+                            <div className="mu-users-list">
                                 {filteredUsers.map((user) => {
                                     const duplicateGroup = duplicateGroups.find(group =>
                                         group.users.some(u => u.id === user.id)
@@ -440,78 +492,78 @@ const ManageUsers = () => {
 
                                     return (
                                         <div
-                                            className={`user-list-item ${isDuplicate ? 'is-duplicate' : ''} ${isOriginal ? 'is-original' : ''}`}
+                                            className={`mu-user-list-item ${isDuplicate ? 'mu-is-duplicate' : ''} ${isOriginal ? 'mu-is-original' : ''}`}
                                             key={user.id}
                                         >
-                                            <div className="user-avatar-section">
-                                                <div className="user-avatar-wrapper">
+                                            <div className="mu-user-avatar-section">
+                                                <div className="mu-user-avatar-wrapper">
                                                     {user.avatar ? (
                                                         <img
                                                             src={user.avatar}
                                                             alt={`${user.firstName} ${user.lastName}`}
-                                                            className="user-avatar"
+                                                            className="mu-user-avatar"
                                                         />
                                                     ) : (
-                                                        <FaUserCircle className="user-avatar default-avatar-icon" />
+                                                        <FaUserCircle className="mu-user-avatar mu-default-avatar-icon" />
                                                     )}
                                                     <span
-                                                        className={`status-indicator ${
-                                                            user.blacklisted ? 'status-blacklisted' : 'status-active'
+                                                        className={`mu-status-indicator ${
+                                                            user.blacklisted ? 'mu-status-blacklisted' : 'mu-status-active'
                                                         }`}
                                                     ></span>
                                                 </div>
                                             </div>
 
-                                            <div className="user-info-section">
-                                                <div className="user-header">
-                                                    <h3 className="user-name">
+                                            <div className="mu-user-info-section">
+                                                <div className="mu-user-header">
+                                                    <h3 className="mu-user-name">
                                                         {user.firstName} {user.lastName}
                                                         {isDuplicate && (
-                                                            <span className="duplicate-badge duplicate">
+                                                            <span className="mu-duplicate-badge mu-duplicate">
                                                                 <FaCopy /> Duplicate
                                                             </span>
                                                         )}
                                                         {isOriginal && duplicateGroup && (
-                                                            <span className="duplicate-badge original">
+                                                            <span className="mu-duplicate-badge mu-original">
                                                                 <FaCheckCircle /> Original ({duplicateGroup.duplicateCount} duplicate{duplicateGroup.duplicateCount > 1 ? 's' : ''})
                                                             </span>
                                                         )}
                                                     </h3>
                                                     {user.createdAt && (
-                                                        <span className="user-joined-date">
-                                                            <FaCalendarAlt className="date-icon" />
+                                                        <span className="mu-user-joined-date">
+                                                            <FaCalendarAlt className="mu-date-icon" />
                                                             Joined {new Date(user.createdAt.seconds * 1000).toLocaleDateString()}
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <div className="user-details">
-                                                    <div className="user-detail">
-                                                        <FaEnvelope className="detail-icon" />
-                                                        <span className="detail-value">{user.email}</span>
+                                                <div className="mu-user-details">
+                                                    <div className="mu-user-detail">
+                                                        <FaEnvelope className="mu-detail-icon" />
+                                                        <span className="mu-detail-value">{user.email}</span>
                                                     </div>
                                                     {user.phone && (
-                                                        <div className="user-detail">
-                                                            <FaPhone className="detail-icon" />
-                                                            <span className="detail-value">{user.phone}</span>
+                                                        <div className="mu-user-detail">
+                                                            <FaPhone className="mu-detail-icon" />
+                                                            <span className="mu-detail-value">{user.phone}</span>
                                                         </div>
                                                     )}
                                                     {(user.city || user.county) && (
-                                                        <div className="user-detail">
-                                                            <FaMapMarkerAlt className="detail-icon" />
-                                                            <span className="detail-value">
+                                                        <div className="mu-user-detail">
+                                                            <FaMapMarkerAlt className="mu-detail-icon" />
+                                                            <span className="mu-detail-value">
                                                                 {user.city && user.county
                                                                     ? `${user.city}, ${user.county}`
                                                                     : user.city || user.county}
                                                             </span>
                                                         </div>
                                                     )}
-                                                    <div className="user-detail">
-                                                        <FaIdCard className="detail-icon" />
-                                                        <span className="detail-value user-id">
+                                                    <div className="mu-user-detail">
+                                                        <FaIdCard className="mu-detail-icon" />
+                                                        <span className="mu-detail-value mu-user-id">
                                                             ID: {user.id}
                                                             <button
-                                                                className="copy-id-btn"
+                                                                className="mu-copy-id-btn"
                                                                 onClick={() => copyToClipboard(user.id)}
                                                                 title="Copy ID"
                                                             >
@@ -522,44 +574,72 @@ const ManageUsers = () => {
                                                 </div>
 
                                                 {duplicateGroup && (
-                                                    <div className="composite-key-info">
-                                                        <span className="composite-label">Composite Key:</span>
-                                                        <code className="composite-value">{user.compositeKey}</code>
+                                                    <div className="mu-composite-key-info">
+                                                        <span className="mu-composite-label">Composite Key:</span>
+                                                        <code className="mu-composite-value">{user.compositeKey}</code>
                                                     </div>
                                                 )}
 
-                                                <div className="user-stats">
-                                                    <div className="stat-item">
-                                                        <FaAd className="stat-icon" />
-                                                        <span className="stat-value">{user.advertCount} Adverts</span>
+                                                <div className="mu-user-stats">
+                                                    <div className="mu-stat-item">
+                                                        <FaAd className="mu-stat-icon" />
+                                                        <span className="mu-stat-value">{user.advertCount} Adverts</span>
                                                     </div>
-                                                    <div className="stat-item">
-                                                        <FaStar className="stat-icon" />
-                                                        <span className="stat-value">{user.reviewCount} Reviews</span>
+                                                    <div className="mu-stat-item">
+                                                        <FaStar className="mu-stat-icon" />
+                                                        <span className="mu-stat-value">{user.reviewCount} Reviews</span>
                                                     </div>
                                                     <button
-                                                        className={`admin-comment-button ${user.notesCount > 0 ? 'has-notes' : ''}`}
+                                                        className={`mu-admin-comment-button ${user.notesCount > 0 ? 'mu-has-notes' : ''}`}
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             openNotesPopup(user.id);
                                                         }}
                                                     >
-                                                        <FaCommentAlt className="comment-icon" />
+                                                        <FaCommentAlt className="mu-comment-icon" />
                                                         <span>
                                                             Admin Notes{user.notesCount > 0 ? ` (${user.notesCount})` : ''}
                                                         </span>
                                                     </button>
                                                 </div>
+
+                                                {/* Recent Adverts Section */}
+                                                {user.recentAdverts && user.recentAdverts.length > 0 && (
+                                                    <div className="mu-recent-adverts-section">
+                                                        <h4 className="mu-recent-adverts-title">Recent Adverts</h4>
+                                                        <div className="mu-recent-adverts-list">
+                                                            {user.recentAdverts.map((advert) => (
+                                                                <div key={advert.id} className="mu-recent-advert-item">
+                                                                    <Link
+                                                                        to={`/admin/adverts/${advert.id}`}
+                                                                        className="mu-advert-link"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <div className="mu-advert-title">{advert.title || 'Untitled Advert'}</div>
+                                                                        <div className="mu-advert-meta">
+                                                                            <span className="mu-advert-location">
+                                                                                <FaMapMarkerAlt /> {advert.city || 'Unknown Location'}
+                                                                            </span>
+                                                                            <span className="mu-advert-date">
+                                                                                <FaClock /> {formatTimeAgo(advert.createdAt)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </Link>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="user-actions">
-                                                <Link to={`/admin/user/${user.id}`} className="view-profile-button">
+                                            <div className="mu-user-actions">
+                                                <Link to={`/admin/user/${user.id}`} className="mu-view-profile-button">
                                                     <FaEye /> View Profile
                                                 </Link>
                                                 <button
-                                                    className={`blacklist-button ${
-                                                        user.blacklisted ? 'unblacklist' : 'blacklist'
+                                                    className={`mu-blacklist-button ${
+                                                        user.blacklisted ? 'mu-unblacklist' : 'mu-blacklist'
                                                     }`}
                                                     onClick={(e) => toggleBlacklist(e, user.id, user.blacklisted)}
                                                 >
@@ -571,7 +651,7 @@ const ManageUsers = () => {
                                 })}
                             </div>
                         ) : (
-                            <div className="no-results">
+                            <div className="mu-no-results">
                                 <p>No users found matching your search criteria.</p>
                             </div>
                         )}
@@ -579,11 +659,11 @@ const ManageUsers = () => {
                 )}
 
                 {selectedUserForNotes && (
-                    <div className="admin-notes-popup">
-                        <div className="popup-backdrop" onClick={() => setSelectedUserForNotes(null)}></div>
-                        <div className="popup-content">
+                    <div className="mu-admin-notes-popup">
+                        <div className="mu-popup-backdrop" onClick={() => setSelectedUserForNotes(null)}></div>
+                        <div className="mu-popup-content">
                             <button
-                                className="popup-close-button"
+                                className="mu-popup-close-button"
                                 onClick={() => setSelectedUserForNotes(null)}
                             >
                                 <FaTimes />
@@ -591,19 +671,19 @@ const ManageUsers = () => {
 
                             <h3>Admin Notes</h3>
 
-                            <ul className="note-list">
+                            <ul className="mu-note-list">
                                 {userNotes.length > 0 ? (
                                     userNotes.map((note) => (
-                                        <li key={note.id}>
-                                            <p>{note.text}</p>
-                                            <small>
+                                        <li key={note.id} className="mu-note-item">
+                                            <p className="mu-note-text">{note.text}</p>
+                                            <small className="mu-note-meta">
                                                 {note.adminName || 'Admin'} &middot;{' '}
                                                 {note.createdAt?.seconds
                                                     ? new Date(note.createdAt.seconds * 1000).toLocaleString()
                                                     : 'Unknown date'}
                                             </small>
                                             <button
-                                                className="note-delete-button"
+                                                className="mu-note-delete-button"
                                                 onClick={() => deleteNote(note.id)}
                                                 title="Delete note"
                                             >
@@ -612,11 +692,12 @@ const ManageUsers = () => {
                                         </li>
                                     ))
                                 ) : (
-                                    <li>No notes yet for this user.</li>
+                                    <li className="mu-note-item">No notes yet for this user.</li>
                                 )}
                             </ul>
 
                             <textarea
+                                className="mu-note-textarea"
                                 value={noteText}
                                 onChange={(e) => setNoteText(e.target.value)}
                                 placeholder="Add a new note..."
@@ -624,6 +705,7 @@ const ManageUsers = () => {
                             />
 
                             <button
+                                className="mu-note-save-button"
                                 onClick={async () => {
                                     if (!noteText.trim()) return;
 
@@ -641,6 +723,13 @@ const ManageUsers = () => {
                                     await setDoc(doc(collection(db, 'adminNotes')), newNote);
                                     setNoteText('');
                                     await openNotesPopup(selectedUserForNotes);
+
+                                    // Update the notes count in the user list
+                                    setUsers(prev => prev.map(user =>
+                                        user.id === selectedUserForNotes
+                                            ? { ...user, notesCount: user.notesCount + 1 }
+                                            : user
+                                    ));
                                 }}
                                 disabled={!noteText.trim()}
                             >

@@ -90,44 +90,99 @@ export default function AdminUIDInspector() {
         setExpandedSections({});
 
         const res = {};
+        let foundUserId = null;
 
         try {
             if (filters.profile) {
-                const userSnap = await getDoc(doc(db, "users", uid));
-                res.profile = userSnap.exists() ? userSnap.data() : null;
-                if (userSnap.exists()) {
-                    setExpandedSections(prev => ({ ...prev, profile: true }));
+                // First, try direct lookup (for full UID)
+                try {
+                    const userSnap = await getDoc(doc(db, "users", uid));
+                    if (userSnap.exists()) {
+                        res.profile = userSnap.data();
+                        foundUserId = uid;
+                        setExpandedSections(prev => ({ ...prev, profile: true }));
+                    }
+                } catch {
+                    // Direct lookup failed, continue to partial search
+                    // No need to use 'err' here
+                }
+
+                // If no direct match and search term is 10 chars or less, search all users
+                if (!res.profile && uid.length <= 10) {
+                    const usersQuery = collection(db, "users");
+                    const usersSnap = await getDocs(usersQuery);
+
+                    const matches = [];
+                    usersSnap.forEach((doc) => {
+                        const userId = doc.id;
+                        // Check if the last N characters of the userId match the search term
+                        if (userId.endsWith(uid)) {
+                            matches.push({
+                                id: userId,
+                                data: doc.data()
+                            });
+                        }
+                    });
+
+                    if (matches.length === 1) {
+                        // Single match found, use it
+                        res.profile = matches[0].data;
+                        foundUserId = matches[0].id;
+                        setExpandedSections(prev => ({ ...prev, profile: true }));
+                    } else if (matches.length > 1) {
+                        // Multiple matches found - store them for display
+                        res.multipleMatches = matches;
+                        setResults(res);
+                        setLoading(false);
+                        return; // Don't continue with other queries
+                    } else if (matches.length === 0) {
+                        setError(`No users found with UID ending in "${uid}"`);
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
 
-            if (filters.adverts) {
-                const adQuery = query(collection(db, "allListings"), where("ownerId", "==", uid));
-                const adSnap = await getDocs(adQuery);
-                res.adverts = adSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Use the found userId for other queries (if we found a single user)
+            const uidToUse = foundUserId || uid;
+
+            if (foundUserId || uid.length > 10) {
+                // Only proceed with other queries if we found a user or have a full UID
+                if (filters.adverts) {
+                    const adQuery = query(collection(db, "allListings"), where("ownerId", "==", uidToUse));
+                    const adSnap = await getDocs(adQuery);
+                    res.adverts = adSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+
+                if (filters.reviewsWritten) {
+                    const rwQuery = query(collection(db, "reviews"), where("reviewerId", "==", uidToUse));
+                    const rwSnap = await getDocs(rwQuery);
+                    res.reviewsWritten = rwSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+
+                if (filters.reviewsReceived) {
+                    const rrQuery = query(collection(db, "reviews"), where("ownerId", "==", uidToUse));
+                    const rrSnap = await getDocs(rrQuery);
+                    res.reviewsReceived = rrSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+
+                if (filters.adminNotes) {
+                    const anQuery = query(collection(db, "adminNotes"), where("userId", "==", uidToUse));
+                    const anSnap = await getDocs(anQuery);
+                    res.adminNotes = anSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+
+                if (filters.conversations) {
+                    const convQuery = query(collection(db, "conversations"), where("participants", "array-contains", uidToUse));
+                    const convSnap = await getDocs(convQuery);
+                    res.conversations = convSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
             }
 
-            if (filters.reviewsWritten) {
-                const rwQuery = query(collection(db, "reviews"), where("reviewerId", "==", uid));
-                const rwSnap = await getDocs(rwQuery);
-                res.reviewsWritten = rwSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
-
-            if (filters.reviewsReceived) {
-                const rrQuery = query(collection(db, "reviews"), where("ownerId", "==", uid));
-                const rrSnap = await getDocs(rrQuery);
-                res.reviewsReceived = rrSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
-
-            if (filters.adminNotes) {
-                const anQuery = query(collection(db, "adminNotes"), where("userId", "==", uid));
-                const anSnap = await getDocs(anQuery);
-                res.adminNotes = anSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
-
-            if (filters.conversations) {
-                const convQuery = query(collection(db, "conversations"), where("participants", "array-contains", uid));
-                const convSnap = await getDocs(convQuery);
-                res.conversations = convSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // If we used a partial search, show which full UID was found
+            if (foundUserId && foundUserId !== uid) {
+                // Success message instead of error
+                setError(`✓ Found user with full UID: ${foundUserId}`);
             }
 
             setResults(res);
@@ -174,7 +229,7 @@ export default function AdminUIDInspector() {
                                 <input
                                     type="text"
                                     className="uid-search-input"
-                                    placeholder="Enter User ID (UID) to search..."
+                                    placeholder="Enter full UID or last 10 digits..."
                                     value={uid}
                                     onChange={(e) => setUid(e.target.value)}
                                     onKeyPress={handleKeyPress}
@@ -247,6 +302,37 @@ export default function AdminUIDInspector() {
                 )}
 
                 <div className="uid-results">
+                    {/* Multiple Matches Warning - ADD IT HERE */}
+                    {results.multipleMatches && results.multipleMatches.length > 0 && (
+                        <div className="uid-warning-message">
+                            <FaExclamationCircle className="uid-warning-icon" />
+                            <div className="uid-warning-content">
+                                <h3>Multiple users found with UID ending in "{uid}"</h3>
+                                <p>Found {results.multipleMatches.length} matching users. Please select one or use a more specific search:</p>
+
+                                <div className="uid-matches-list">
+                                    {results.multipleMatches.map((match) => (
+                                        <div key={match.id} className="uid-match-item">
+                                            <div className="uid-match-info">
+                                                <strong>{match.data.firstName} {match.data.lastName}</strong>
+                                                <span className="uid-match-email">{match.data.email}</span>
+                                                <code className="uid-match-id">{match.id}</code>
+                                            </div>
+                                            <button
+                                                className="uid-match-select-btn"
+                                                onClick={() => {
+                                                    setUid(match.id);
+                                                    handleSearch();
+                                                }}
+                                            >
+                                                Select
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {/* Profile Section */}
                     {results.profile && (
                         <div className="uid-result-card">

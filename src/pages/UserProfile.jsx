@@ -1024,10 +1024,18 @@ export default function UserProfile() {
                         </div>
 
                         {/* User ID Display */}
+                        {/* User ID Display */}
                         <div className="up-profile-uid">
                             <FontAwesomeIcon icon={faFingerprint} className="up-uid-icon" />
                             <span className="up-uid-label">User ID:</span>
-                            <span className="up-uid-value">{uid}</span>
+                            {uid.length > 10 ? (
+                                <>
+                                    <span className="up-uid-value">{uid.slice(0, -10)}</span>
+                                    <span className="up-uid-value up-uid-highlight">{uid.slice(-10)}</span>
+                                </>
+                            ) : (
+                                <span className="up-uid-value up-uid-highlight">{uid}</span>
+                            )}
                         </div>
                     </div>
                 </div>

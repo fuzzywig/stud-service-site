@@ -1,7 +1,7 @@
 /* src/pages/admin/ManageUsers.css */
 
 /* Main container - works with AdminSidebar */
-.admin-manage-users-page {
+.mu-admin-page {
     display: flex;
     min-height: 100vh;
     background-color: #f9fafb;
@@ -11,13 +11,13 @@
     box-sizing: border-box;
 }
 
-.admin-manage-users-page *,
-.admin-manage-users-page *::before,
-.admin-manage-users-page *::after {
+.mu-admin-page *,
+.mu-admin-page *::before,
+.mu-admin-page *::after {
     box-sizing: border-box;
 }
 
-.admin-manage-users-page .content-area {
+.mu-admin-page .mu-content-area {
     flex: 1;
     padding: 1rem;
     max-width: 100%;
@@ -28,14 +28,14 @@
 
 /* When sidebar is open on larger screens */
 @media (min-width: 1024px) {
-    .admin-manage-users-page .content-area {
+    .mu-admin-page .mu-content-area {
         margin-left: 250px; /* Width of the sidebar */
         width: calc(100% - 250px);
     }
 }
 
 /* Page header */
-.admin-manage-users-page .page-header {
+.mu-admin-page .mu-page-header {
     display: flex;
     flex-direction: column;
     margin-bottom: 1.5rem;
@@ -45,14 +45,14 @@
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .page-header {
+    .mu-admin-page .mu-page-header {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
     }
 }
 
-.admin-manage-users-page .page-title {
+.mu-admin-page .mu-page-title {
     font-size: 1.5rem;
     line-height: 2rem;
     font-weight: 700;
@@ -61,31 +61,31 @@
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .page-title {
+    .mu-admin-page .mu-page-title {
         margin-bottom: 0;
     }
 }
 
 /* Adjust padding for page content when toggle is visible */
 @media (max-width: 1023px) {
-    .admin-manage-users-page .page-title {
+    .mu-admin-page .mu-page-title {
         padding-left: 3rem; /* Make room for the hamburger button */
     }
 }
 
-.admin-manage-users-page .page-actions {
+.mu-admin-page .mu-page-actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.admin-manage-users-page .filter-controls {
+.mu-admin-page .mu-filter-controls {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
 
-.admin-manage-users-page .filter-button {
+.mu-admin-page .mu-filter-button {
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     font-size: 0.875rem;
@@ -96,19 +96,19 @@
     transition: all 0.2s ease;
 }
 
-.admin-manage-users-page .filter-button:hover {
+.mu-admin-page .mu-filter-button:hover {
     border-color: #d1d5db;
     color: #1f2937;
 }
 
-.admin-manage-users-page .filter-button.active {
+.mu-admin-page .mu-filter-button.mu-active {
     background-color: #2563eb;
     border-color: #2563eb;
     color: white;
 }
 
 /* Search section */
-.admin-manage-users-page .search-section {
+.mu-admin-page .mu-search-section {
     display: flex;
     flex-direction: column;
     margin-bottom: 1.5rem;
@@ -116,27 +116,27 @@
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .search-section {
+    .mu-admin-page .mu-search-section {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
     }
 }
 
-.admin-manage-users-page .search-container {
+.mu-admin-page .mu-search-container {
     position: relative;
     width: 100%;
     margin-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .search-container {
+    .mu-admin-page .mu-search-container {
         width: 400px;
         margin-bottom: 0;
     }
 }
 
-.admin-manage-users-page .search-icon {
+.mu-admin-page .mu-search-icon {
     position: absolute;
     left: 1rem;
     top: 50%;
@@ -144,7 +144,7 @@
     color: #9ca3af;
 }
 
-.admin-manage-users-page .search-input {
+.mu-admin-page .mu-search-input {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 2.5rem;
     border-radius: 0.375rem;
@@ -155,13 +155,13 @@
     transition: border-color 0.2s;
 }
 
-.admin-manage-users-page .search-input:focus {
+.mu-admin-page .mu-search-input:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.admin-manage-users-page .search-results-count {
+.mu-admin-page .mu-search-results-count {
     font-size: 0.875rem;
     color: #6b7280;
     white-space: nowrap;
@@ -169,7 +169,7 @@
 }
 
 /* Loading state */
-.admin-manage-users-page .loading-container {
+.mu-admin-page .mu-loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -177,12 +177,12 @@
     width: 100%;
 }
 
-.admin-manage-users-page .loading-animation {
+.mu-admin-page .mu-loading-animation {
     display: flex;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: mu-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes pulse {
+@keyframes mu-pulse {
     0%, 100% {
         opacity: 1;
     }
@@ -191,27 +191,42 @@
     }
 }
 
-.admin-manage-users-page .loading-circle {
+.mu-admin-page .mu-loading-circle {
     border-radius: 9999px;
     background-color: #e5e7eb;
     height: 3rem;
     width: 3rem;
 }
 
-.admin-manage-users-page .loading-lines {
+.mu-admin-page .mu-loading-lines {
     margin-left: 1rem;
     flex: 1 1 0%;
 }
 
-.admin-manage-users-page .loading-line {
+.mu-admin-page .mu-loading-line {
     height: 1rem;
     background-color: #e5e7eb;
     border-radius: 0.25rem;
     margin-bottom: 0.5rem;
 }
 
+/* Error container */
+.mu-admin-page .mu-error-container {
+    padding: 40px;
+    text-align: center;
+}
+
+/* Error banner */
+.mu-admin-page .mu-error-banner {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
 /* Users list */
-.admin-manage-users-page .users-list {
+.mu-admin-page .mu-users-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -219,7 +234,7 @@
 }
 
 /* User list item */
-.admin-manage-users-page .user-list-item {
+.mu-admin-page .mu-user-list-item {
     display: flex;
     flex-direction: column;
     background-color: white;
@@ -230,19 +245,19 @@
     cursor: pointer;
 }
 
-.admin-manage-users-page .user-list-item:hover {
+.mu-admin-page .mu-user-list-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 @media (min-width: 640px) {
-    .admin-manage-users-page .user-list-item {
+    .mu-admin-page .mu-user-list-item {
         flex-direction: row;
     }
 }
 
 /* User avatar section */
-.admin-manage-users-page .user-avatar-section {
+.mu-admin-page .mu-user-avatar-section {
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -251,19 +266,19 @@
 }
 
 @media (min-width: 640px) {
-    .admin-manage-users-page .user-avatar-section {
+    .mu-admin-page .mu-user-avatar-section {
         width: 120px;
         flex-shrink: 0;
         border-right: 1px solid #f3f4f6;
     }
 }
 
-.admin-manage-users-page .user-avatar-wrapper {
+.mu-admin-page .mu-user-avatar-wrapper {
     position: relative;
     margin-bottom: 0.5rem;
 }
 
-.admin-manage-users-page .user-avatar {
+.mu-admin-page .mu-user-avatar {
     width: 4rem;
     height: 4rem;
     border-radius: 9999px;
@@ -271,7 +286,7 @@
     border: 2px solid white;
 }
 
-.admin-manage-users-page .status-indicator {
+.mu-admin-page .mu-status-indicator {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -281,15 +296,15 @@
     border: 2px solid white;
 }
 
-.admin-manage-users-page .status-active {
+.mu-admin-page .mu-status-active {
     background-color: #10b981;
 }
 
-.admin-manage-users-page .status-blacklisted {
+.mu-admin-page .mu-status-blacklisted {
     background-color: #ef4444;
 }
 
-.admin-manage-users-page .user-status-badge {
+.mu-admin-page .mu-user-status-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
@@ -297,39 +312,39 @@
     text-align: center;
 }
 
-.admin-manage-users-page .status-badge-active {
+.mu-admin-page .mu-status-badge-active {
     background-color: #d1fae5;
     color: #065f46;
 }
 
-.admin-manage-users-page .status-badge-blacklisted {
+.mu-admin-page .mu-status-badge-blacklisted {
     background-color: #fee2e2;
     color: #991b1b;
 }
 
 /* User info section */
-.admin-manage-users-page .user-info-section {
+.mu-admin-page .mu-user-info-section {
     flex: 1;
     padding: 1rem;
     display: flex;
     flex-direction: column;
 }
 
-.admin-manage-users-page .user-header {
+.mu-admin-page .mu-user-header {
     display: flex;
     flex-direction: column;
     margin-bottom: 0.75rem;
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .user-header {
+    .mu-admin-page .mu-user-header {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
     }
 }
 
-.admin-manage-users-page .user-name {
+.mu-admin-page .mu-user-name {
     font-size: 1.125rem;
     font-weight: 600;
     color: #1f2937;
@@ -337,24 +352,24 @@
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .user-name {
+    .mu-admin-page .mu-user-name {
         margin-bottom: 0;
     }
 }
 
-.admin-manage-users-page .user-joined-date {
+.mu-admin-page .mu-user-joined-date {
     display: flex;
     align-items: center;
     font-size: 0.75rem;
     color: #6b7280;
 }
 
-.admin-manage-users-page .date-icon {
+.mu-admin-page .mu-date-icon {
     margin-right: 0.375rem;
 }
 
 /* User details */
-.admin-manage-users-page .user-details {
+.mu-admin-page .mu-user-details {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -362,34 +377,34 @@
 }
 
 @media (min-width: 768px) {
-    .admin-manage-users-page .user-details {
+    .mu-admin-page .mu-user-details {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 1rem 2rem;
     }
 }
 
-.admin-manage-users-page .user-detail {
+.mu-admin-page .mu-user-detail {
     display: flex;
     align-items: center;
     font-size: 0.875rem;
     color: #4b5563;
 }
 
-.admin-manage-users-page .detail-icon {
+.mu-admin-page .mu-detail-icon {
     color: #6b7280;
     margin-right: 0.5rem;
     flex-shrink: 0;
 }
 
-.admin-manage-users-page .detail-value {
+.mu-admin-page .mu-detail-value {
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.admin-manage-users-page .user-id {
+.mu-admin-page .mu-user-id {
     font-family: monospace;
     font-size: 0.8rem;
     background-color: #f3f4f6;
@@ -398,7 +413,7 @@
 }
 
 /* User stats */
-.admin-manage-users-page .user-stats {
+.mu-admin-page .mu-user-stats {
     display: flex;
     gap: 1.5rem;
     margin-top: auto;
@@ -408,24 +423,24 @@
     flex-wrap: wrap;
 }
 
-.admin-manage-users-page .stat-item {
+.mu-admin-page .mu-stat-item {
     display: flex;
     align-items: center;
     font-size: 0.875rem;
     color: #4b5563;
 }
 
-.admin-manage-users-page .stat-icon {
+.mu-admin-page .mu-stat-icon {
     color: #6b7280;
     margin-right: 0.5rem;
 }
 
-.admin-manage-users-page .stat-value {
+.mu-admin-page .mu-stat-value {
     font-weight: 500;
 }
 
 /* Admin comment button */
-.admin-manage-users-page .admin-comment-button {
+.mu-admin-page .mu-admin-comment-button {
     display: flex;
     align-items: center;
     background: none;
@@ -439,17 +454,17 @@
     transition: background-color 0.2s, color 0.2s;
 }
 
-.admin-manage-users-page .admin-comment-button:hover {
+.mu-admin-page .mu-admin-comment-button:hover {
     background-color: #f3f4f6;
     color: #2563eb;
 }
 
-.admin-manage-users-page .comment-icon {
+.mu-admin-page .mu-comment-icon {
     margin-right: 0.375rem;
 }
 
 /* User actions */
-.admin-manage-users-page .user-actions {
+.mu-admin-page .mu-user-actions {
     display: flex;
     padding: 1rem;
     background-color: #f9fafb;
@@ -457,7 +472,7 @@
 }
 
 @media (min-width: 640px) {
-    .admin-manage-users-page .user-actions {
+    .mu-admin-page .mu-user-actions {
         width: 200px;
         flex-shrink: 0;
         flex-direction: column;
@@ -467,7 +482,7 @@
     }
 }
 
-.admin-manage-users-page .view-profile-button {
+.mu-admin-page .mu-view-profile-button {
     flex: 1;
     display: flex;
     align-items: center;
@@ -484,21 +499,21 @@
 }
 
 @media (min-width: 640px) {
-    .admin-manage-users-page .view-profile-button {
+    .mu-admin-page .mu-view-profile-button {
         margin-right: 0;
         margin-bottom: 0.5rem;
     }
 }
 
-.admin-manage-users-page .view-profile-button:hover {
+.mu-admin-page .mu-view-profile-button:hover {
     background-color: #1d4ed8;
 }
 
-.admin-manage-users-page .view-profile-button svg {
+.mu-admin-page .mu-view-profile-button svg {
     margin-right: 0.5rem;
 }
 
-.admin-manage-users-page .blacklist-button {
+.mu-admin-page .mu-blacklist-button {
     flex: 1;
     display: flex;
     align-items: center;
@@ -512,30 +527,30 @@
     transition: background-color 0.2s;
 }
 
-.admin-manage-users-page .blacklist-button.blacklist {
+.mu-admin-page .mu-blacklist-button.mu-blacklist {
     background-color: #dc2626;
     color: white;
 }
 
-.admin-manage-users-page .blacklist-button.blacklist:hover {
+.mu-admin-page .mu-blacklist-button.mu-blacklist:hover {
     background-color: #b91c1c;
 }
 
-.admin-manage-users-page .blacklist-button.unblacklist {
+.mu-admin-page .mu-blacklist-button.mu-unblacklist {
     background-color: #9ca3af;
     color: white;
 }
 
-.admin-manage-users-page .blacklist-button.unblacklist:hover {
+.mu-admin-page .mu-blacklist-button.mu-unblacklist:hover {
     background-color: #6b7280;
 }
 
-.admin-manage-users-page .blacklist-button svg {
+.mu-admin-page .mu-blacklist-button svg {
     margin-right: 0.5rem;
 }
 
 /* No results */
-.admin-manage-users-page .no-results {
+.mu-admin-page .mu-no-results {
     background-color: white;
     padding: 2rem;
     text-align: center;
@@ -545,157 +560,8 @@
     width: 100%;
 }
 
-/* Admin Comments Popup */
-.admin-manage-users-page .admin-comment-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-manage-users-page .comment-popup-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.admin-manage-users-page .comment-popup-content {
-    position: relative;
-    background-color: white;
-    border-radius: 0.5rem;
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    z-index: 51;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.admin-manage-users-page .comment-popup-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.admin-manage-users-page .comment-popup-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-.admin-manage-users-page .comment-popup-close {
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.admin-manage-users-page .comment-popup-close:hover {
-    background-color: #f3f4f6;
-    color: #1f2937;
-}
-
-.admin-manage-users-page .comment-popup-body {
-    padding: 1.5rem;
-}
-
-.admin-manage-users-page .comment-textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    resize: vertical;
-    min-height: 150px;
-    margin-bottom: 1rem;
-}
-
-.admin-manage-users-page .comment-textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.admin-manage-users-page .comment-popup-info {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin: 0;
-    font-style: italic;
-}
-
-.admin-manage-users-page .comment-popup-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-}
-
-.admin-manage-users-page .comment-popup-cancel {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    background-color: #f3f4f6;
-    color: #1f2937;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.admin-manage-users-page .comment-popup-cancel:hover {
-    background-color: #e5e7eb;
-}
-
-.admin-manage-users-page .comment-popup-save {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-}
-
-.admin-manage-users-page .comment-popup-save:hover {
-    background-color: #1d4ed8;
-}
-
-.admin-manage-users-page .comment-popup-save:disabled,
-.admin-manage-users-page .comment-popup-cancel:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.admin-manage-users-page .save-icon {
-    margin-right: 0.5rem;
-}
-/* === Admin Notes Popup === */
-.admin-notes-popup {
+/* Admin Notes Popup */
+.mu-admin-notes-popup {
     position: fixed;
     top: 0;
     left: 0;
@@ -707,7 +573,7 @@
     justify-content: center;
 }
 
-.popup-backdrop {
+.mu-admin-notes-popup .mu-popup-backdrop {
     position: absolute;
     top: 0;
     left: 0;
@@ -718,7 +584,7 @@
     z-index: 1;
 }
 
-.popup-content {
+.mu-admin-notes-popup .mu-popup-content {
     position: relative;
     background: #fff;
     padding: 24px;
@@ -727,10 +593,10 @@
     border-radius: 10px;
     z-index: 2;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.2s ease-in-out;
+    animation: mu-fadeIn 0.2s ease-in-out;
 }
 
-.popup-content h3 {
+.mu-admin-notes-popup .mu-popup-content h3 {
     margin-top: 0;
     margin-bottom: 12px;
     font-size: 1.4rem;
@@ -738,7 +604,7 @@
     text-align: center;
 }
 
-.note-list {
+.mu-admin-notes-popup .mu-note-list {
     max-height: 200px;
     overflow-y: auto;
     padding: 0;
@@ -746,22 +612,24 @@
     list-style: none;
 }
 
-.note-list li {
+.mu-admin-notes-popup .mu-note-item {
+    position: relative;
     padding: 10px;
+    padding-right: 30px; /* space for delete button */
     border-bottom: 1px solid #eee;
 }
 
-.note-list li p {
+.mu-admin-notes-popup .mu-note-text {
     margin: 0 0 4px 0;
     font-size: 0.95rem;
 }
 
-.note-list li small {
+.mu-admin-notes-popup .mu-note-meta {
     font-size: 0.75rem;
     color: #888;
 }
 
-.popup-content textarea {
+.mu-admin-notes-popup .mu-note-textarea {
     width: 100%;
     resize: vertical;
     border: 1px solid #ccc;
@@ -770,9 +638,10 @@
     margin-bottom: 12px;
     font-size: 0.95rem;
     font-family: inherit;
+    background: #fff;
 }
 
-.popup-content button {
+.mu-admin-notes-popup .mu-note-save-button {
     display: inline-block;
     background-color: #256845;
     color: white;
@@ -784,12 +653,17 @@
     transition: background 0.2s ease;
 }
 
-.popup-content button:hover {
+.mu-admin-notes-popup .mu-note-save-button:hover {
     background-color: #1e5438;
 }
 
+.mu-admin-notes-popup .mu-note-save-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
 /* Optional: fade-in animation */
-@keyframes fadeIn {
+@keyframes mu-fadeIn {
     from {
         opacity: 0;
         transform: translateY(-10px);
@@ -799,7 +673,8 @@
         transform: translateY(0);
     }
 }
-.popup-close-button {
+
+.mu-admin-notes-popup .mu-popup-close-button {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -812,14 +687,19 @@
     z-index: 3;
 }
 
-.popup-close-button:hover {
+.mu-admin-notes-popup .mu-popup-close-button:hover {
     color: #000;
 }
-.admin-comment-button.has-notes {
+
+.mu-admin-page .mu-admin-comment-button.mu-has-notes {
     color: #d32f2f; /* red */
     font-weight: 600;
 }
-.popup-content .note-delete-button {
+
+.mu-admin-notes-popup .mu-note-delete-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
     background: transparent !important;
     border: none;
     padding: 0;
@@ -833,38 +713,27 @@
     justify-content: center;
 }
 
-.popup-content .note-delete-button:hover {
+.mu-admin-notes-popup .mu-note-delete-button:hover {
     color: #ff5252;
 }
 
-
-.note-list li {
-    position: relative;
-    padding-right: 30px; /* space for delete button */
-}
-
-.note-delete-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
-.verified-badge {
+.mu-admin-page .mu-verified-badge {
     margin-left: 8px;
     color: green;
     font-weight: bold;
     font-size: 0.9rem;
 }
-.default-avatar-icon {
+
+.mu-admin-page .mu-default-avatar-icon {
     font-size: 80px;
     color: #ccc;
     border-radius: 50%;
     border: 3px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-/* Add these styles to your existing ManageUsers.css */
 
 /* Duplicate Alert Banner */
-.duplicate-alert-banner {
+.mu-admin-page .mu-duplicate-alert-banner {
     background: #fff3cd;
     border: 1px solid #ffeaa7;
     border-radius: 8px;
@@ -873,10 +742,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    animation: slideDown 0.3s ease-out;
+    animation: mu-slideDown 0.3s ease-out;
 }
 
-@keyframes slideDown {
+@keyframes mu-slideDown {
     from {
         transform: translateY(-20px);
         opacity: 0;
@@ -887,18 +756,18 @@
     }
 }
 
-.duplicate-alert-banner .alert-icon {
+.mu-admin-page .mu-alert-icon {
     color: #f39c12;
     font-size: 20px;
 }
 
-.duplicate-alert-banner span {
+.mu-admin-page .mu-duplicate-alert-banner span {
     flex: 1;
     color: #856404;
     font-weight: 500;
 }
 
-.view-duplicates-btn {
+.mu-admin-page .mu-view-duplicates-btn {
     background: #f39c12;
     color: white;
     border: none;
@@ -909,36 +778,36 @@
     transition: background 0.2s;
 }
 
-.view-duplicates-btn:hover {
+.mu-admin-page .mu-view-duplicates-btn:hover {
     background: #e67e22;
 }
 
 /* Duplicate Filter Button */
-.filter-button.duplicate-filter {
+.mu-admin-page .mu-filter-button.mu-duplicate-filter {
     background: #fff3cd;
     color: #856404;
     border: 1px solid #ffeaa7;
 }
 
-.filter-button.duplicate-filter.active {
+.mu-admin-page .mu-filter-button.mu-duplicate-filter.mu-active {
     background: #f39c12;
     color: white;
     border-color: #f39c12;
 }
 
 /* User List Item Duplicate Indicators */
-.user-list-item.is-duplicate {
+.mu-admin-page .mu-user-list-item.mu-is-duplicate {
     border-left: 4px solid #f39c12;
     background: linear-gradient(to right, #fff3cd 0%, transparent 100px);
 }
 
-.user-list-item.is-original {
+.mu-admin-page .mu-user-list-item.mu-is-original {
     border-left: 4px solid #27ae60;
     background: linear-gradient(to right, #e8f8f5 0%, transparent 100px);
 }
 
 /* Duplicate Badges */
-.duplicate-badge {
+.mu-admin-page .mu-duplicate-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -949,24 +818,24 @@
     margin-left: 8px;
 }
 
-.duplicate-badge.duplicate {
+.mu-admin-page .mu-duplicate-badge.mu-duplicate {
     background: #fff3cd;
     color: #856404;
     border: 1px solid #ffeaa7;
 }
 
-.duplicate-badge.original {
+.mu-admin-page .mu-duplicate-badge.mu-original {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-.duplicate-badge svg {
+.mu-admin-page .mu-duplicate-badge svg {
     font-size: 10px;
 }
 
 /* Composite Key Display */
-.composite-key-info {
+.mu-admin-page .mu-composite-key-info {
     margin-top: 8px;
     padding: 8px 12px;
     background: #f8f9fa;
@@ -977,12 +846,12 @@
     gap: 8px;
 }
 
-.composite-label {
+.mu-admin-page .mu-composite-label {
     color: #6c757d;
     font-weight: 500;
 }
 
-.composite-value {
+.mu-admin-page .mu-composite-value {
     background: #e9ecef;
     padding: 2px 6px;
     border-radius: 3px;
@@ -993,7 +862,7 @@
 }
 
 /* Copy ID Button */
-.copy-id-btn {
+.mu-admin-page .mu-copy-id-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1008,18 +877,18 @@
     transition: all 0.2s;
 }
 
-.copy-id-btn:hover {
+.mu-admin-page .mu-copy-id-btn:hover {
     background: #e9ecef;
     border-color: #adb5bd;
 }
 
-.copy-id-btn svg {
+.mu-admin-page .mu-copy-id-btn svg {
     font-size: 10px;
     color: #6c757d;
 }
 
 /* Search Results Count Enhancement */
-.search-results-count {
+.mu-admin-page .mu-search-results-count {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1028,70 +897,70 @@
     color: #6c757d;
 }
 
-.duplicate-count {
+.mu-admin-page .mu-duplicate-count {
     color: #f39c12;
     font-weight: 500;
 }
 
 /* Enhanced User Stats for Duplicates */
-.user-list-item.is-duplicate .user-stats,
-.user-list-item.is-original .user-stats {
+.mu-admin-page .mu-user-list-item.mu-is-duplicate .mu-user-stats,
+.mu-admin-page .mu-user-list-item.mu-is-original .mu-user-stats {
     padding-top: 8px;
     border-top: 1px solid #e9ecef;
     margin-top: 8px;
 }
 
 /* Loading Animation Enhancement */
-.loading-container {
+.mu-admin-page .mu-loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 400px;
 }
 
-.loading-animation {
+.mu-admin-page .mu-loading-animation {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
 }
 
-.loading-circle {
+.mu-admin-page .mu-loading-circle {
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
     border-top: 3px solid #007bff;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: mu-spin 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes mu-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-.loading-lines {
+.mu-admin-page .mu-loading-lines {
     display: flex;
     gap: 4px;
 }
 
-.loading-line {
+.mu-admin-page .mu-loading-line {
     width: 4px;
     height: 20px;
     background: #e9ecef;
     border-radius: 2px;
-    animation: pulse 1.2s ease-in-out infinite;
+    animation: mu-pulse-line 1.2s ease-in-out infinite;
 }
 
-.loading-line:nth-child(2) {
+.mu-admin-page .mu-loading-line:nth-child(2) {
     animation-delay: 0.2s;
 }
 
-.loading-line:nth-child(3) {
+.mu-admin-page .mu-loading-line:nth-child(3) {
     animation-delay: 0.4s;
 }
 
-@keyframes pulse {
+@keyframes mu-pulse-line {
     0%, 100% {
         transform: scaleY(1);
         background: #e9ecef;
@@ -1103,7 +972,7 @@
 }
 
 /* Admin Comment Button Enhancement */
-.admin-comment-button {
+.mu-admin-page .mu-admin-comment-button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -1117,24 +986,24 @@
     transition: all 0.2s;
 }
 
-.admin-comment-button:hover {
+.mu-admin-page .mu-admin-comment-button:hover {
     background: #e9ecef;
     border-color: #adb5bd;
 }
 
-.admin-comment-button.has-notes {
+.mu-admin-page .mu-admin-comment-button.mu-has-notes {
     background: #cfe2ff;
     border-color: #b6d4fe;
     color: #084298;
     font-weight: 500;
 }
 
-.admin-comment-button.has-notes:hover {
+.mu-admin-page .mu-admin-comment-button.mu-has-notes:hover {
     background: #b6d4fe;
 }
 
 /* User ID Enhancement */
-.user-id {
+.mu-admin-page .mu-user-id {
     display: inline-flex;
     align-items: center;
     font-family: monospace;
@@ -1142,19 +1011,94 @@
     color: #6c757d;
 }
 
+/* Recent Adverts Section */
+.mu-admin-page .mu-recent-adverts-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.mu-admin-page .mu-recent-adverts-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.mu-admin-page .mu-recent-adverts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mu-admin-page .mu-recent-advert-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.mu-admin-page .mu-recent-advert-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.mu-admin-page .mu-advert-link {
+    display: block;
+    padding: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.mu-admin-page .mu-advert-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mu-admin-page .mu-advert-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.mu-admin-page .mu-advert-location,
+.mu-admin-page .mu-advert-date {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mu-admin-page .mu-advert-location svg,
+.mu-admin-page .mu-advert-date svg {
+    font-size: 0.75rem;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-    .duplicate-alert-banner {
+    .mu-admin-page .mu-duplicate-alert-banner {
         flex-direction: column;
         text-align: center;
     }
 
-    .view-duplicates-btn {
+    .mu-admin-page .mu-view-duplicates-btn {
         width: 100%;
     }
 
-    .composite-key-info {
+    .mu-admin-page .mu-composite-key-info {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .mu-admin-page .mu-recent-adverts-section {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
     }
 }

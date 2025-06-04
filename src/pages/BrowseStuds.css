@@ -206,7 +206,6 @@ body.browse-studs-view .browse-studs-mobile-toolbar {
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
-    padding: 1rem !important;
     background: white !important;
     border-bottom: 1px solid #eee !important;
     position: relative !important;
@@ -214,6 +213,7 @@ body.browse-studs-view .browse-studs-mobile-toolbar {
     width: 100% !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
+    margin: 0;
 }
 
 .browse-studs-wrapper .browse-studs-mobile-toolbar button,
@@ -410,7 +410,7 @@ body.browse-studs-view .browse-studs-card-fee-pill {
     position: absolute !important;
     top: 16px !important;
     right: 16px !important;
-    background-color: #256845 !important;
+    background-color: #b83c56 !important;
     color: #fff !important;
     padding: 10px 20px !important;
     border-radius: 12px !important;
@@ -723,4 +723,75 @@ body.browse-studs-view input[type="checkbox"] {
     line-height: 1.5;
     margin-top: 10px;
 }
+/* Add this CSS to your BrowseStuds.css file */
+.browse-studs-pill.licensed-breeder {
+    background-color: #fbbf24;
+    color: #78350f;
+    font-weight: 600;
+    padding-left: 8px;
+}
 
+.browse-studs-pill.licensed-breeder::before {
+    content: "★";
+    margin-right: 6px;
+    font-size: 14px;
+}
+/* Fix for the mobile toolbar white background */
+
+.browse-studs-mobile-toolbar {
+    background: transparent; /* Remove white background */
+    border: none; /* Remove any border */
+    box-shadow: none; /* Remove any shadow */
+    padding: 0; /* Remove padding if needed */
+}
+
+/* Alternative: if you want to keep some structure but remove the white rectangle */
+.browse-studs-mobile-toolbar.minimal {
+    background-color: transparent;
+    border: none;
+}
+
+/* If the mobile-only class is adding the background */
+.mobile-only.browse-studs-mobile-toolbar {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Make sure the button inside doesn't have a white background either */
+.browse-studs-mobile-toolbar .filter-btn {
+    background: transparent;
+    border: none;
+    color: #1f2937;
+    cursor: pointer;
+}
+/* Position the mobile toolbar in top right corner */
+
+.browse-studs-mobile-toolbar {
+    position: fixed;
+    z-index: 100;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+
+
+
+
+.browse-studs-mobile-toolbar.fab-style .filter-btn:hover {
+    background: #163f29;
+}
+
+/* Hide the text in FAB style, only show icon */
+.browse-studs-mobile-toolbar.fab-style .filter-btn svg {
+    margin: 0;
+    width: 24px;
+    height: 24px;
+}
+
+/* Hide text in FAB style */
+.browse-studs-mobile-toolbar.fab-style .filter-btn::after {
+    content: none;
+}

@@ -8,9 +8,6 @@ import './ManageUserProfile.css';
 import { FaUserCircle, FaTimes } from 'react-icons/fa';
 import EditContactModal from "../../components/EditContactModal";
 
-
-
-
 const ManageUserProfile = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
@@ -158,7 +155,6 @@ const ManageUserProfile = () => {
         navigate(`/admin/view-advert/${adId}`);
     };
 
-
     const handleEditUser = () => {
         setShowEditModal(true);
     };
@@ -183,7 +179,6 @@ const ManageUserProfile = () => {
             alert("Failed to update user status.");
         }
     };
-
 
     const handleDeleteUser = async () => {
         if (!window.confirm("Are you sure you want to permanently delete this user and all related data? This action cannot be undone.")) {
@@ -212,7 +207,6 @@ const ManageUserProfile = () => {
         }
     };
 
-
     const handleRemoveAdvert = async (adId) => {
         const confirm = window.confirm("Are you sure you want to permanently delete this advert?");
         if (!confirm) return;
@@ -227,207 +221,202 @@ const ManageUserProfile = () => {
         }
     };
 
-
     return (
-        <div className="admin-user-profile-page">
+        <div className="mup-page">
             <AdminSidebar />
 
-            <div className="content-area">
-                <h1 className="page-title">Manage User Profile</h1>
+            <div className="mup-content-area">
+                <h1 className="mup-page-title">Manage User Profile</h1>
 
                 {isLoading ? (
-                    <div className="loading-container">
-                        <div className="loading-animation">
-                            <div className="loading-circle"></div>
-                            <div className="loading-lines">
-                                <div className="loading-line"></div>
-                                <div className="loading-line"></div>
-                                <div className="loading-line"></div>
+                    <div className="mup-loading-container">
+                        <div className="mup-loading-animation">
+                            <div className="mup-loading-circle"></div>
+                            <div className="mup-loading-lines">
+                                <div className="mup-loading-line"></div>
+                                <div className="mup-loading-line"></div>
+                                <div className="mup-loading-line"></div>
                             </div>
                         </div>
                     </div>
                 ) : userData ? (
-                    <div className="profile-container">
-                        <div className="profile-header">
-                            <div className="user-summary">
-                                <div className="avatar-container">
+                    <div className="mup-profile-container">
+                        <div className="mup-profile-header">
+                            <div className="mup-user-summary">
+                                <div className="mup-avatar-container">
                                     {userData.avatar ? (
-                                        <img src={userData.avatar} alt="Avatar" className="admin-user-avatar" />
+                                        <img src={userData.avatar} alt="Avatar" className="mup-user-avatar" />
                                     ) : (
-                                        <FaUserCircle className="admin-user-avatar default-avatar-icon" />
+                                        <FaUserCircle className="mup-user-avatar mup-default-avatar-icon" />
                                     )}
 
-                                    <span className={`status-indicator ${userData.blacklisted ? 'status-blacklisted' : 'status-active'}`}></span>
+                                    <span className={`mup-status-indicator ${userData.blacklisted ? 'mup-status-blacklisted' : 'mup-status-active'}`}></span>
                                 </div>
-                                <div className="user-header-details">
-                                    <h2 className="user-name">{userData.firstName} {userData.lastName}</h2>
-                                    <p className="user-id">UID: {userId}</p>
-                                    <span className={`user-status-badge ${
+                                <div className="mup-user-header-details">
+                                    <h2 className="mup-user-name">{userData.firstName} {userData.lastName}</h2>
+                                    <p className="mup-user-id">UID: {userId}</p>
+                                    <span className={`mup-user-status-badge ${
                                         userData.blacklisted
-                                            ? 'status-badge-blacklisted'
-                                            : 'status-badge-active'
+                                            ? 'mup-status-badge-blacklisted'
+                                            : 'mup-status-badge-active'
                                     }`}>
                                         {userData.blacklisted ? 'Blacklisted' : 'Active'}
                                     </span>
                                 </div>
                             </div>
-                            <div className="action-buttons">
+                            <div className="mup-action-buttons">
                                 <button
-                                    className="action-button edit-button"
+                                    className="mup-action-button mup-edit-button"
                                     onClick={() => setShowEditModal(true)}
                                 >
                                     Edit
                                 </button>
 
                                 <button
-                                    className={`action-button ${userData?.blacklisted ? 'unblacklist-button' : 'blacklist-button'}`}
+                                    className={`mup-action-button ${userData?.blacklisted ? 'mup-unblacklist-button' : 'mup-blacklist-button'}`}
                                     onClick={handleToggleBlacklist}
                                 >
                                     {userData?.blacklisted ? 'Unblacklist' : 'Blacklist'}
                                 </button>
 
-
                                 <button
-                                    className="action-button delete-button"
+                                    className="mup-action-button mup-delete-button"
                                     onClick={handleDeleteUser}
                                 >
                                     Delete
                                 </button>
                                 <button
-                                    className={`action-button admin-comment-button ${userNotes.length > 0 ? 'has-notes' : ''}`}
+                                    className={`mup-action-button mup-admin-comment-button ${userNotes.length > 0 ? 'mup-has-notes' : ''}`}
                                     onClick={() => setShowNotesPopup(true)}
                                 >
                                     Admin Notes {userNotes.length > 0 ? `(${userNotes.length})` : ''}
                                 </button>
-
                             </div>
                         </div>
 
-                        <div className="profile-main">
-                            <div className="profile-grid">
+                        <div className="mup-profile-main">
+                            <div className="mup-profile-grid">
                                 {/* User Info Card */}
-                                <div className="user-card">
-                                    <h3 className="section-header">User Information</h3>
-                                    <div className="user-details">
-                                        <div className="detail-row">
-                                            <span className="detail-label">Email:</span>
-                                            <span className="detail-value">{userData.email}</span>
+                                <div className="mup-user-card">
+                                    <h3 className="mup-section-header">User Information</h3>
+                                    <div className="mup-user-details">
+                                        <div className="mup-detail-row">
+                                            <span className="mup-detail-label">Email:</span>
+                                            <span className="mup-detail-value">{userData.email}</span>
                                         </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Phone:</span>
-                                            <span className="detail-value">{userData.phone || 'Not provided'}</span>
+                                        <div className="mup-detail-row">
+                                            <span className="mup-detail-label">Phone:</span>
+                                            <span className="mup-detail-value">{userData.phone || 'Not provided'}</span>
                                         </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">City:</span>
-                                            <span className="detail-value">{userData.city || 'Not provided'}</span>
+                                        <div className="mup-detail-row">
+                                            <span className="mup-detail-label">City:</span>
+                                            <span className="mup-detail-value">{userData.city || 'Not provided'}</span>
                                         </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">County:</span>
-                                            <span className="detail-value">{userData.county || 'Not provided'}</span>
+                                        <div className="mup-detail-row">
+                                            <span className="mup-detail-label">County:</span>
+                                            <span className="mup-detail-value">{userData.county || 'Not provided'}</span>
                                         </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Joined:</span>
-                                            <span className="detail-value">
+                                        <div className="mup-detail-row">
+                                            <span className="mup-detail-label">Joined:</span>
+                                            <span className="mup-detail-value">
                                                 {userData.createdAt ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}
                                             </span>
                                         </div>
                                         {userData.lastSeen && (
-                                            <div className="detail-row">
-                                                <span className="detail-label">Last Seen:</span>
-                                                <span className="detail-value">
-            {new Date(userData.lastSeen.seconds * 1000).toLocaleString()}
-        </span>
+                                            <div className="mup-detail-row">
+                                                <span className="mup-detail-label">Last Seen:</span>
+                                                <span className="mup-detail-value">
+                                                    {new Date(userData.lastSeen.seconds * 1000).toLocaleString()}
+                                                </span>
                                             </div>
                                         )}
-
                                     </div>
                                 </div>
 
                                 {/* Adverts Section - Redesigned without tables */}
-                                <div className="data-card">
-                                    <h3 className="section-header">
+                                <div className="mup-data-card">
+                                    <h3 className="mup-section-header">
                                         <span>User Adverts</span>
-                                        <span className="count-badge badge-blue">
+                                        <span className="mup-count-badge mup-badge-blue">
                                             {adverts.length}
                                         </span>
                                     </h3>
 
                                     {adverts.length > 0 ? (
-                                        <div className="advert-cards-container">
+                                        <div className="mup-advert-cards-container">
                                             {adverts.map(ad => (
-                                                <div key={ad.id} className="advert-card">
-                                                    <div className="advert-card-content">
-                                                        <h4 className="advert-title">{ad.title || ad.breed || 'Unnamed Ad'}</h4>
-                                                        <div className="advert-meta">
-                                                            <span className={`status-badge ${
+                                                <div key={ad.id} className="mup-advert-card">
+                                                    <div className="mup-advert-card-content">
+                                                        <h4 className="mup-advert-title">{ad.title || ad.breed || 'Unnamed Ad'}</h4>
+                                                        <div className="mup-advert-meta">
+                                                            <span className={`mup-status-badge ${
                                                                 ad.paused
-                                                                    ? 'status-paused'
+                                                                    ? 'mup-status-paused'
                                                                     : ad.approved
-                                                                        ? 'status-approved'
-                                                                        : 'status-pending'
+                                                                        ? 'mup-status-approved'
+                                                                        : 'mup-status-pending'
                                                             }`}>
                                                                 {ad.paused ? 'Paused' : ad.approved ? 'Live' : 'Pending'}
                                                             </span>
-                                                            <span className="advert-date">
+                                                            <span className="mup-advert-date">
                                                                 Posted: {ad.createdAt ? new Date(ad.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="advert-card-actions">
+                                                    <div className="mup-advert-card-actions">
                                                         <button
-                                                            className="card-button view-button"
+                                                            className="mup-card-button mup-view-button"
                                                             onClick={() => handleViewAdvert(ad.id)}
                                                         >
                                                             View
                                                         </button>
                                                         <button
-                                                            className="card-button pause-button-table"
+                                                            className="mup-card-button mup-pause-button-table"
                                                             onClick={() => togglePause(ad.id, ad.paused)}
                                                         >
                                                             {ad.paused ? "Unpause" : "Pause"}
                                                         </button>
                                                         <button
-                                                            className="card-button remove-button"
+                                                            className="mup-card-button mup-remove-button"
                                                             onClick={() => handleRemoveAdvert(ad.id)}
                                                         >
                                                             Remove
                                                         </button>
-
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="empty-state">No adverts found for this user.</p>
+                                        <p className="mup-empty-state">No adverts found for this user.</p>
                                     )}
                                 </div>
 
                                 {/* Reviews Section */}
-                                <div className="data-card">
-                                    <h3 className="section-header">
+                                <div className="mup-data-card">
+                                    <h3 className="mup-section-header">
                                         <span>User Reviews</span>
-                                        <span className="count-badge badge-purple">
+                                        <span className="mup-count-badge mup-badge-purple">
                                             {reviews.length}
                                         </span>
                                     </h3>
 
                                     {reviews.length > 0 ? (
                                         <>
-                                            <div className="user-profile-reviews-grid">
+                                            <div className="mup-reviews-grid">
                                                 {reviews.map((review, index) => (
                                                     <div
                                                         key={review.id}
-                                                        className="user-profile-review-item"
+                                                        className="mup-review-item"
                                                         style={{ display: index >= 6 && !showAllReviews ? 'none' : 'block' }}
                                                         onClick={() => openReviewModal(review)}
                                                     >
-                                                        <p className="user-profile-review-content">{review.text}</p>
-                                                        <div className="user-profile-review-footer">
-                                                            <div className="user-profile-star-rating">
+                                                        <p className="mup-review-content">{review.text}</p>
+                                                        <div className="mup-review-footer">
+                                                            <div className="mup-star-rating">
                                                                 {[...Array(5)].map((_, i) => (
                                                                     <svg
                                                                         key={i}
-                                                                        className={`user-profile-star ${i < (review.rating || 0) ? 'user-profile-star-filled' : 'user-profile-star-empty'}`}
+                                                                        className={`mup-star ${i < (review.rating || 0) ? 'mup-star-filled' : 'mup-star-empty'}`}
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         viewBox="0 0 20 20"
                                                                         fill="currentColor"
@@ -436,9 +425,9 @@ const ManageUserProfile = () => {
                                                                     </svg>
                                                                 ))}
                                                             </div>
-                                                            <div className="user-profile-review-meta">
-                                                                <span className="user-profile-reviewer-name">{review.reviewerName || 'Unknown User'}</span>
-                                                                <span className="user-profile-review-date">{review.reviewDate || 'No date'}</span>
+                                                            <div className="mup-review-meta">
+                                                                <span className="mup-reviewer-name">{review.reviewerName || 'Unknown User'}</span>
+                                                                <span className="mup-review-date">{review.reviewDate || 'No date'}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -446,9 +435,9 @@ const ManageUserProfile = () => {
                                             </div>
 
                                             {reviews.length > 6 && (
-                                                <div className="user-profile-show-more-container">
+                                                <div className="mup-show-more-container">
                                                     <button
-                                                        className="user-profile-show-more-btn"
+                                                        className="mup-show-more-btn"
                                                         onClick={() => setShowAllReviews(!showAllReviews)}
                                                     >
                                                         {showAllReviews ? 'Show Less' : 'Show More'}
@@ -467,39 +456,39 @@ const ManageUserProfile = () => {
                                             )}
                                         </>
                                     ) : (
-                                        <p className="empty-state">No reviews found for this user.</p>
+                                        <p className="mup-empty-state">No reviews found for this user.</p>
                                     )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="error-state">
-                        <p className="error-message">User not found or data could not be loaded.</p>
+                    <div className="mup-error-state">
+                        <p className="mup-error-message">User not found or data could not be loaded.</p>
                     </div>
                 )}
             </div>
 
             {/* Review Modal */}
             {showReviewModal && selectedReview && (
-                <div className="review-modal-overlay" onClick={closeReviewModal}>
-                    <div className="review-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="review-modal-close" onClick={closeReviewModal}>
+                <div className="mup-review-modal-overlay" onClick={closeReviewModal}>
+                    <div className="mup-review-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="mup-review-modal-close" onClick={closeReviewModal}>
                             ×
                         </button>
-                        <div className="review-modal-header">
-                            <h4 className="review-modal-title">Review Details</h4>
+                        <div className="mup-review-modal-header">
+                            <h4 className="mup-review-modal-title">Review Details</h4>
                         </div>
-                        <div className="review-modal-body">
-                            <p className="review-modal-text">{selectedReview.text}</p>
+                        <div className="mup-review-modal-body">
+                            <p className="mup-review-modal-text">{selectedReview.text}</p>
                         </div>
-                        <div className="review-modal-footer">
-                            <div className="review-modal-meta">
-                                <div className="review-modal-rating">
+                        <div className="mup-review-modal-footer">
+                            <div className="mup-review-modal-meta">
+                                <div className="mup-review-modal-rating">
                                     {[...Array(5)].map((_, i) => (
                                         <svg
                                             key={i}
-                                            className={`user-profile-star ${i < (selectedReview.rating || 0) ? 'user-profile-star-filled' : 'user-profile-star-empty'}`}
+                                            className={`mup-star ${i < (selectedReview.rating || 0) ? 'mup-star-filled' : 'mup-star-empty'}`}
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 20 20"
                                             fill="currentColor"
@@ -510,7 +499,7 @@ const ManageUserProfile = () => {
                                         </svg>
                                     ))}
                                 </div>
-                                <span className="user-profile-reviewer-name">
+                                <span className="mup-reviewer-name">
                                     Review by {selectedReview.reviewerName} on {selectedReview.reviewDate}
                                 </span>
                             </div>
@@ -540,16 +529,16 @@ const ManageUserProfile = () => {
             )}
 
             {showNotesPopup && (
-                <div className="admin-notes-popup">
-                    <div className="popup-backdrop" onClick={() => setShowNotesPopup(false)}></div>
-                    <div className="popup-content">
-                        <button className="popup-close-button" onClick={() => setShowNotesPopup(false)}>
+                <div className="mup-admin-notes-popup">
+                    <div className="mup-popup-backdrop" onClick={() => setShowNotesPopup(false)}></div>
+                    <div className="mup-popup-content">
+                        <button className="mup-popup-close-button" onClick={() => setShowNotesPopup(false)}>
                             <FaTimes />
                         </button>
 
                         <h3>Admin Notes</h3>
 
-                        <ul className="note-list">
+                        <ul className="mup-note-list">
                             {userNotes.length > 0 ? (
                                 userNotes.map((note) => (
                                     <li key={note.id}>
@@ -561,7 +550,7 @@ const ManageUserProfile = () => {
                                                 : 'Unknown date'}
                                         </small>
                                         <button
-                                            className="note-delete-button"
+                                            className="mup-note-delete-button"
                                             onClick={async () => {
                                                 await deleteDoc(doc(db, 'adminNotes', note.id));
                                                 const snap = await getDocs(
@@ -587,7 +576,6 @@ const ManageUserProfile = () => {
                             placeholder="Add a new note..."
                             rows={4}
                         />
-
 
                         <button
                             onClick={async () => {
@@ -615,12 +603,7 @@ const ManageUserProfile = () => {
                     </div>
                 </div>
             )}
-
-
         </div>
-
-
-
     );
 };
 

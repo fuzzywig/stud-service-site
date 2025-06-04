@@ -74,12 +74,14 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    position: relative;
 }
 
 .up-profile-hero-content {
     display: flex;
     align-items: center;
     gap: 2rem;
+    padding-right: 200px; /* Make room for buttons on desktop */
 }
 
 .up-avatar-container {
@@ -208,10 +210,65 @@
     font-size: 0.875rem;
 }
 
+/* User ID Display */
+.up-profile-uid {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.up-profile-uid:hover {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.up-uid-icon {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.up-uid-label {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+.up-uid-value {
+    font-family: 'Courier New', monospace;
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.025em;
+}
+
+.up-uid-highlight {
+    color: #b83c56;
+    font-weight: 700;
+    background-color: rgba(184, 60, 86, 0.12);
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 0;
+    display: inline-block;
+}
+
+/* Profile Actions */
 .up-profile-actions {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
 }
 
 .up-edit-profile-btn,
@@ -236,6 +293,7 @@
 .up-edit-profile-btn:hover {
     background-color: #153d28;
     transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .up-change-password-btn {
@@ -246,6 +304,7 @@
 .up-change-password-btn:hover {
     background-color: #a32e45;
     transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Follow Button Styles */
@@ -364,47 +423,50 @@
     justify-content: space-between;
     align-items: center;
     background-color: #ffffff;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     margin-bottom: 1.5rem;
     overflow: hidden;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
-    padding: 0 24px;
+    padding: 8px;
     gap: 16px;
 }
 
 .up-nav-tabs {
     display: flex;
-    gap: 0;
+    gap: 4px;
     flex: 1;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    padding: 4px;
 }
 
 .up-nav-button {
     flex: 1;
-    padding: 1rem;
+    padding: 12px 20px;
     background: none;
     border: none;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #4b5563;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #6b7280;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     text-align: center;
-    border-bottom: 2px solid transparent;
+    border-radius: 6px;
     white-space: nowrap;
 }
 
 .up-nav-button.up-active {
-    color: #b83c56;
-    border-bottom-color: #b83c56;
-    background-color: transparent;
+    background-color: #1c5235;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(28, 82, 53, 0.2);
 }
 
 .up-nav-button:hover:not(.up-active) {
-    background-color: #f9fafb;
+    background-color: #ffffff;
     color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .up-nav-button.up-report-button {
@@ -419,19 +481,17 @@
     align-items: center;
     gap: 6px;
     transition: all 0.2s;
-    border-bottom: none;
     margin-left: auto;
     flex: unset;
+    border-radius: 6px;
 }
 
 .up-nav-button.up-report-button:hover {
     background: #fee2e2;
-    border-radius: 8px;
 }
 
 .up-nav-button.up-report-button svg {
-    margin-right: 6px;
-    color: #ef4444;
+    font-size: 14px;
 }
 
 /* Profile Content */
@@ -2172,10 +2232,21 @@
 
 /* Responsive Styles */
 @media (max-width: 992px) {
+    .up-profile-hero {
+        position: relative;
+    }
+
     .up-profile-hero-content {
         flex-direction: column;
         text-align: center;
         gap: 1.5rem;
+        padding-right: 0;
+    }
+
+    .up-profile-actions {
+        position: static;
+        justify-content: center;
+        margin-top: 1rem;
     }
 
     .up-profile-rating {
@@ -2186,8 +2257,21 @@
         justify-content: center;
     }
 
-    .up-profile-actions {
+    .up-profile-stats {
         justify-content: center;
+    }
+
+    .up-profile-uid {
+        margin: 1rem auto 0;
+        font-size: 0.8rem;
+    }
+
+    .up-uid-label {
+        display: none;
+    }
+
+    .up-uid-value {
+        font-size: 0.75rem;
     }
 
     .up-contact-summary {
@@ -2206,59 +2290,65 @@
     }
 
     .up-profile-nav {
-        flex-direction: column;
         padding: 0;
-        gap: 0;
-        border-radius: 0.5rem;
-        overflow: visible;
+        background-color: transparent;
+        box-shadow: none;
+        margin-bottom: 1rem;
     }
 
     .up-nav-tabs {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        gap: 0;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        background-color: transparent;
+        padding: 0;
     }
 
     .up-nav-button {
         width: 100%;
-        padding: 16px 20px;
-        font-size: 14px;
-        border-bottom: 1px solid #e5e7eb;
-        border-radius: 0;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        border-radius: 10px;
         text-align: center;
-        justify-content: center;
-    }
-
-    .up-nav-button:first-child {
-        border-top-left-radius: 0.5rem;
-        border-top-right-radius: 0.5rem;
-    }
-
-    .up-nav-button:last-child {
-        border-bottom: none;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .up-nav-button.up-active {
+        background-color: #1c5235;
+        color: #ffffff;
+        border-color: #1c5235;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(28, 82, 53, 0.25);
+    }
+
+    .up-nav-button:hover:not(.up-active) {
         background-color: #f9fafb;
-        border-left: 3px solid #b83c56;
-        padding-left: 17px;
-        border-bottom-color: #b83c56;
+        border-color: #d1d5db;
+    }
+
+    .up-nav-button:nth-child(4) {
+        grid-column: 1 / -1;
     }
 
     .up-nav-button.up-report-button {
-        width: 100%;
-        justify-content: center;
-        margin: 0;
+        grid-column: 1 / -1;
+        margin-top: 8px;
         padding: 12px;
-        border-top: 2px solid #e5e7eb;
-        border-bottom: none;
-        border-radius: 0 0 0.5rem 0.5rem;
-        background-color: #fee2e2;
+        background-color: #fff;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+        font-weight: 500;
+        justify-content: center;
     }
 
     .up-nav-button.up-report-button:hover {
-        background: #fecaca;
+        background: #fee2e2;
+        border-color: #dc2626;
+        color: #dc2626;
     }
 
     .up-aspect-badges-container {
@@ -2370,47 +2460,39 @@
 }
 
 @media (max-width: 480px) {
+    .up-profile-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .up-edit-profile-btn,
+    .up-change-password-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .up-nav-tabs {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
     .up-nav-button {
         padding: 14px 16px;
-        font-size: 13px;
+        font-size: 0.95rem;
     }
-}
-/* User ID Display Styles */
-.up-profile-uid {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
 
-.up-uid-icon {
-    color: #9ca3af;
-    font-size: 1rem;
-}
+    .up-nav-button:nth-child(4),
+    .up-nav-button.up-report-button {
+        grid-column: auto;
+    }
 
-.up-uid-label {
-    font-weight: 500;
-    color: #6b7280;
-}
-
-.up-uid-value {
-    font-family: 'Courier New', monospace;
-    color: #4b5563;
-    font-weight: 600;
-    font-size: 0.875rem;
-    letter-spacing: 0.025em;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
     .up-profile-uid {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
     }
 
     .up-uid-value {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         word-break: break-all;
     }
 }

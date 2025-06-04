@@ -709,9 +709,10 @@ export default function BrowseStuds() {
                                 disabled={isLoadingPostcode}
                                 style={{
                                     width: '100%',
-                                    padding: '10px 16px',
+                                    padding: '15px 16px',
+                                    marginTop:  '6px',
                                     cursor: isLoadingPostcode ? 'wait' : 'pointer',
-                                    backgroundColor: '#a03248',
+                                    backgroundColor: '#1c5235',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '12px',
@@ -1086,8 +1087,23 @@ export default function BrowseStuds() {
                                         {ad.colour && <span className="browse-studs-pill">{ad.colour}</span>}
                                         {ad.intent && (
                                             <span className="browse-studs-pill">
-                                                {ad.intent.charAt(0).toUpperCase() + ad.intent.slice(1)}
-                                            </span>
+            {ad.intent.charAt(0).toUpperCase() + ad.intent.slice(1)}
+        </span>
+                                        )}
+
+                                        {/* Proven and Health Tested pills - only for stud intent */}
+                                        {ad.intent === 'stud' && ad.proven && (
+                                            <span className="browse-studs-pill">Proven</span>
+                                        )}
+                                        {ad.intent === 'stud' && ad.healthTested && (
+                                            <span className="browse-studs-pill">Health Tested</span>
+                                        )}
+
+                                        {/* Licensed breeder pill - always at the end */}
+                                        {ad.breederType === 'licensed' && (
+                                            <span className="browse-studs-pill licensed-breeder">
+            Licensed Breeder
+        </span>
                                         )}
                                     </div>
 
