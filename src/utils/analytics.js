@@ -37,22 +37,22 @@ const hasAnalyticsConsent = () => {
 // Initialize GA4 - safe version
 export const initGA = () => {
     console.log('initGA called');
-    try {
-        if (!hasAnalyticsConsent() || GA_MEASUREMENT_ID === 'G-N966Z6R5QJ') {
-            console.log('GA4 not initialized - missing requirements');
-            return false;
+
+    // Always initialize the script for detection
+    ReactGA.initialize(GA_MEASUREMENT_ID, {
+        gtagOptions: {
+            send_page_view: false, // Disable automatic tracking
+            anonymize_ip: true
         }
+    });
 
-        ReactGA.initialize(GA_MEASUREMENT_ID, {
-            gtagOptions: {
-                anonymize_ip: true
-            }
-        });
-
-        console.log('GA4 initialized successfully');
+    // Only enable tracking if consent given
+    if (hasAnalyticsConsent()) {
+        console.log('GA4 tracking enabled with consent');
+        ReactGA.send({ hitType: "pageview", page: window.location.pathname });
         return true;
-    } catch (error) {
-        console.error('GA4 initialization failed:', error);
+    } else {
+        console.log('GA4 loaded but tracking disabled - no consent');
         return false;
     }
 };
