@@ -3,7 +3,6 @@ import "./Messages.css";
 import {ref, uploadBytes, getDownloadURL} from "firebase/storage";
 import {storage} from "../firebase/firebase"; // make sure storage is imported
 import { Eye } from "lucide-react";
-// lucide icons
 import { Send, Paperclip, Trash2, ShieldX, MoreVertical, ChevronRight } from "lucide-react";
 
 // Firestore
@@ -23,8 +22,8 @@ import {
 } from "firebase/firestore";
 import {db} from "../firebase/firebase";
 
-import {useSearchParams} from "react-router-dom";
-import {useAuth} from "../firebase/firebaseAuth";
+import {useSearchParams, useNavigate} from "react-router-dom"; // ✅ Add useNavigate
+import {useAuth, auth} from "../firebase/firebaseAuth"; // ✅ Import auth
 import {
     getConversationId,
     sendMessage,
@@ -32,7 +31,8 @@ import {
     fetchUserConversations,
     listenToUserConversations // ✅ this was missing
 } from "../firebase/firestoreChat";
-
+import {Helmet} from "react-helmet-async";
+import { useLoginModal } from "../context/LoginContext"; // ✅ Add login context
 
 // Permanently deletes a conversation and all its messages subcollection
 async function deleteConversation(convoId) {
@@ -44,7 +44,6 @@ async function deleteConversation(convoId) {
     // 2) Delete the conversation document itself
     await deleteDoc(doc(db, "conversations", convoId));
 }
-
 
 function formatMessageTimestamp(timestamp) {
     if (!timestamp || !timestamp.toDate) return "";
@@ -105,9 +104,10 @@ function groupMessagesByDate(messages) {
     return groups;
 }
 
-
 const Messages = () => {
     const {currentUser} = useAuth();
+    const navigate = useNavigate(); // ✅ Add navigate
+    const { openLogin } = useLoginModal(); // ✅ Add login modal
     const [conversations, setConversations] = useState([]);
     const [participants, setParticipants] = useState({});
     const [activeConversationId, setActiveConversationId] = useState(null);
@@ -128,11 +128,79 @@ const Messages = () => {
     const pressTimer = useRef(null);
     const [messageReactions, setMessageReactions] = useState({});
     const [blockedUsers, setBlockedUsers] = useState([]);
-    const [currentUserData, setCurrentUserData] = useState({});
     const [audioContext, setAudioContext] = useState(null);
     const [reactionMenuPosition, setReactionMenuPosition] = useState({ top: 0, left: 0 });
+    const [authChecked, setAuthChecked] = useState(false); // ✅ Add authChecked state
+
+    const messagesEndRef = useRef(null);
+    const [showSidebar, setShowSidebar] = useState(true);
+    const conversationIdFromURL = searchParams.get("c");
+    const recipientIdFromURL = searchParams.get("recipient");
 
 
+    // ✅ CLEAN UP MALFORMED URLs
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        let needsCleanup = false;
+
+        // Check if recipient is literally "undefined"
+        if (urlParams.get("recipient") === "undefined") {
+            urlParams.delete("recipient");
+            needsCleanup = true;
+        }
+
+        // Check if conversation ID contains "undefined"
+        const conversationId = urlParams.get("c");
+        if (conversationId && conversationId.includes("_undefined")) {
+            urlParams.delete("c");
+            needsCleanup = true;
+        }
+
+        // If we cleaned up the URL, redirect to the clean version
+        if (needsCleanup) {
+            const cleanUrl = urlParams.toString() ?
+                `/messages?${urlParams.toString()}` :
+                '/messages';
+            console.log('🧹 Cleaning up malformed URL, redirecting to:', cleanUrl);
+            window.location.replace(cleanUrl);
+            return;
+        }
+    }, []);
+
+    // ✅ NEW: Authentication state handler
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setAuthChecked(true);
+            if (!user) {
+                // User is not logged in - preserve URL and redirect to login
+                const currentUrl = window.location.pathname + window.location.search;
+                sessionStorage.setItem('redirectAfterLogin', currentUrl);
+
+                // Show login prompt or redirect
+                if (window.confirm('You need to log in to view messages. Would you like to log in now?')) {
+                    // Trigger your login modal
+                    openLogin(); // If you have access to login context
+                } else {
+                    // User declined - redirect to home
+                    navigate('/');
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, [navigate, openLogin]);
+
+    // ✅ NEW: Handle redirect after login
+    useEffect(() => {
+        if (currentUser && authChecked) {
+            const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+            if (redirectUrl && redirectUrl !== window.location.pathname + window.location.search) {
+                sessionStorage.removeItem('redirectAfterLogin');
+                // User just logged in and we have a saved conversation URL
+                window.location.href = redirectUrl;
+            }
+        }
+    }, [currentUser, authChecked]);
     const handleBlockUser = async () => {
         if (!currentUser || !otherUserId) return;
 
@@ -196,10 +264,6 @@ const Messages = () => {
         }
     };
 
-
-
-
-
     const handlePressStart = (messageId, event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -235,7 +299,6 @@ const Messages = () => {
         }, 500);
     };
 
-
     const handlePressEnd = () => {
         clearTimeout(pressTimer.current);
     };
@@ -260,10 +323,11 @@ const Messages = () => {
         }
     };
 
+    // All your existing useEffects remain the same, but add this FIXED one:
+
     useEffect(() => {
         console.log("reactionMenuOpen changed:", reactionMenuOpen);
     }, [reactionMenuOpen]);
-
 
     useEffect(() => {
         if (!currentUser?.uid) return;
@@ -277,7 +341,6 @@ const Messages = () => {
 
         fetchCurrentUserData();
     }, [currentUser]);
-
 
     useEffect(() => {
         if (!currentUser) return;
@@ -296,8 +359,6 @@ const Messages = () => {
         fetchBlocked();
     }, [currentUser]);
 
-
-
     useEffect(() => {
         if (!currentUser) return;
 
@@ -309,8 +370,6 @@ const Messages = () => {
         return () => unsubscribe();
     }, [currentUser]);
 
-
-// 👇 rest of your useEffects...
     useEffect(() => {
         const prev = document.body.style.overflowY;
         document.body.style.overflowY = "hidden";
@@ -346,47 +405,119 @@ const Messages = () => {
         markAsRead().catch(console.error);
     }, [activeConversationId, currentUser]);
 
+    // ✅ FIXED: Main conversation loading useEffect with authentication checks
+    useEffect(() => {
+        const loadOrCreateConversation = async () => {
+            // ✅ Wait for auth check to complete
+            if (!authChecked) return;
 
-// ✅ Safely fetch other user's info from the active conversation
-    const getOtherUserInfo = () => {
-        if (!activeConversationId || !conversations.length) return {};
+            // ✅ If no user after auth check, don't proceed
+            if (!currentUser) {
+                console.log('❌ No authenticated user, cannot load conversations');
+                return;
+            }
 
-        const convo = conversations.find(c => c.id === activeConversationId);
-        if (!convo) return {};
+            if (!conversationsLoaded) return;
 
-        const otherId = convo.users.find(u => u !== currentUser.uid);
-        return participants[otherId] || {};
-    };
+            // ✅ PRIORITY 1: If we have a conversation ID in URL, use it directly
+            if (conversationIdFromURL) {
+                console.log('📧 Using conversation ID from URL:', conversationIdFromURL);
 
-// ✅ Compute isOnline using lastSeen timestamp
-    const handleFileUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file || !currentUser || !activeConversationId) return;
+                // Check if this conversation exists in our loaded conversations
+                const existingConvo = conversations.find(convo => convo.id === conversationIdFromURL);
 
-        const ext = file.name.split(".").pop();
-        const fileRef = ref(storage, `chat_uploads/${activeConversationId}/${Date.now()}.${ext}`);
+                if (existingConvo) {
+                    console.log('📧 Found existing conversation by ID:', existingConvo.id);
+                    setActiveConversationId(conversationIdFromURL);
+                    return; // ✅ Exit early - we found and opened the conversation
+                } else {
+                    console.log('📧 Conversation ID not found in loaded conversations, checking Firestore...');
 
-        try {
-            await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(fileRef);
+                    // Check if conversation exists in Firestore
+                    const convoRef = doc(db, "conversations", conversationIdFromURL);
+                    const convoSnap = await getDoc(convoRef);
 
-            const convo = conversations.find(c => c.id === activeConversationId);
-            const toUid = convo?.users.find(u => u !== currentUser.uid) || recipientIdFromURL;
+                    if (convoSnap.exists()) {
+                        console.log('📧 Conversation exists in Firestore, opening it');
+                        setActiveConversationId(conversationIdFromURL);
+                        return; // ✅ Exit early
+                    } else {
+                        console.log('❌ Conversation ID not found in Firestore');
+                    }
+                }
+            }
 
-            await sendMessage(activeConversationId, currentUser.uid, toUid, url, file.name);
-        } catch (err) {
-            console.error("Upload failed:", err);
-            alert("Failed to upload attachment.");
-        }
-    };
+            // ✅ PRIORITY 2: If no conversation ID or conversation not found, handle recipient-based logic
+            if (recipientIdFromURL && recipientIdFromURL !== 'undefined') {
+                console.log('📧 Looking for conversation with recipient:', recipientIdFromURL);
 
+                // First check if conversation already exists in loaded conversations
+                const existingConvo = conversations.find(convo => {
+                    const isCorrectUsers = convo.users.includes(currentUser.uid) && convo.users.includes(recipientIdFromURL);
+                    const isCorrectAdvert = advertId ? convo.advertId === advertId : true;
+                    return isCorrectUsers && isCorrectAdvert;
+                });
 
-    const messagesEndRef = useRef(null);
-    const [showSidebar, setShowSidebar] = useState(true);
-    const conversationIdFromURL = searchParams.get("c");
-    const recipientIdFromURL = searchParams.get("recipient");
+                if (existingConvo) {
+                    console.log('📧 Found existing conversation with recipient:', existingConvo.id);
+                    setActiveConversationId(existingConvo.id);
 
+                    // Update URL to include conversation ID for future reference
+                    const url = new URLSearchParams(window.location.search);
+                    url.set("c", existingConvo.id);
+                    window.history.replaceState(null, "", `/messages?${url.toString()}`);
+                    return; // ✅ Exit early
+                }
 
+                // If no existing conversation found, create a new one
+                console.log('📧 No existing conversation found, creating new one...');
+                const convoId = getConversationId(currentUser.uid, recipientIdFromURL, advertId);
+                const convoRef = doc(db, "conversations", convoId);
+                const convoSnap = await getDoc(convoRef);
+
+                // Fetch advertTitle from Firestore
+                let advertTitle = "Conversation";
+                if (advertId) {
+                    try {
+                        const advertRef = doc(db, "allListings", advertId);
+                        const advertSnap = await getDoc(advertRef);
+                        if (advertSnap.exists()) {
+                            const advertData = advertSnap.data();
+                            advertTitle = advertData.title || "Conversation";
+                        }
+                    } catch (err) {
+                        console.error("Failed to fetch advert title:", err);
+                    }
+                }
+
+                if (!convoSnap.exists()) {
+                    console.log('📧 Creating new conversation:', convoId);
+                    await setDoc(convoRef, {
+                        users: [currentUser.uid, recipientIdFromURL],
+                        createdAt: serverTimestamp(),
+                        lastMessage: "",
+                        lastUpdated: serverTimestamp(),
+                        advertId: advertId || "",
+                        advertTitle
+                    });
+                }
+
+                // Update URL to include conversation ID
+                const url = new URLSearchParams(window.location.search);
+                url.set("c", convoId);
+                window.history.replaceState(null, "", `/messages?${url.toString()}`);
+
+                // Wait a moment for the conversation listener to update
+                setTimeout(() => {
+                    setActiveConversationId(convoId);
+                }, 100);
+            }
+        };
+
+        loadOrCreateConversation();
+    }, [currentUser, conversationIdFromURL, recipientIdFromURL, advertId, conversationsLoaded, conversations, authChecked]); // ✅ Add authChecked
+
+    // Rest of your existing useEffects...
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === "Escape") {
@@ -396,7 +527,6 @@ const Messages = () => {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
-
 
     useEffect(() => {
         // Find which element is causing overflow
@@ -417,6 +547,7 @@ const Messages = () => {
         // Run after a short delay to ensure layout is complete
         setTimeout(findOverflow, 1000);
     }, []);
+
     // Scroll to bottom whenever messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
@@ -430,84 +561,6 @@ const Messages = () => {
         }
     }, []);
 
-    // Handle starting from recipient ID
-    useEffect(() => {
-        const loadOrCreateConversation = async () => {
-            if (!currentUser) return;
-
-            if (recipientIdFromURL) {
-                const convoId = getConversationId(currentUser.uid, recipientIdFromURL, advertId);
-                const convoRef = doc(db, "conversations", convoId);
-                const convoSnap = await getDoc(convoRef);
-
-                // ✅ Fetch advertTitle from Firestore
-                let advertTitle = "Conversation";
-                if (advertId) {
-                    try {
-                        const advertRef = doc(db, "allListings", advertId);
-                        const advertSnap = await getDoc(advertRef);
-                        if (advertSnap.exists()) {
-                            const advertData = advertSnap.data();
-                            advertTitle = advertData.title || "Conversation";
-                        }
-                    } catch (err) {
-                        console.error("Failed to fetch advert title:", err);
-                    }
-                }
-
-                if (!convoSnap.exists()) {
-                    await setDoc(convoRef, {
-                        users: [currentUser.uid, recipientIdFromURL],
-                        createdAt: serverTimestamp(),
-                        lastMessage: "",
-                        lastUpdated: serverTimestamp(),
-                        advertId: advertId || "",
-                        advertTitle // ✅ use fetched title
-                    });
-                }
-
-                setActiveConversationId(convoId);
-
-            } else if (conversationIdFromURL) {
-                const convoRef = doc(db, "conversations", conversationIdFromURL);
-                const convoSnap = await getDoc(convoRef);
-
-                // ✅ Fetch advertTitle here too, in case convo doesn't exist
-                let advertTitle = "Conversation";
-                if (advertId) {
-                    try {
-                        const advertRef = doc(db, "allListings", advertId);
-                        const advertSnap = await getDoc(advertRef);
-                        if (advertSnap.exists()) {
-                            const advertData = advertSnap.data();
-                            advertTitle = advertData.title || "Conversation";
-                        }
-                    } catch (err) {
-                        console.error("Failed to fetch advert title:", err);
-                    }
-                }
-
-                if (convoSnap.exists()) {
-                    setActiveConversationId(convoSnap.id);
-                } else {
-                    await setDoc(convoRef, {
-                        users: [currentUser.uid, recipientIdFromURL],
-                        createdAt: serverTimestamp(),
-                        lastMessage: "",
-                        lastUpdated: serverTimestamp(),
-                        advertId: advertId || "",
-                        advertTitle // ✅ use fetched title here too
-                    });
-
-                    setActiveConversationId(convoRef.id);
-                }
-            }
-        };
-
-        loadOrCreateConversation();
-    }, [currentUser, conversationIdFromURL, recipientIdFromURL,]);
-
-
     // Fetch user conversations and participants
     useEffect(() => {
         if (!currentUser) return;
@@ -519,6 +572,12 @@ const Messages = () => {
             const map = {};
             for (const convo of convos) {
                 const otherId = convo.users.find(uid => uid !== currentUser.uid);
+                // ✅ FIXED: Add validation to prevent undefined user IDs
+                if (!otherId || otherId === 'undefined') {
+                    console.warn('⚠️ Skipping conversation with undefined user ID:', convo.id);
+                    continue;
+                }
+
                 if (!map[otherId]) {
                     const snap = await getDoc(doc(db, "users", otherId));
                     if (snap.exists()) map[otherId] = snap.data();
@@ -536,10 +595,7 @@ const Messages = () => {
                             const adData = adSnap.data();
                             titleMap[convo.advertId] = adData.title || "Advert";
                             imageMap[convo.advertId] = adData.images?.[0] || null;
-
-
                         }
-
                     } catch (err) {
                         console.error("Failed to fetch advert title for:", convo.advertId, err);
                     }
@@ -547,12 +603,9 @@ const Messages = () => {
             }
             setAdvertTitles(titleMap);
             setAdvertImages(imageMap); // ✅ new state
-
-
         })();
     }, [currentUser]);
 
-    // Load messages for the active conversation
     // Load messages and sync reactions
     useEffect(() => {
         if (!activeConversationId || !conversationsLoaded) return;
@@ -610,6 +663,26 @@ const Messages = () => {
         oscillator.stop(audioContext.currentTime + 0.1);
     };
 
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file || !currentUser || !activeConversationId) return;
+
+        const ext = file.name.split(".").pop();
+        const fileRef = ref(storage, `chat_uploads/${activeConversationId}/${Date.now()}.${ext}`);
+
+        try {
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+
+            const convo = conversations.find(c => c.id === activeConversationId);
+            const toUid = convo?.users.find(u => u !== currentUser.uid) || recipientIdFromURL;
+
+            await sendMessage(activeConversationId, currentUser.uid, toUid, url, file.name);
+        } catch (err) {
+            console.error("Upload failed:", err);
+            alert("Failed to upload attachment.");
+        }
+    };
 
     // Send a message
     const handleSend = async () => {
@@ -619,7 +692,6 @@ const Messages = () => {
         const convo = conversations.find(c => c.id === activeConversationId);
         const toUid = convo?.users.find(uid => uid !== currentUser.uid) || recipientIdFromURL;
         if (!toUid) return;
-
 
         try {
             if (selectedFile) {
@@ -641,7 +713,6 @@ const Messages = () => {
         }
     };
 
-
     // Handle enter key in input
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -650,7 +721,15 @@ const Messages = () => {
         }
     };
 
-    // Replace your existing getOtherUserName with this:
+    const getOtherUserInfo = () => {
+        if (!activeConversationId || !conversations.length) return {};
+
+        const convo = conversations.find(c => c.id === activeConversationId);
+        if (!convo) return {};
+
+        const otherId = convo.users.find(u => u !== currentUser.uid);
+        return participants[otherId] || {};
+    };
 
     const getOtherUserName = () => {
         if (!activeConversationId || !conversations.length) return "User";
@@ -661,7 +740,7 @@ const Messages = () => {
         const otherId = convo.users.find(u => u !== currentUser.uid);
         const user = participants[otherId] || {};
 
-        // Build “First Last” and fall back to “User”
+        // Build "First Last" and fall back to "User"
         const fullName = [user.firstName, user.lastName]
             .filter(Boolean)
             .join(" ");
@@ -675,456 +754,486 @@ const Messages = () => {
         ?.users.find(u => u !== currentUser?.uid);
     const isOnline = otherUser?.lastSeen?.seconds > Date.now() / 1000 - 300;
 
-
-    return (
-        <div className="messages-page-container">
-            {showAlert && (
-                <div className="messages-page-alert">
-                    Please select a conversation first
+    // ✅ EARLY RETURNS for authentication states - MOVED TO END
+    if (!authChecked) {
+        return (
+            <>
+                <Helmet>
+                    <title>Loading Messages | My Pet Connect</title>
+                    <meta name="robots" content="noindex,follow" />
+                </Helmet>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Checking authentication...</p>
                 </div>
-            )}
+            </>
+        );
+    }
 
-            <div className="messages-page-inner">
-                {/* Left Column: Conversation List */}
-
-
-                <div className={`messages-page-sidebar ${showSidebar ? "show" : ""}`}>
-
-
-
-                    <h2 className="messages-page-sidebar-header">Your Conversations</h2>
+    if (!currentUser) {
+        return (
+            <>
+                <Helmet>
+                    <title>Login Required | My Pet Connect</title>
+                    <meta name="robots" content="noindex,follow" />
+                </Helmet>
+                <div className="not-found-container">
+                    <div className="not-found-icon">🔒</div>
+                    <h2>Login Required</h2>
+                    <p>You need to be logged in to view messages.</p>
                     <button
-                        className="messages-page-sidebar-close"
+                        className="primary-button"
                         onClick={() => {
-                            if (activeConversationId) {
-                                setShowSidebar(false);
-                            } else {
-                                setShowAlert(true);
-                                setTimeout(() => setShowAlert(false), 2500); // auto-hide after 2.5s
-                            }
+                            const currentUrl = window.location.pathname + window.location.search;
+                            sessionStorage.setItem('redirectAfterLogin', currentUrl);
+                            openLogin();
                         }}
                     >
-                        ✕
+                        Log In
                     </button>
+                    <button
+                        className="secondary-button"
+                        onClick={() => navigate('/')}
+                    >
+                        Go Home
+                    </button>
+                </div>
+            </>
+        );
+    }
 
-                    {conversations.length === 0 ? (
-                        <p className="messages-page-no-convo">No conversations yet</p>
-                    ) : (
-                        conversations.map((conv) => {
-                            const otherId = conv.users.find(u => u !== currentUser.uid);
-                            console.log("Checking convo with:", otherId, "→ Blocked?", blockedUsers.includes(otherId));
-                            const isBlocked = blockedUsers.includes(otherId); // ✅ This is the correct per-convo check                            const otherUser = participants[otherId] || {}; // ✅ ADD THIS
-                            const otherUser = participants[otherId] || {};
-                            const initials = (
-                                (otherUser.firstName?.[0] ?? "") +
-                                (otherUser.lastName?.[0] ?? "")
-                            ).toUpperCase() || "U";
+    return (
+        <>
+            <Helmet>
+                <title>Your Messages | My Pet Connect</title>
+                <meta name="robots" content="noindex,follow" />
+            </Helmet>
 
-                            // get raw title (from advert or fallback)
-                            const rawTitle =
-                                advertTitles[conv.advertId] ||
-                                `${otherUser.firstName || ""} ${otherUser.lastName || ""}`.trim() ||
-                                "Conversation";
+            <div className="messages-page-container">
+                {showAlert && (
+                    <div className="messages-page-alert">
+                        Please select a conversation first
+                    </div>
+                )}
 
-                            const isUnread =
-                                conv.lastMessageSenderId &&
-                                conv.lastMessageSenderId !== currentUser?.uid &&
-                                activeConversationId !== conv.id;
+                <div className="messages-page-inner">
+                    {/* Left Column: Conversation List */}
+                    <div className={`messages-page-sidebar ${showSidebar ? "show" : ""}`}>
+                        <h2 className="messages-page-sidebar-header">Your Conversations</h2>
+                        <button
+                            className="messages-page-sidebar-close"
+                            onClick={() => {
+                                if (activeConversationId) {
+                                    setShowSidebar(false);
+                                } else {
+                                    setShowAlert(true);
+                                    setTimeout(() => setShowAlert(false), 2500); // auto-hide after 2.5s
+                                }
+                            }}
+                        >
+                            ✕
+                        </button>
 
+                        {conversations.length === 0 ? (
+                            <p className="messages-page-no-convo">No conversations yet</p>
+                        ) : (
+                            conversations.map((conv) => {
+                                const otherId = conv.users.find(u => u !== currentUser.uid);
+                                console.log("Checking convo with:", otherId, "→ Blocked?", blockedUsers.includes(otherId));
+                                const isBlocked = blockedUsers.includes(otherId);
+                                const otherUser = participants[otherId] || {};
+                                const initials = (
+                                    (otherUser.firstName?.[0] ?? "") +
+                                    (otherUser.lastName?.[0] ?? "")
+                                ).toUpperCase() || "U";
 
-                            // truncate to 60 chars
+                                // get raw title (from advert or fallback)
+                                const rawTitle =
+                                    advertTitles[conv.advertId] ||
+                                    `${otherUser.firstName || ""} ${otherUser.lastName || ""}`.trim() ||
+                                    "Conversation";
 
+                                const isUnread =
+                                    conv.lastMessageSenderId &&
+                                    conv.lastMessageSenderId !== currentUser?.uid &&
+                                    activeConversationId !== conv.id;
 
-                            const preview = conv.lastMessage || "No messages yet";
-                            const nameToShow =
-                                `${otherUser.firstName || ""} ${otherUser.lastName || ""}`.trim() ||
-                                "User";
+                                const preview = conv.lastMessage || "No messages yet";
+                                const nameToShow =
+                                    `${otherUser.firstName || ""} ${otherUser.lastName || ""}`.trim() ||
+                                    "User";
 
-                            return (
-                                <div
-                                    key={conv.id}
-                                    className={`messages-page-convo-item ${
-                                        activeConversationId === conv.id ? "active" : ""
-                                    } ${isUnread ? "unread" : ""} ${isBlocked ? "blocked" : ""}`}
-                                    onClick={() => {
-                                        if (isBlocked) {
-                                            alert("❌ You have blocked this user. Unblock to send messages.");
-                                            return;
-                                        }
+                                return (
+                                    <div
+                                        key={conv.id}
+                                        className={`messages-page-convo-item ${
+                                            activeConversationId === conv.id ? "active" : ""
+                                        } ${isUnread ? "unread" : ""} ${isBlocked ? "blocked" : ""}`}
+                                        onClick={() => {
+                                            if (isBlocked) {
+                                                alert("❌ You have blocked this user. Unblock to send messages.");
+                                                return;
+                                            }
 
-                                        const url = new URLSearchParams();
-                                        url.set("recipient", otherId);
-                                        if (conv.advertId) url.set("advert", conv.advertId);
-                                        if (advertTitles[conv.advertId]) url.set("title", advertTitles[conv.advertId]);
+                                            const url = new URLSearchParams();
+                                            url.set("recipient", otherId);
+                                            if (conv.advertId) url.set("advert", conv.advertId);
+                                            if (advertTitles[conv.advertId]) url.set("title", advertTitles[conv.advertId]);
 
-                                        window.history.replaceState(null, "", `/messages?${url.toString()}`);
-                                        setActiveConversationId(conv.id);
-                                        if (window.innerWidth <= 768) setShowSidebar(false);
-                                    }}
-                                >
-                                    {advertImages[conv.advertId] ? (
-                                        <div className="messages-page-avatar-wrapper">
-                                            <img
-                                                src={advertImages[conv.advertId]}
-                                                alt="avatar"
-                                                className="messages-page-avatar-image"
-                                            />
+                                            window.history.replaceState(null, "", `/messages?${url.toString()}`);
+                                            setActiveConversationId(conv.id);
+                                            if (window.innerWidth <= 768) setShowSidebar(false);
+                                        }}
+                                    >
+                                        {advertImages[conv.advertId] ? (
+                                            <div className="messages-page-avatar-wrapper">
+                                                <img
+                                                    src={advertImages[conv.advertId]}
+                                                    alt="avatar"
+                                                    className="messages-page-avatar-image"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="messages-page-avatar-placeholder">
+                                                {initials}
+                                            </div>
+                                        )}
+
+                                        {isBlocked && (
+                                            <div className="blocked-message-warning">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Don't open convo
+                                                        handleUnblockUser(otherId);
+                                                    }}
+                                                    className="messages-page-unblock-button"
+                                                >
+                                                    Unblock
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <div className="messages-page-convo-details">
+                                            <span className="messages-page-convo-title">
+                                                {rawTitle.slice(0, 60)}
+                                            </span>
+
+                                            <span className="messages-page-convo-preview">
+                                                <strong>{(conv.lastMessageSenderName || nameToShow || "").split(" ")[0]}:</strong>
+                                                {conv.lastMessageText || preview}
+                                            </span>
+
+                                            <span className="messages-page-convo-timestamp">
+                                                {conv.lastUpdated?.toDate ? formatMessageTimestamp(conv.lastUpdated) : ""}
+                                            </span>
                                         </div>
-                                    ) : (
-                                        <div className="messages-page-avatar-placeholder">
-                                            {initials}
-                                        </div>
-                                    )}
+                                    </div>
+                                );
+                            })
+                                .filter(Boolean) // ✅ Remove null entries from undefined user IDs
+                        )}
+                    </div>
 
-                                    {isBlocked && (
-                                        <div className="blocked-message-warning">
+                    {/* Right Column: Chat Window */}
+                    <div className="messages-page-chat">
+                        {activeConversationId ? (
+                            <>
+                                <div className="messages-page-chat-header">
+                                    <div
+                                        className="messages-page-chat-header-info"
+                                        style={{
+                                            width: "100%",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        {/* Left: Sidebar toggle (mobile only) + Name */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                            <button
+                                                className="messages-page-toggle-button"
+                                                onClick={() => setShowSidebar((old) => !old)}
+                                                aria-label="Toggle sidebar"
+                                            >
+                                                <ChevronRight />
+                                            </button>
+
+                                            <span className="messages-page-chat-header-name">
+                                                {getOtherUserName()}
+                                            </span>
+                                        </div>
+
+                                        {/* Right: Online status + Menu */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative" }}>
+                                            <div className="messages-page-chat-header-status">
+                                                <span
+                                                    className="status-dot"
+                                                    style={{ backgroundColor: isOnline ? "#4caf50" : "#ccc" }}
+                                                />
+                                                {isOnline ? "Online" : "Offline"}
+                                            </div>
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Don't open convo
-                                                    handleUnblockUser(otherId);
-                                                }}
-                                                className="messages-page-unblock-button"
+                                                className="messages-page-mobile-menu-button"
+                                                onClick={() => setMobileMenuOpen((o) => !o)}
+                                                aria-label="Open conversation menu"
                                             >
-                                                Unblock
+                                                <MoreVertical size={20} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {mobileMenuOpen && (
+                                        <div className="messages-page-dropdown">
+                                            {activeConvo?.advertId && (
+                                                <>
+                                                    <button
+                                                        className="dropdown-item"
+                                                        disabled
+                                                        style={{ cursor: "default", color: "#444", fontWeight: 500 }}
+                                                    >
+                                                        ID: {activeConvo.advertId}
+                                                    </button>
+
+                                                    <button
+                                                        className="dropdown-item view-advert-item"
+                                                        onClick={() => {
+                                                            setMobileMenuOpen(false);
+                                                            window.location.href = `/advert-details/${activeConvo.advertId}`;
+                                                        }}
+                                                        title="View Advert"
+                                                    >
+                                                        <Eye size={18} style={{ marginRight: 8 }} />
+                                                        View Advert
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={async () => {
+                                                    setMobileMenuOpen(false);
+                                                    if (window.confirm("Are you sure you want to report this user? This will flag the conversation for admin review.")) {
+                                                        try {
+                                                            const reportRef = doc(collection(db, "reports"));
+                                                            const messagesQuery = query(
+                                                                collection(db, "conversations", activeConversationId, "messages"),
+                                                                orderBy("createdAt", "desc"),
+                                                                limit(10)
+                                                            );
+                                                            const messagesSnap = await getDocs(messagesQuery);
+                                                            const messageSnapshot = messagesSnap.docs.map(doc => {
+                                                                const data = doc.data();
+                                                                return {
+                                                                    from: data.from,
+                                                                    text: data.text || "",
+                                                                    filename: data.filename || "",
+                                                                    createdAt: data.createdAt
+                                                                };
+                                                            }).reverse();
+
+                                                            await setDoc(reportRef, {
+                                                                reportedBy: currentUser.uid,
+                                                                reportedUser: otherUserId,
+                                                                conversationId: activeConversationId,
+                                                                timestamp: serverTimestamp(),
+                                                                reason: "Flagged via messages",
+                                                                status: "pending",
+                                                                messageSnapshot
+                                                            });
+                                                            alert("✅ User has been reported. Our team will review the messages.");
+                                                        } catch (err) {
+                                                            console.error("Failed to submit report:", err);
+                                                            alert("⚠️ Failed to submit report. Please try again later.");
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                Report User
+                                            </button>
+
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={async () => {
+                                                    setMobileMenuOpen(false);
+                                                    if (window.confirm("Are you sure you want to permanently delete this conversation?")) {
+                                                        await deleteConversation(activeConversationId);
+                                                        setConversations(cs => cs.filter(c => c.id !== activeConversationId));
+                                                        setActiveConversationId(null);
+                                                    }
+                                                }}
+                                                title="Delete Conversation"
+                                            >
+                                                <Trash2 size={18} style={{ marginRight: 8 }} />
+                                                Delete
+                                            </button>
+
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setMobileMenuOpen(false);
+                                                    if (window.confirm("Are you sure you want to block this user?")) {
+                                                        handleBlockUser();
+                                                    }
+                                                }}
+                                                title="Block User"
+                                            >
+                                                <ShieldX size={18} style={{ marginRight: 8 }} />
+                                                Block
                                             </button>
                                         </div>
                                     )}
-
-
-                                    <div className="messages-page-convo-details">
-  <span className="messages-page-convo-title">
-  {rawTitle.slice(0, 60)}</span>
-
-
-                                        <span className="messages-page-convo-preview">
-    <strong>{(conv.lastMessageSenderName || nameToShow || "").split(" ")[0]}:</strong>
-                                            {conv.lastMessageText || preview}
-  </span>
-
-                                        <span className="messages-page-convo-timestamp">
-  {conv.lastUpdated?.toDate ? formatMessageTimestamp(conv.lastUpdated) : ""}
-</span>
-
-
-                                    </div>
-
                                 </div>
-                            );
-                        })
-                    )}
-                </div>
 
+                                {/* Messages list */}
+                                <div className="messages-page-chat-messages">
+                                    {Object.entries(groupMessagesByDate(messages)).map(([dateLabel, msgs]) => (
+                                        <div key={dateLabel} className="messages-group">
+                                            <div className="messages-date-label">{dateLabel}</div>
 
-                {/* Right Column: Chat Window */}
-                {/* Right Column: Chat Window */}
-                <div className="messages-page-chat">
-                    {activeConversationId ? (
-                        <>
-                            <div className="messages-page-chat-header">
-                                <div
-                                    className="messages-page-chat-header-info"
-                                    style={{
-                                        width: "100%",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    {/* Left: Sidebar toggle (mobile only) + Name */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                        <button
-                                            className="messages-page-toggle-button"
-                                            onClick={() => setShowSidebar((old) => !old)}
-                                            aria-label="Toggle sidebar"
-                                        >
-                                            <ChevronRight />
-                                        </button>
-
-                                        <span className="messages-page-chat-header-name">
-        {getOtherUserName()}
-      </span>
-                                    </div>
-
-                                    {/* Right: Online status + Menu */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative" }}>
-                                        <div className="messages-page-chat-header-status">
-        <span
-            className="status-dot"
-            style={{ backgroundColor: isOnline ? "#4caf50" : "#ccc" }}
-        />
-                                            {isOnline ? "Online" : "Offline"}
-                                        </div>
-
-                                        <button
-                                            className="messages-page-mobile-menu-button"
-                                            onClick={() => setMobileMenuOpen((o) => !o)}
-                                            aria-label="Open conversation menu"
-                                        >
-                                            <MoreVertical size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                                {mobileMenuOpen && (
-                                    <div className="messages-page-dropdown">
-                                        {activeConvo?.advertId && (
-                                            <>
-                                                <button
-                                                    className="dropdown-item"
-                                                    disabled
-                                                    style={{ cursor: "default", color: "#444", fontWeight: 500 }}
+                                            {msgs.map(m => (
+                                                <div
+                                                    key={m.id}
+                                                    className={`messages-page-chat-bubble ${
+                                                        m.from === currentUser?.uid ? "outgoing" : "incoming"
+                                                    }`}
+                                                    onMouseDown={e => m.from !== currentUser?.uid && handlePressStart(m.id, e)}
+                                                    onMouseUp={handlePressEnd}
+                                                    onMouseLeave={handlePressEnd}
+                                                    onTouchStart={e => m.from !== currentUser?.uid && handlePressStart(m.id, e)}
+                                                    onTouchEnd={handlePressEnd}
+                                                    onTouchCancel={handlePressEnd}
+                                                    onDoubleClick={() => m.from !== currentUser?.uid && handleSelectReaction(m.id, "❤️")}
+                                                    onContextMenu={e => e.preventDefault()}
                                                 >
-                                                    ID: {activeConvo.advertId}
-                                                </button>
-
-                                                <button
-                                                    className="dropdown-item view-advert-item"
-                                                    onClick={() => {
-                                                        setMobileMenuOpen(false);
-                                                        window.location.href = `/advert-details/${activeConvo.advertId}`;
-                                                    }}
-                                                    title="View Advert"
-                                                >
-                                                    <Eye size={18} style={{ marginRight: 8 }} />
-                                                    View Advert
-                                                </button>
-                                            </>
-                                        )}
-
-                                        <button
-                                            className="dropdown-item"
-                                            onClick={async () => {
-                                                setMobileMenuOpen(false);
-                                                if (window.confirm("Are you sure you want to report this user? This will flag the conversation for admin review.")) {
-                                                    try {
-                                                        const reportRef = doc(collection(db, "reports"));
-                                                        const messagesQuery = query(
-                                                            collection(db, "conversations", activeConversationId, "messages"),
-                                                            orderBy("createdAt", "desc"),
-                                                            limit(10)
-                                                        );
-                                                        const messagesSnap = await getDocs(messagesQuery);
-                                                        const messageSnapshot = messagesSnap.docs.map(doc => {
-                                                            const data = doc.data();
-                                                            return {
-                                                                from: data.from,
-                                                                text: data.text || "",
-                                                                filename: data.filename || "",
-                                                                createdAt: data.createdAt
-                                                            };
-                                                        }).reverse();
-
-                                                        await setDoc(reportRef, {
-                                                            reportedBy: currentUser.uid,
-                                                            reportedUser: otherUserId,
-                                                            conversationId: activeConversationId,
-                                                            timestamp: serverTimestamp(),
-                                                            reason: "Flagged via messages",
-                                                            status: "pending",
-                                                            messageSnapshot
-                                                        });
-                                                        alert("✅ User has been reported. Our team will review the messages.");
-                                                    } catch (err) {
-                                                        console.error("Failed to submit report:", err);
-                                                        alert("⚠️ Failed to submit report. Please try again later.");
-                                                    }
-                                                }
-                                            }}
-                                        >
-                                            Report User
-                                        </button>
-
-                                        <button
-                                            className="dropdown-item"
-                                            onClick={async () => {
-                                                setMobileMenuOpen(false);
-                                                if (window.confirm("Are you sure you want to permanently delete this conversation?")) {
-                                                    await deleteConversation(activeConversationId);
-                                                    setConversations(cs => cs.filter(c => c.id !== activeConversationId));
-                                                    setActiveConversationId(null);
-                                                }
-                                            }}
-                                            title="Delete Conversation"
-                                        >
-                                            <Trash2 size={18} style={{ marginRight: 8 }} />
-                                            Delete
-                                        </button>
-
-                                        <button
-                                            className="dropdown-item"
-                                            onClick={() => {
-                                                setMobileMenuOpen(false);
-                                                if (window.confirm("Are you sure you want to block this user?")) {
-                                                    handleBlockUser();
-                                                }
-                                            }}
-                                            title="Block User"
-                                        >
-                                            <ShieldX size={18} style={{ marginRight: 8 }} />
-                                            Block
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-
-
-                            {/* Messages list */}
-                            <div className="messages-page-chat-messages">
-                                {Object.entries(groupMessagesByDate(messages)).map(([dateLabel, msgs]) => (
-                                    <div key={dateLabel} className="messages-group">
-                                        <div className="messages-date-label">{dateLabel}</div>
-
-                                        {msgs.map(m => (
-                                            <div
-                                                key={m.id}
-                                                className={`messages-page-chat-bubble ${
-                                                    m.from === currentUser?.uid ? "outgoing" : "incoming"
-                                                }`}
-                                                onMouseDown={e => m.from !== currentUser?.uid && handlePressStart(m.id, e)}
-                                                onMouseUp={handlePressEnd}
-                                                onMouseLeave={handlePressEnd}
-                                                onTouchStart={e => m.from !== currentUser?.uid && handlePressStart(m.id, e)}
-                                                onTouchEnd={handlePressEnd}
-                                                onTouchCancel={handlePressEnd}
-                                                onDoubleClick={() => m.from !== currentUser?.uid && handleSelectReaction(m.id, "❤️")}                                                onContextMenu={e => e.preventDefault()}
-                                            >
-                                                <div className="message-text-content">
-                                                    {m.filename ? (
-                                                        /\.(jpg|jpeg|png|gif|webp)$/i.test(m.filename) ? (
-                                                            <div
-                                                                className="image-thumbnail-wrapper"
-                                                                onClick={() => {
-                                                                    setPreviewImageUrl(m.text);
-                                                                    setPreviewImageFilename(m.filename);
-                                                                }}
-                                                                style={{ cursor: "pointer" }}
-                                                            >
-                                                                <img
-                                                                    src={m.text}
-                                                                    alt={m.filename}
-                                                                    className="messages-page-image-thumbnail"
-                                                                />
-                                                            </div>
+                                                    <div className="message-text-content">
+                                                        {m.filename ? (
+                                                            /\.(jpg|jpeg|png|gif|webp)$/i.test(m.filename) ? (
+                                                                <div
+                                                                    className="image-thumbnail-wrapper"
+                                                                    onClick={() => {
+                                                                        setPreviewImageUrl(m.text);
+                                                                        setPreviewImageFilename(m.filename);
+                                                                    }}
+                                                                    style={{ cursor: "pointer" }}
+                                                                >
+                                                                    <img
+                                                                        src={m.text}
+                                                                        alt={m.filename}
+                                                                        className="messages-page-image-thumbnail"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <a href={m.text} target="_blank" rel="noopener noreferrer">
+                                                                    📎 {m.filename}
+                                                                </a>
+                                                            )
                                                         ) : (
-                                                            <a href={m.text} target="_blank" rel="noopener noreferrer">
-                                                                📎 {m.filename}
-                                                            </a>
-                                                        )
-                                                    ) : (
-                                                        m.text
+                                                            m.text
+                                                        )}
+                                                    </div>
+
+                                                    {messageReactions[m.id] && (
+                                                        <div className="reaction-floating">{messageReactions[m.id]}</div>
+                                                    )}
+
+                                                    {reactionMenuOpen === m.id && (
+                                                        <div
+                                                            className="reaction-menu"
+                                                            style={{
+                                                                position: "fixed",
+                                                                top: reactionMenuPosition.top,
+                                                                left: reactionMenuPosition.left,
+                                                                display: "flex",
+                                                                flexDirection: "row",
+                                                                gap: "10px",
+                                                                background: "white",
+                                                                border: "1px solid #ccc",
+                                                                borderRadius: "10px",
+                                                                padding: "5px 10px",
+                                                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                                                zIndex: 1000,
+                                                                fontSize: "1.4rem",
+                                                            }}
+                                                            onClick={e => e.stopPropagation()}
+                                                        >
+                                                            {["❤️", "😆", "😮", "😢", "👍", "👎"].map((emoji) => (
+                                                                <span
+                                                                    key={emoji}
+                                                                    className="reaction-emoji"
+                                                                    onClick={() => handleSelectReaction(m.id, emoji)}
+                                                                    style={{
+                                                                        cursor: "pointer",
+                                                                        padding: "4px 8px",
+                                                                        fontSize: "1.3rem",
+                                                                        borderRadius: "100%",
+                                                                        transition: "background-color 0.2s"
+                                                                    }}
+                                                                    onMouseLeave={e => e.target.style.backgroundColor = "transparent"}
+                                                                >
+                                                                    {emoji}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
-
-                                                {messageReactions[m.id] && (
-                                                    <div className="reaction-floating">{messageReactions[m.id]}</div>
-                                                )}
-
-                                                {reactionMenuOpen === m.id && (
-                                                    <div
-                                                        className="reaction-menu"
-                                                        style={{
-                                                            position: "fixed",
-                                                            top: reactionMenuPosition.top,
-                                                            left: reactionMenuPosition.left,
-                                                            display: "flex",
-                                                            flexDirection: "row",
-                                                            gap: "10px",
-                                                            background: "white",
-                                                            border: "1px solid #ccc",
-                                                            borderRadius: "10px",
-                                                            padding: "5px 10px",
-                                                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                                                            zIndex: 1000,
-                                                            fontSize: "1.4rem",
-
-                                                        }}
-                                                        onClick={e => e.stopPropagation()}
-                                                    >
-                                                        {["❤️", "😆", "😮", "😢", "👍", "👎"].map((emoji) => (
-                                                            <span
-                                                                key={emoji}
-                                                                className="reaction-emoji"
-                                                                onClick={() => handleSelectReaction(m.id, emoji)}
-                                                                style={{
-                                                                    cursor: "pointer",
-                                                                    padding: "4px 8px",
-                                                                    fontSize: "1.3rem",
-                                                                    borderRadius: "100%",
-                                                                    transition: "background-color 0.2s"
-                                                                }}
-                                                                onMouseLeave={e => e.target.style.backgroundColor = "transparent"}
-                                                            >
-                        {emoji}
-                    </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-
-                                    </div>
-                                ))}
-                                <div ref={messagesEndRef}/>
-                            </div>
-
-
-                            {/* Input */}
-                            <div className="messages-page-chat-input">
-                                <div className="messages-page-input-container">
-                                    <input
-                                        type="text"
-                                        placeholder="Type a message..."
-                                        value={newMessage}
-                                        onChange={e => setNewMessage(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                    />
-                                    <label className="attachment-icon-inner">
-                                        <Paperclip size={18} />
-                                        <input
-                                            type="file"
-                                            style={{display: "none"}}
-                                            onChange={handleFileUpload}
-                                            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-                                        />
-                                    </label>
+                                            ))}
+                                        </div>
+                                    ))}
+                                    <div ref={messagesEndRef}/>
                                 </div>
-                                <button
-                                    className="messages-page-send-button"
-                                    onClick={handleSend}
-                                    aria-label="Send message"
-                                >
-                                    <Send />
-                                </button>
+
+                                {/* Input */}
+                                <div className="messages-page-chat-input">
+                                    <div className="messages-page-input-container">
+                                        <input
+                                            type="text"
+                                            placeholder="Type a message..."
+                                            value={newMessage}
+                                            onChange={e => setNewMessage(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                        />
+                                        <label className="attachment-icon-inner">
+                                            <Paperclip size={18} />
+                                            <input
+                                                type="file"
+                                                style={{display: "none"}}
+                                                onChange={handleFileUpload}
+                                                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                            />
+                                        </label>
+                                    </div>
+                                    <button
+                                        className="messages-page-send-button"
+                                        onClick={handleSend}
+                                        aria-label="Send message"
+                                    >
+                                        <Send />
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="messages-page-no-chat">
+                                Select a conversation to start messaging
                             </div>
-
-                        </>
-                    ) : (
-                        <div className="messages-page-no-chat">
-                            Select a conversation to start messaging
-                        </div>
-                    )}
-                </div>
-
-            </div>
-            {previewImageUrl && (
-                <div className="image-preview-modal" onClick={() => setPreviewImageUrl(null)}>
-                    <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="image-preview-close"
-                            onClick={() => setPreviewImageUrl(null)}
-                        >
-                            ×
-                        </button>
-
-                        <img src={previewImageUrl} alt={previewImageFilename}/>
+                        )}
                     </div>
                 </div>
-            )}
 
-
-        </div>
-
+                {previewImageUrl && (
+                    <div className="image-preview-modal" onClick={() => setPreviewImageUrl(null)}>
+                        <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
+                            <button
+                                className="image-preview-close"
+                                onClick={() => setPreviewImageUrl(null)}
+                            >
+                                ×
+                            </button>
+                            <img src={previewImageUrl} alt={previewImageFilename}/>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 

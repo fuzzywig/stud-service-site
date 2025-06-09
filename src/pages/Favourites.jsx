@@ -19,19 +19,23 @@ import {
     FaDog
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import {Helmet} from "react-helmet-async";
 
 export default function Favourites() {
     const [user, setUser] = useState(null);
     const [favouriteAds, setFavouriteAds] = useState([]);
     const [groupedFavourites, setGroupedFavourites] = useState({
         forSale: {},
-        forStud: {}
+        forStud: {},
+        forRescue: {}
     });
+
     const [loading, setLoading] = useState(true);
     const [selectedView, setSelectedView] = useState("grid");
-    const [activeTab, setActiveTab] = useState("all"); // 'all', 'forSale', or 'forStud'
+    const [activeTab, setActiveTab] = useState("all");
     const auth = getAuth();
     const navigate = useNavigate();
+    const shouldRenderForRescue = activeTab === 'all' || activeTab === 'forRescue';
 
     // watch auth
     useEffect(() => {
@@ -47,7 +51,8 @@ export default function Favourites() {
             setFavouriteAds([]);
             setGroupedFavourites({
                 forSale: {},
-                forStud: {}
+                forStud: {},
+                forRescue: {}
             });
             setLoading(false);
             return;
@@ -95,13 +100,15 @@ export default function Favourites() {
 
                 console.log("Fetched intents:", filteredAds.map(ad => ad.intent));
 
-
                 // 4) separate by listing type (for sale vs for stud) and then group by breed
                 const forSaleAds = filteredAds.filter(ad =>
                     ["sale", "forSale"].includes((ad.intent || "").toLowerCase())
                 );
                 const forStudAds = filteredAds.filter(ad =>
                     ["stud", "forStud"].includes((ad.intent || "").toLowerCase())
+                );
+                const forRescueAds = filteredAds.filter(ad =>
+                    ["rescue", "forRescue"].includes((ad.intent || "").toLowerCase())
                 );
 
                 // 5) group by breed
@@ -113,6 +120,13 @@ export default function Favourites() {
                 }, {});
 
                 const forStudGrouped = forStudAds.reduce((acc, ad) => {
+                    const b = ad.breedOrType || "Other";
+                    acc[b] = acc[b] || [];
+                    acc[b].push(ad);
+                    return acc;
+                }, {});
+
+                const forRescueGrouped = forRescueAds.reduce((acc, ad) => {
                     const b = ad.breedOrType || "Other";
                     acc[b] = acc[b] || [];
                     acc[b].push(ad);
@@ -134,16 +148,25 @@ export default function Favourites() {
                         return acc;
                     }, {});
 
+                const sortedForRescue = Object.keys(forRescueGrouped)
+                    .sort()
+                    .reduce((acc, key) => {
+                        acc[key] = forRescueGrouped[key];
+                        return acc;
+                    }, {});
+
                 setGroupedFavourites({
                     forSale: sortedForSale,
-                    forStud: sortedForStud
+                    forStud: sortedForStud,
+                    forRescue: sortedForRescue
                 });
             } catch (err) {
                 console.error("Error fetching favourites:", err);
                 setFavouriteAds([]);
                 setGroupedFavourites({
                     forSale: {},
-                    forStud: {}
+                    forStud: {},
+                    forRescue: {}
                 });
             } finally {
                 setLoading(false);
@@ -152,7 +175,6 @@ export default function Favourites() {
 
         fetchFavourites();
     }, [user]);
-
 
     // remove one
     const handleRemoveFavourite = async (adId) => {
@@ -164,8 +186,15 @@ export default function Favourites() {
             const updatedAds = prev.filter((ad) => ad.id !== adId);
 
             // rebuild groupings
-            const forSaleAds = updatedAds.filter(ad => ad.listingType === 'forSale' || !ad.listingType);
-            const forStudAds = updatedAds.filter(ad => ad.listingType === 'forStud');
+            const forSaleAds = updatedAds.filter(ad =>
+                ["sale", "forSale"].includes((ad.intent || "").toLowerCase())
+            );
+            const forStudAds = updatedAds.filter(ad =>
+                ["stud", "forStud"].includes((ad.intent || "").toLowerCase())
+            );
+            const forRescueAds = updatedAds.filter(ad =>
+                ["rescue", "forRescue"].includes((ad.intent || "").toLowerCase())
+            );
 
             const forSaleGrouped = forSaleAds.reduce((acc, ad) => {
                 const b = ad.breedOrType || "Other";
@@ -181,19 +210,28 @@ export default function Favourites() {
                 return acc;
             }, {});
 
+            const forRescueGrouped = forRescueAds.reduce((acc, ad) => {
+                const b = ad.breedOrType || "Other";
+                if (!acc[b]) acc[b] = [];
+                acc[b].push(ad);
+                return acc;
+            }, {});
+
             setGroupedFavourites({
                 forSale: forSaleGrouped,
-                forStud: forStudGrouped
+                forStud: forStudGrouped,
+                forRescue: forRescueGrouped
             });
 
             return updatedAds;
         });
     };
 
-    // Count total favorites for each type
-    const forSaleCount = Object.values(groupedFavourites.forSale).flat().length;
-    const forStudCount = Object.values(groupedFavourites.forStud).flat().length;
-    const totalCount = forSaleCount + forStudCount;
+    // Count total favorites for each type - ADD NULL CHECKS HERE
+    const forSaleCount = Object.values(groupedFavourites?.forSale || {}).flat().length;
+    const forRescueCount = Object.values(groupedFavourites?.forRescue || {}).flat().length;
+    const forStudCount = Object.values(groupedFavourites?.forStud || {}).flat().length;
+    const totalCount = forSaleCount + forStudCount + forRescueCount;
 
     if (loading) {
         return (
@@ -230,7 +268,7 @@ export default function Favourites() {
                             <FaShoppingCart className="listing-type-icon" /> For Sale
                         </h2>
                         <div className="breed-groups-container">
-                            {Object.entries(groupedFavourites.forSale).map(([breed, ads]) => (
+                            {Object.entries(groupedFavourites?.forSale || {}).map(([breed, ads]) => (
                                 <div className="breed-group" key={`sale-${breed}`}>
                                     <h3 className="breed-group-title">{breed}</h3>
                                     <div className={`favourites-${selectedView}`}>
@@ -248,8 +286,26 @@ export default function Favourites() {
                             <FaDog className="listing-type-icon" /> For Stud
                         </h2>
                         <div className="breed-groups-container">
-                            {Object.entries(groupedFavourites.forStud).map(([breed, ads]) => (
+                            {Object.entries(groupedFavourites?.forStud || {}).map(([breed, ads]) => (
                                 <div className="breed-group" key={`stud-${breed}`}>
+                                    <h3 className="breed-group-title">{breed}</h3>
+                                    <div className={`favourites-${selectedView}`}>
+                                        {ads.map((ad) => renderFavouriteItem(ad))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {shouldRenderForRescue && forRescueCount > 0 && (
+                    <div className="listing-type-container">
+                        <h2 className="listing-type-title">
+                            <FaHeart className="listing-type-icon" /> For Adoption
+                        </h2>
+                        <div className="breed-groups-container">
+                            {Object.entries(groupedFavourites?.forRescue || {}).map(([breed, ads]) => (
+                                <div className="breed-group" key={`rescue-${breed}`}>
                                     <h3 className="breed-group-title">{breed}</h3>
                                     <div className={`favourites-${selectedView}`}>
                                         {ads.map((ad) => renderFavouriteItem(ad))}
@@ -281,6 +337,17 @@ export default function Favourites() {
                         </button>
                     </div>
                 )}
+
+                {activeTab === 'forRescue' && forRescueCount === 0 && (
+                    <div className="empty-state">
+                        <FaRegStar className="empty-icon" />
+                        <h3>No 'For Adoption' Favourites</h3>
+                        <p>You haven't added any rescue adverts to your favourites.</p>
+                        <button className="browse-btn" onClick={() => navigate("/browse")}>
+                            Browse Listings
+                        </button>
+                    </div>
+                )}
             </>
         );
     };
@@ -304,21 +371,17 @@ export default function Favourites() {
                 <div className="favourite-details">
                     <span className="favourite-breed">{ad.breedOrType}</span>
                     <span className="favourite-listing-type">
-                        {ad.listingType === 'forStud' ? 'For Stud' : 'For Sale'}
+                        {ad.intent === 'stud' || ad.listingType === 'forStud' ? 'For Stud' :
+                            ad.intent === 'rescue' ? 'For Adoption' : 'For Sale'}
                     </span>
                     {ad.age != null && (
                         <span className="favourite-age">
                             {ad.age} {ad.age === 1 ? "year" : "years"} old
                         </span>
                     )}
-                    {ad.price != null && (
-                        <span className="favourite-fee">£{ad.price}</span>
-                    )}
-                    {(ad.ownerCity || ad.ownerCounty) && (
-                        <span className="favourite-location">
-                            <FaMapMarkerAlt /> {ad.ownerCity}
-                            {ad.ownerCity && ad.ownerCounty ? ", " : ""}
-                            {ad.ownerCounty}
+                    {(ad.price != null || ad.adoptionFee != null) && (
+                        <span className="favourite-fee">
+                            £{ad.intent === 'rescue' ? ad.adoptionFee : ad.price}
                         </span>
                     )}
                 </div>
@@ -341,6 +404,13 @@ export default function Favourites() {
     );
 
     return (
+
+        <>
+            <Helmet>
+                <title>Your Favourites | My Pet Connect</title>
+                <meta name="robots" content="noindex,follow" />
+            </Helmet>
+
         <div className="favourites-container">
             <div className="favourites-header">
                 <h2 className="favourites-title">
@@ -366,6 +436,12 @@ export default function Favourites() {
                         >
                             For Stud ({forStudCount})
                         </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'forRescue' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('forRescue')}
+                        >
+                            For Adoption ({forRescueCount})
+                        </button>
                     </div>
                     <div className="view-toggle">
                         <button
@@ -386,5 +462,7 @@ export default function Favourites() {
 
             {renderListings()}
         </div>
+
+            </>
     );
 }

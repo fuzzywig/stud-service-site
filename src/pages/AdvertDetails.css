@@ -914,7 +914,7 @@
     word-break: break-word;
 }
 
-/* Online Status */
+/* Online Status - Fixed alignment */
 .online-now {
     display: flex;
     align-items: center;
@@ -931,19 +931,6 @@
     position: relative;
 }
 
-.online-dot::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 12px;
-    height: 12px;
-    background: #4caf50;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    animation: pulse 2s infinite;
-    opacity: 0.3;
-}
 
 @keyframes pulse {
     0%, 100% {
@@ -2854,4 +2841,22 @@ body.tooltip-open {
 /* Remove bottom margin from main container if needed */
 .stud-details-container {
     padding-bottom: 0 !important;
+}
+.breeder-badge.rescue {
+    background-color: #e6f0ea;
+    color: #1c5235;
+    border: 1px solid #bfd6cc;
+}
+
+.breeder-badge.rescue .badge-icon {
+    color: #256845;
+}
+.breeder-badge.rescue {
+    background: linear-gradient(135deg, #b83c56, #d64862);
+    color: white;
+    box-shadow: 0 4px 15px rgba(184, 60, 86, 0.3);
+}
+
+.breeder-badge.rescue .badge-icon {
+    color: white;
 }

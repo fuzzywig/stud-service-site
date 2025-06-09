@@ -27,7 +27,7 @@
     background: white;
     border-radius: 16px;
     width: 100%;
-    max-width: 720px;
+    max-width: 900px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -81,44 +81,62 @@
     color: #111827;
 }
 
-/* Tab Navigation */
+/* Tab Navigation - Matching UserProfile Design */
 .psm-tabs {
     display: flex;
-    gap: 8px;
-    padding: 0 24px;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    overflow-x: auto;
+    gap: 4px;
+    flex: 1;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    padding: 4px;
+    margin-top: 5px;
+    margin-right: 16px;
+    margin-left: 16px;
+    margin-bottom: 0;
 }
 
 .psm-tab {
+    flex: 1;
+    padding: 12px 20px;
     background: none;
     border: none;
-    padding: 16px 20px;
-    font-size: 14px;
+    font-size: 0.95rem;
     font-weight: 500;
-    color: #2d3436 ;
+    color: #6b7280;
     cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    text-align: center;
+    border-radius: 6px;
+    white-space: nowrap;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.psm-tab:hover {
-    color: #1c5235;
+    line-height: 1;
+    box-sizing: border-box;
 }
 
 .psm-tab.active {
-    color: #1c5235;
-    border-bottom-color: #1c5235;
+    background-color: #1c5235;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(28, 82, 53, 0.2);
+}
 
+.psm-tab:hover:not(.active) {
+    background-color: #ffffff;
+    color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .psm-tab svg {
     font-size: 16px;
+    flex-shrink: 0;
+}
+
+.psm-tab span {
+    display: inline;
 }
 
 /* Message Display */
@@ -161,6 +179,32 @@
     flex: 1;
     overflow-y: auto;
     padding: 24px;
+    padding-right: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-gutter: stable;
+}
+
+.psm-tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.psm-tab-content::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.psm-tab-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.psm-tab-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.psm-tab-content::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 /* Form Styles */
@@ -168,6 +212,34 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding-right: 8px;
+    margin-right: -8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-gutter: stable;
+}
+
+/* Form scrollbar styles */
+.psm-form::-webkit-scrollbar {
+    width: 8px;
+}
+
+.psm-form::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.psm-form::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.psm-form::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.psm-form::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .psm-form-row {
@@ -208,7 +280,10 @@
     width: 100%;
     background-color: #fff;
     color: #2d3436;
-
+    resize: vertical;
+    line-height: 1.5;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
 .psm-form-group input:focus,
@@ -222,6 +297,36 @@
 .psm-form-group textarea {
     resize: vertical;
     line-height: 1.5;
+    overflow-y: auto;
+    padding-right: 20px;
+}
+
+/* Textarea scrollbar styles */
+.psm-form-group textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+.psm-form-group textarea::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.psm-form-group textarea::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.psm-form-group textarea:hover::-webkit-scrollbar-thumb,
+.psm-form-group textarea:focus::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.psm-form-group textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.psm-form-group textarea::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .psm-field-help {
@@ -307,7 +412,6 @@
     cursor: pointer;
     transition: all 0.2s;
     border: none;
-
 }
 
 .psm-cancel-btn {
@@ -340,42 +444,104 @@
     transform: none;
 }
 
-/* Responsive Design */
+/* Desktop only - Fixed form height to prevent jumping */
+@media (min-width: 641px) {
+    .psm-form {
+        min-height: 450px;
+        height: 450px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+/* For even larger screens */
+@media (min-width: 1280px) {
+    .psm-form {
+        height: 500px;
+    }
+}
+
+/* Responsive Design - Mobile fixes */
 @media (max-width: 640px) {
+    .psm-modal-overlay {
+        padding: 0;
+        align-items: flex-start;
+    }
+
     .psm-modal-content {
         max-height: 100vh;
+        max-height: 100dvh;
+        height: 100%;
         margin: 0;
         border-radius: 0;
+        max-width: 100%;
+        position: relative;
+        padding-top: env(safe-area-inset-top);
     }
 
     .psm-modal-header {
         padding: 20px;
+        padding-top: calc(20px + env(safe-area-inset-top));
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .psm-modal-header h2 {
         font-size: 20px;
     }
 
+    /* Tab container wrapper if it exists */
+    .psm-modal-content > div {
+        height: auto !important;
+        min-height: unset !important;
+    }
+
+    /* Tab styles for mobile - icon only with reduced height */
     .psm-tabs {
-        padding: 0 16px;
+        padding: 4px !important;
         gap: 4px;
+        margin-top: 5px;
+        margin-right: 16px;
+        margin-left: 16px;
+        margin-bottom: 0;
+        height: 44px !important;
+        min-height: 44px !important;
+        max-height: 44px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
     .psm-tab {
-        padding: 14px 16px;
-        font-size: 13px;
+        padding: 8px !important;
+        font-size: 0 !important;
+        gap: 0 !important;
+        min-height: unset !important;
+        height: 36px !important;
+        line-height: 1 !important;
     }
 
     .psm-tab span {
-        display: none;
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
     }
 
     .psm-tab svg {
-        font-size: 18px;
+        font-size: 18px !important;
+        margin: 0 !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .psm-tab-content {
         padding: 20px;
+        height: calc(100% - 60px - 44px - 80px);
+        overflow-y: auto;
     }
 
     .psm-form-row {
@@ -385,11 +551,30 @@
     .psm-modal-actions {
         padding: 20px;
         flex-direction: column;
+        position: sticky;
+        bottom: 0;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
 
     .psm-cancel-btn,
     .psm-save-btn {
         width: 100%;
+    }
+}
+
+/* For very small devices */
+@media (max-width: 380px) {
+    .psm-tab {
+        padding: 6px !important;
+        height: 32px !important;
+    }
+
+    .psm-tab svg {
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
     }
 }
 
@@ -630,19 +815,57 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-
-/* Toggle switches for visibility settings - SCOPED TO PSM */
-.psm-modal-content .up-checkbox-label input[type="checkbox"] {
-    accent-color: #b83c56;
+/* Desktop/Mobile visibility helpers - Add to UserProfile.css */
+.up-desktop-only {
+    display: flex;
 }
 
-/* Stars active color - SCOPED TO PSM */
-.psm-modal-content .up-star.up-active {
-    color: #b83c56;
+.up-mobile-only {
+    display: none !important; /* Added !important to ensure it overrides other display properties */
 }
 
-/* REMOVED GENERIC SELECTORS - These were affecting the whole site:
-- input:focus, select:focus, textarea:focus
-- a
-- a:hover
-*/
+/* Ensure buttons with these classes follow the visibility rules */
+button.up-desktop-only {
+    display: flex;
+}
+
+button.up-mobile-only {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .up-desktop-only {
+        display: none !important;
+    }
+
+    .up-mobile-only {
+        display: flex !important;
+        width: 100%;
+        margin-top: 16px;
+        justify-content: center;
+    }
+
+    /* Ensure button elements specifically follow these rules */
+    button.up-desktop-only {
+        display: none !important;
+    }
+
+    button.up-mobile-only {
+        display: flex !important;
+        width: 100%;
+        margin-top: 16px;
+        justify-content: center;
+    }
+
+    /* Ensure section headers don't have gap on mobile */
+    .up-bio-section .up-section-header,
+    .up-adoption-process-section .up-section-header {
+        gap: 0;
+    }
+
+    /* Optional: Add some bottom margin to content before button */
+    .up-bio-content,
+    .up-process-content {
+        margin-bottom: 8px;
+    }
+}

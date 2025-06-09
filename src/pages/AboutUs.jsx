@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AboutUs.css';
-
+import { Helmet } from "react-helmet-async";
 const AboutUs = () => {
     const [visibleSections, setVisibleSections] = useState({});
 
@@ -49,7 +49,19 @@ const AboutUs = () => {
     ];
 
     return (
-        <div className="about">
+        <>
+
+    <Helmet>
+        <title>About Us | My Pet Connect</title>
+        <meta
+            name="description"
+            content="Learn about My Pet Connect—our mission, story, and commitment to transparency in stud advertising. Connecting responsible breeders and handlers across the UK."
+        />
+        <meta name="robots" content="index,follow" />
+    </Helmet>
+
+
+    <div className="about">
             {/* Hero Section */}
             <section className="about__hero">
                 <div className="about__container">
@@ -218,6 +230,8 @@ const AboutUs = () => {
                 </section>
             </div>
         </div>
+
+        </>
     );
 };
 

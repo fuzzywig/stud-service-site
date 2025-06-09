@@ -307,3 +307,187 @@
         z-index: 9998;
     }
 }
+/* Add this to your AdminSidebar.css for crisp icon rendering */
+
+/* Icon optimization for crisp rendering */
+.admin-sidebar-icon {
+    flex-shrink: 0;
+    /* Ensure crisp rendering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    will-change: transform;
+    /* Anti-aliasing for smooth edges */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Ensure pixel perfect alignment */
+    transform: translate3d(0, 0, 0);
+}
+
+/* Specific sizing for different contexts */
+.admin-sidebar-toggle svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+}
+
+.admin-sidebar-close svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+}
+
+.admin-sidebar-icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    margin-right: 12px;
+}
+
+.admin-sidebar-profile-icon,
+.admin-sidebar-logout-icon {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* Ensure icons align properly */
+.admin-sidebar-link {
+    display: flex;
+    align-items: center;
+    /* Ensure consistent icon baseline */
+    line-height: 1;
+}
+
+/* High DPI display optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .admin-sidebar-icon {
+        /* Sharper rendering on retina displays */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+    }
+}
+
+/* Force GPU acceleration for smooth animations */
+.admin-sidebar-icon,
+.admin-sidebar-toggle svg,
+.admin-sidebar-close svg {
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform: translate3d(0, 0, 0);
+}
+/* Simplified, high-quality notification badges */
+.admin-sidebar-notification-badge {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+
+    /* Simple, solid background - no gradients */
+    background: #ef4444;
+    color: white;
+
+    /* Larger, cleaner typography */
+    font-size: 14px;
+    font-weight: 600;
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1;
+
+    /* Slightly larger circular design to accommodate bigger text */
+    min-width: 24px;
+    height: 24px;
+    border-radius: 12px;
+
+    /* Perfect centering */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+
+    /* Clean shadow */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+    /* Smooth transitions */
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    /* Prevent text issues */
+    user-select: none;
+    white-space: nowrap;
+}
+
+/* Update the sidebar link to accommodate the slightly larger badge */
+.admin-sidebar-link {
+    position: relative;
+    padding-right: 50px; /* Increased to accommodate larger badge */
+    /* ... your existing sidebar link styles ... */
+}
+
+/* Simple hover effect */
+.admin-sidebar-link:hover .admin-sidebar-notification-badge {
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Clean color variants - solid colors only */
+.admin-sidebar-link[href*="approve-adverts"] .admin-sidebar-notification-badge {
+    background: #f59e0b; /* Solid amber */
+}
+
+.admin-sidebar-link[href*="approve-reviews"] .admin-sidebar-notification-badge {
+    background: #8b5cf6; /* Solid purple */
+}
+
+.admin-sidebar-link[href*="reported-users"] .admin-sidebar-notification-badge {
+    background: #ef4444; /* Solid red */
+}
+
+.admin-sidebar-link[href*="tickets"] .admin-sidebar-notification-badge {
+    background: #06b6d4; /* Solid cyan */
+}
+
+/* Simple animations */
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.admin-sidebar-notification-badge {
+    animation: pulse-badge 3s infinite;
+}
+
+/* Loading state - simple and clean */
+.admin-sidebar-notification-badge.loading {
+    background: #9ca3af;
+    animation: none;
+}
+
+/* Responsive - adjust for mobile */
+@media (max-width: 768px) {
+    .admin-sidebar-notification-badge {
+        font-size: 13px;
+        min-width: 22px;
+        height: 22px;
+        border-radius: 11px;
+        padding: 0 5px;
+    }
+
+    .admin-sidebar-link {
+        padding-right: 40px;
+    }
+}
+
+/* Responsive - keep it simple */
+@media (max-width: 768px) {
+    .admin-sidebar-notification-badge {
+        font-size: 11px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+    }
+
+    .admin-sidebar-link {
+        padding-right: 35px;
+    }
+}

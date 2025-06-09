@@ -1,15 +1,12 @@
-/* src/pages/admin/ApproveAdverts.css */
-
-/* Main container */
 .admin-approve-adverts-page {
-    display: flex;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
-    position: relative;
-    width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
+       display: flex;
+       min-height: 100vh;
+       background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
+       position: relative;
+       width: 100%;
+       overflow-x: hidden;
+       box-sizing: border-box;
+   }
 
 .admin-approve-adverts-page *,
 .admin-approve-adverts-page *::before,
@@ -17,7 +14,7 @@
     box-sizing: border-box;
 }
 
-/* Content area */
+/* Content area - keeping existing structure */
 .admin-approve-adverts-page .content-area {
     flex: 1;
     padding: 1.5rem;
@@ -35,7 +32,7 @@
     }
 }
 
-/* Page header */
+/* Page header - keeping existing */
 .admin-approve-adverts-page .page-title {
     font-size: 2.25rem;
     line-height: 2.75rem;
@@ -61,7 +58,7 @@
     }
 }
 
-/* Search section */
+/* Search section - keeping existing */
 .admin-approve-adverts-page .search-section {
     display: flex;
     flex-direction: column;
@@ -149,395 +146,360 @@
     animation: pulse 2s infinite;
 }
 
-/* Loading state */
-.admin-approve-adverts-page .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 24rem;
-    width: 100%;
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+.admin-approve-adverts-page .loading-spinner {
+    animation: spin 1s linear infinite;
 }
 
-.admin-approve-adverts-page .loading-animation {
+/* Loading state */
+.approve-adverts-loading-container {
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    min-height: 400px;
     gap: 1rem;
 }
 
-.admin-approve-adverts-page .loading-circle {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
-    animation: loadingPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes loadingPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.7;
-    }
-}
-
-.admin-approve-adverts-page .loading-lines {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.admin-approve-adverts-page .loading-line {
-    height: 0.5rem;
-    background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
-    border-radius: 0.25rem;
-    width: 120px;
-    animation: shimmer 1.5s infinite;
-}
-
-.admin-approve-adverts-page .loading-line:nth-child(2) {
-    width: 100px;
-    animation-delay: 0.2s;
-}
-
-.admin-approve-adverts-page .loading-line:nth-child(3) {
-    width: 140px;
-    animation-delay: 0.4s;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -200% center;
-    }
-    100% {
-        background-position: 200% center;
-    }
+.approve-adverts-loading-icon {
+    font-size: 3rem;
+    color: #3b82f6;
+    animation: spin 1s linear infinite;
 }
 
 /* Empty state */
-.admin-approve-adverts-page .empty-state {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 24rem;
-    width: 100%;
-}
-
-.admin-approve-adverts-page .empty-state-content {
-    text-align: center;
-    padding: 4rem;
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    max-width: 450px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.admin-approve-adverts-page .empty-state-icon {
-    font-size: 5rem;
-    color: #10b981;
-    margin-bottom: 1.5rem;
-    filter: drop-shadow(0 4px 6px rgba(16, 185, 129, 0.2));
-    animation: bounceIn 0.6s ease-out;
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0.3);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    70% {
-        transform: scale(0.9);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.admin-approve-adverts-page .empty-state-content h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 0.75rem 0;
-}
-
-.admin-approve-adverts-page .empty-state-content p {
-    color: #6b7280;
-    margin: 0;
-    font-size: 1.0625rem;
-    line-height: 1.6;
-}
-
-/* Adverts list */
-.admin-approve-adverts-page .adverts-list {
+.approve-adverts-empty-state {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.approve-adverts-empty-icon {
+    font-size: 4rem;
+    color: #10b981;
+    margin-bottom: 1rem;
+}
+
+.approve-adverts-empty-state h2 {
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.approve-adverts-empty-state p {
+    color: #6b7280;
+}
+
+/* Adverts Grid */
+.approve-adverts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.5rem;
     width: 100%;
 }
 
-/* Advert list item */
-.admin-approve-adverts-page .advert-list-item {
-    display: flex;
-    flex-direction: row;
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    animation: fadeInUp 0.6s ease-out;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    position: relative;
-}
-
-.admin-approve-adverts-page .advert-list-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-@media (max-width: 640px) {
-    .admin-approve-adverts-page .advert-list-item {
-        flex-direction: column;
+@media (max-width: 768px) {
+    .approve-adverts-grid {
+        grid-template-columns: 1fr;
     }
 }
 
-/* Advert thumbnail */
-.admin-approve-adverts-page .advert-thumbnail {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+/* Advert Card */
+.approve-adverts-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.approve-adverts-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Card Header */
+.approve-adverts-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.approve-adverts-type-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.875rem;
+    background: white;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.approve-adverts-type-badge svg {
+    font-size: 1rem;
+    color: #256845;
+}
+
+.approve-adverts-date {
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+/* Image Container */
+.approve-adverts-image-container {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    background: #f3f4f6;
     overflow: hidden;
-    flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
-    .admin-approve-adverts-page .advert-thumbnail {
-        width: 100%;
-        height: 200px;
-    }
-}
-
-.admin-approve-adverts-page .thumbnail-image {
+.approve-adverts-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
 }
 
-.admin-approve-adverts-page .advert-list-item:hover .thumbnail-image {
-    transform: scale(1.05);
-}
-
-.admin-approve-adverts-page .thumbnail-placeholder {
+.approve-adverts-no-image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
     color: #9ca3af;
+    gap: 0.5rem;
+}
+
+.approve-adverts-no-image svg {
     font-size: 3rem;
 }
 
-.admin-approve-adverts-page .image-count-badge {
+.approve-adverts-image-count {
     position: absolute;
     bottom: 0.75rem;
     right: 0.75rem;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 2rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    min-width: 2rem;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.admin-approve-adverts-page .image-count-badge::before {
-    content: '📷';
+    padding: 0.375rem 0.75rem;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    border-radius: 2rem;
     font-size: 0.875rem;
+    font-weight: 500;
 }
 
-/* Advert info */
-.admin-approve-adverts-page .advert-info {
+/* Content Section */
+.approve-adverts-content {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    min-width: 0;
+    gap: 1rem;
 }
 
-.admin-approve-adverts-page .advert-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.admin-approve-adverts-page .advert-title {
-    font-size: 1.25rem;
-    font-weight: 700;
+.approve-adverts-title {
+    font-size: 1.125rem;
+    font-weight: 600;
     color: #1f2937;
     margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     line-height: 1.4;
 }
 
-.admin-approve-adverts-page .advert-name {
-    font-weight: 500;
-    color: #6366f1;
+/* Details Grid */
+.approve-adverts-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.625rem;
 }
 
-.admin-approve-adverts-page .advert-date {
+.approve-adverts-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    background: #f9fafb;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.approve-adverts-detail-item svg {
+    flex-shrink: 0;
+    color: #256845;
+    font-size: 0.875rem;
+}
+
+.approve-adverts-detail-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Description */
+.approve-adverts-description {
+    flex: 1;
+    margin: 0.5rem 0;
+}
+
+.approve-adverts-description p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Contact Info */
+.approve-adverts-contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.approve-adverts-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.8125rem;
     color: #6b7280;
-    white-space: nowrap;
-    background: #f3f4f6;
-    padding: 0.25rem 0.75rem;
-    border-radius: 2rem;
-    font-weight: 500;
 }
 
-/* Advert meta information */
-.admin-approve-adverts-page .advert-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 0.75rem;
+.approve-adverts-contact-item svg {
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+/* Actions */
+.approve-adverts-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.approve-adverts-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.approve-adverts-btn-approve {
+    background: #10b981;
+    color: white;
+}
+
+.approve-adverts-btn-approve:hover {
+    background: #059669;
+}
+
+.approve-adverts-btn-reject {
+    background: #ef4444;
+    color: white;
+}
+
+.approve-adverts-btn-reject:hover {
+    background: #dc2626;
+}
+
+.approve-adverts-btn-view {
+    background: #3b82f6;
+    color: white;
+}
+
+.approve-adverts-btn-view:hover {
+    background: #2563eb;
+}
+
+/* Modal */
+.approve-adverts-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.approve-adverts-modal {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.approve-adverts-modal h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
     margin-bottom: 1rem;
 }
 
-.admin-approve-adverts-page .meta-item {
-    display: flex;
-    align-items: center;
+.approve-adverts-modal p {
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.approve-adverts-modal select,
+.approve-adverts-modal textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
-    color: #4b5563;
-    padding: 0.5rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-    transition: all 0.2s;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
 }
 
-.admin-approve-adverts-page .advert-list-item:hover .meta-item {
-    border-color: #d1d5db;
+.approve-adverts-modal select:focus,
+.approve-adverts-modal textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
 }
 
-.admin-approve-adverts-page .meta-icon {
-    color: #6b7280;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
-    font-size: 1rem;
+.approve-adverts-modal textarea {
+    resize: vertical;
+    min-height: 100px;
 }
 
-.admin-approve-adverts-page .meta-item:has(.fa-pound-sign) .meta-icon {
-    color: #059669;
-}
-
-.admin-approve-adverts-page .meta-item:has(.fa-map-marker-alt) .meta-icon {
-    color: #ef4444;
-}
-
-.admin-approve-adverts-page .meta-item:has(.fa-user) .meta-icon {
-    color: #3b82f6;
-}
-
-.admin-approve-adverts-page .meta-item:has(.fa-calendar-alt) .meta-icon {
-    color: #f59e0b;
-}
-
-.admin-approve-adverts-page .meta-item:has(.fa-palette) .meta-icon {
-    color: #8b5cf6;
-}
-
-.admin-approve-adverts-page .meta-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-}
-
-/* Advert description */
-.admin-approve-adverts-page .advert-description {
-    font-size: 0.9375rem;
-    color: #6b7280;
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    margin-top: auto;
-    line-height: 1.6;
-}
-
-/* View button */
-.admin-approve-adverts-page .view-button-container {
+.approve-adverts-modal-actions {
     display: flex;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border-left: 2px solid #bae6fd;
-    align-items: center;
-    justify-content: center;
-}
-
-@media (max-width: 640px) {
-    .admin-approve-adverts-page .view-button-container {
-        padding: 1rem;
-        border-left: none;
-        border-top: 2px solid #bae6fd;
-    }
-}
-
-.admin-approve-adverts-page .view-button {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: #3b82f6;
-    white-space: nowrap;
-    padding: 0.625rem 1.25rem;
-    background: white;
-    border-radius: 0.5rem;
-    border: 2px solid #3b82f6;
-    transition: all 0.2s;
-}
-
-.admin-approve-adverts-page .advert-list-item:hover .view-button {
-    background: #3b82f6;
-    color: white;
-    transform: scale(1.05);
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
-}
-
-/* Status indicators - for future use */
-.admin-approve-adverts-page .status-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    padding: 0.375rem 0.875rem;
-    border-radius: 2rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    color: white;
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+    gap: 0.75rem;
+    justify-content: flex-end;
 }
 
 /* Animations */
@@ -572,192 +534,11 @@
     }
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-    .admin-approve-adverts-page .advert-meta {
-        grid-template-columns: 1fr;
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
     }
-
-    .admin-approve-adverts-page .meta-item {
-        justify-content: flex-start;
+    to {
+        transform: rotate(360deg);
     }
-}
-
-/* Print styles */
-@media print {
-    .admin-approve-adverts-page .search-section,
-    .admin-approve-adverts-page .view-button-container {
-        display: none;
-    }
-
-    .admin-approve-adverts-page .advert-list-item {
-        page-break-inside: avoid;
-        box-shadow: none;
-        border: 1px solid #000;
-    }
-}
-.advert-card {
-    display: flex;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-    background: #fff;
-    cursor: pointer;
-    transition: box-shadow 0.2s ease;
-}
-
-.advert-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.advert-image-section {
-    flex: 0 0 150px;
-    height: 150px;
-    margin-right: 16px;
-    position: relative;
-}
-
-.advert-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.image-count-badge {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: #000a;
-    color: #fff;
-    font-size: 0.75rem;
-    padding: 2px 6px;
-    border-radius: 12px;
-}
-
-.advert-details-section {
-    flex: 1;
-}
-
-.advert-title {
-    margin: 0 0 8px;
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.advert-meta-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-.meta-icon {
-    margin-right: 6px;
-    color: #888;
-}
-
-.advert-description {
-    margin-top: 12px;
-    font-size: 0.9rem;
-    color: #333;
-}
-
-.advert-actions {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-left: 16px;
-}
-
-.advert-actions button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.btn-approve {
-    background-color: #2ecc71;
-    color: white;
-}
-
-.btn-approve:hover {
-    background-color: #27ae60;
-}
-
-.btn-reject {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.btn-reject:hover {
-    background-color: #c0392b;
-}
-
-.btn-view {
-    background-color: #3498db;
-    color: white;
-}
-
-.btn-view:hover {
-    background-color: #2980b9;
-}
-
-.loading-icon,
-.empty-state-icon {
-    font-size: 48px;
-    color: #999;
-    margin-bottom: 12px;
-}
-.advert-details-inline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem; /* space between each detail */
-    margin-top: 8px;
-    margin-bottom: 16px;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 6px; /* space between icon and text */
-}
-
-.meta-icon {
-    color: #256845; /* your brand green */
-    min-width: 16px;
-}
-.advert-description-block {
-    margin: 1rem 0 1.5rem 0;
-    /* No border or background here */
-}
-
-.description-heading {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #256845; /* Use your brand colour or any preferred */
-}
-
-.advert-description {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #444;
-    line-height: 1.4;
-}
-.advert-view-search-input{
-
-    color: #2d3436;
-
 }

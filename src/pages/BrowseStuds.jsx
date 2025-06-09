@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
+import SEO from "../components/SEO";
+
 import {
     collection,
     getDocs,
@@ -41,12 +43,18 @@ export default function BrowseStuds() {
     const [selectedBreederType, setSelectedBreederType] = useState("");
     const [searchPostcode, setSearchPostcode] = useState("");
     const [isLoadingPostcode, setIsLoadingPostcode] = useState(false);
+    const [selectedGoodWithCats, setSelectedGoodWithCats] = useState("");
+    const [selectedGoodWithDogs, setSelectedGoodWithDogs] = useState("");
+    const [selectedGoodWithChildren, setSelectedGoodWithChildren] = useState("");
+    const [selectedEnergyLevel, setSelectedEnergyLevel] = useState("");
     const [filters, setFilters] = useState({
         kc: false,
         healthTested: false,
         healthChecked: false,
-        proven: false
+        proven: false,
+        fosteringAvailable: false
     });
+
     const [user, setUser] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -87,6 +95,81 @@ export default function BrowseStuds() {
             setSearchPostcode(postcodeParam);
         }
     }, [categoryParam, breedParam, intentParam, radiusParam, postcodeParam]);
+
+    // Dynamic SEO generation function
+    const getSEOData = () => {
+        const parts = [];
+
+        // Add breed to title if selected
+        if (selectedBreed) {
+            parts.push(selectedBreed);
+        }
+
+        // Add category to title if not "all"
+        if (selectedCategory && selectedCategory !== "all") {
+            const categoryLabel = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+            parts.push(categoryLabel);
+        }
+
+        // Map intent to a label
+        const intentLabel =
+            selectedIntent === "stud" ? "Stud Services" :
+                selectedIntent === "rescue" ? "Adoptions" :
+                    selectedIntent === "sale" ? "For Sale" :
+                        "Listings";
+
+        parts.push(intentLabel);
+
+        // Build the title
+        let pageTitle = parts.length > 1 ? parts.join(" — ") : intentLabel;
+        pageTitle += " | My Pet Connect";
+
+        // Build the description
+        let description = `Browse ${intentLabel.toLowerCase()}`;
+        if (selectedBreed) description += ` of ${selectedBreed}`;
+        if (selectedCategory && selectedCategory !== "all") description += ` in ${selectedCategory}`;
+        if (searchPostcode) description += ` near ${searchPostcode}`;
+        if (searchRadius && searchPostcode) description += ` within ${searchRadius} miles`;
+        description += " on My Pet Connect.";
+
+        // Add filter context to description
+        const activeFilters = [];
+        if (maxFee) activeFilters.push(`under £${maxFee}`);
+        if (selectedColour) activeFilters.push(`${selectedColour} colour`);
+        if (selectedAgeRange) activeFilters.push(`${selectedAgeRange.toLowerCase()}`);
+        if (filters.kc) activeFilters.push("KC registered");
+        if (filters.healthTested) activeFilters.push("health tested");
+        if (selectedBreederType) {
+            if (selectedBreederType === 'rescue') {
+                activeFilters.push("rescue organizations");
+            } else {
+                activeFilters.push(`${selectedBreederType} breeders`);
+            }
+        }
+        if (selectedGender && selectedIntent === "sale") {
+            activeFilters.push(`${selectedGender} gender`);
+        }
+
+        // Add rescue-specific filters
+        if (selectedIntent === "rescue") {
+            if (selectedGoodWithCats) activeFilters.push(`good with cats: ${selectedGoodWithCats}`);
+            if (selectedGoodWithDogs) activeFilters.push(`good with dogs: ${selectedGoodWithDogs}`);
+            if (selectedGoodWithChildren) activeFilters.push(`good with children: ${selectedGoodWithChildren}`);
+            if (selectedEnergyLevel) activeFilters.push(`${selectedEnergyLevel} energy`);
+            if (filters.fosteringAvailable) activeFilters.push("fostering available");
+        }
+
+        if (activeFilters.length > 0) {
+            description += ` Filtered by: ${activeFilters.join(", ")}.`;
+        }
+
+        // Add results count if we have filtered results
+        if (filteredAds.length > 0 && filteredAds.length !== ads.length) {
+            description += ` ${filteredAds.length} results found.`;
+        }
+
+        return { title: pageTitle, description };
+    };
 
     // Handle postcode search
     const handlePostcodeSearch = async () => {
@@ -179,7 +262,11 @@ export default function BrowseStuds() {
         setSelectedGender("");
         setSelectedBreederType("");
         setSearchPostcode("");
-        setFilters({ kc: false, healthTested: false, healthChecked: false, proven: false });
+        setSelectedGoodWithCats("");
+        setSelectedGoodWithDogs("");
+        setSelectedGoodWithChildren("");
+        setSelectedEnergyLevel("");
+        setFilters({ kc: false, healthTested: false, healthChecked: false, proven: false, fosteringAvailable: false });
         setSearchRadius(50);
         setSelectedIntent("");
 
@@ -219,8 +306,7 @@ export default function BrowseStuds() {
             // 1️⃣ grab all approved docs from your single collection:
             const q = query(
                 collection(db, "allListings"),
-                where("approved", "==", true),
-                where("sold", "==", false)
+                where("approved", "==", true)
             );
             const snap = await getDocs(q);
             const raw = snap.docs.map(d => {
@@ -231,6 +317,13 @@ export default function BrowseStuds() {
                     // if createdAt is a Firestore Timestamp, pull out seconds; else default to 0
                     createdAt: data.createdAt?.seconds ?? 0
                 };
+            }).filter(ad => {
+                // Filter out sold items for sale/stud, adopted items for rescue
+                if (ad.intent === 'rescue') {
+                    return !ad.adopted;
+                } else {
+                    return !ad.sold;
+                }
             });
 
             // 2️⃣ enrich each record (calculate age, health flags, owner info…)
@@ -279,7 +372,7 @@ export default function BrowseStuds() {
 
                     return {
                         ...ad,
-                        fee: ad.fee || ad.price || 0,
+                        fee: ad.intent === 'rescue' ? (ad.adoptionFee || 0) : (ad.fee || ad.price || 0),
                         breed: ad.breed || ad.breedOrType || "Unknown",
                         colour: normalizedColor, // Use the normalized color
                         images: Array.isArray(ad.images) ? ad.images : [],
@@ -288,9 +381,11 @@ export default function BrowseStuds() {
                         healthTests: Array.isArray(ad.healthTests) ? ad.healthTests : [],
                         healthTested:
                             Array.isArray(ad.healthTests) && ad.healthTests.length > 0,
-                        ownerDisplay: owner.firstName
-                            ? `${owner.firstName} ${owner.lastName?.charAt(0)}.`
-                            : "Unknown",
+                        ownerDisplay: owner.breederType === 'rescue' && owner.organizationName
+                            ? owner.organizationName
+                            : owner.firstName
+                                ? `${owner.firstName} ${owner.lastName?.charAt(0)}.`
+                                : "Unknown",
                         ownerAvatar: owner.avatar || "",
                         ownerLocation: owner.city
                             ? `${owner.city}${owner.postcode ? `, ${owner.postcode}` : ""}`
@@ -321,7 +416,7 @@ export default function BrowseStuds() {
     useEffect(() => {
         const list = ads
             .filter(ad => {
-                if (ad.paused || ad.sold) return false;
+                if (ad.paused) return false;
 
                 // Keywords filter - search in title and description
                 if (searchKeywords) {
@@ -395,6 +490,25 @@ export default function BrowseStuds() {
                     return false;
                 }
 
+                // Rescue-specific filters
+                if (selectedIntent === "rescue") {
+                    if (selectedGoodWithCats && ad.goodWithCats !== selectedGoodWithCats) {
+                        return false;
+                    }
+                    if (selectedGoodWithDogs && ad.goodWithDogs !== selectedGoodWithDogs) {
+                        return false;
+                    }
+                    if (selectedGoodWithChildren && ad.goodWithChildren !== selectedGoodWithChildren) {
+                        return false;
+                    }
+                    if (selectedEnergyLevel && ad.energyLevel !== selectedEnergyLevel) {
+                        return false;
+                    }
+                    if (filters.fosteringAvailable && !ad.fosteringAvailable) {
+                        return false;
+                    }
+                }
+
                 if (selectedAgeRange) {
                     const age = ad.age;
                     if (selectedAgeRange === "Under 1 year" && age >= 1) return false;
@@ -445,10 +559,15 @@ export default function BrowseStuds() {
         searchKeywords,
         selectedGender,
         selectedBreederType,
+        selectedGoodWithCats,
+        selectedGoodWithDogs,
+        selectedGoodWithChildren,
+        selectedEnergyLevel,
         filters.kc,
         filters.healthTested,
         filters.healthChecked,
-        filters.proven
+        filters.proven,
+        filters.fosteringAvailable
     ]);
 
     useEffect(() => {
@@ -568,7 +687,7 @@ export default function BrowseStuds() {
             // Reset registration body when changing categories
             setSelectedRegistrationBody("");
         }
-    }, [selectedCategory]);
+    }, [selectedCategory, categoryParam]);
 
     const colourOptions = React.useMemo(() => {
         if (selectedCategory === "dogs") {
@@ -581,8 +700,16 @@ export default function BrowseStuds() {
         return [{ value: "", label: "Any colour" }];
     }, [selectedCategory]);
 
+    // Get the dynamic SEO data
+    const { title: seoTitle, description: seoDescription } = getSEOData();
+
     return (
         <>
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+            />
+
             <div className="browse-studs-wrapper">
                 <div className="browse-studs-page">
                     {/* Mobile filter */}
@@ -630,7 +757,7 @@ export default function BrowseStuds() {
 
                     {/* Desktop sidebar */}
                     <aside className="browse-studs-sidebar desktop-only">
-                        {/* Advert Type */}
+                        {/* Advert Type - ADDED RESCUE */}
                         <div className="browse-studs-filter-block">
                             <h3>Advert Type</h3>
                             <select
@@ -641,6 +768,7 @@ export default function BrowseStuds() {
                                 <option value="">All Types</option>
                                 <option value="sale">For Sale</option>
                                 <option value="stud">For Stud</option>
+                                <option value="rescue">For Adoption</option>
                             </select>
                         </div>
 
@@ -748,7 +876,7 @@ export default function BrowseStuds() {
 
                         {/* Price */}
                         <div className="browse-studs-filter-block">
-                            <label>Max Price: £{maxFee || 1000}</label>
+                            <label>Max {selectedIntent === 'rescue' ? 'Adoption Fee' : 'Price'}: £{maxFee || 1000}</label>
                             <input
                                 type="range"
                                 className="panel-slider"
@@ -768,8 +896,8 @@ export default function BrowseStuds() {
                             >
                                 <option value="newest">Newest First</option>
                                 <option value="oldest">Oldest First</option>
-                                <option value="fee-asc">Lowest Price</option>
-                                <option value="fee-desc">Highest Price</option>
+                                <option value="fee-asc">Lowest {selectedIntent === 'rescue' ? 'Fee' : 'Price'}</option>
+                                <option value="fee-desc">Highest {selectedIntent === 'rescue' ? 'Fee' : 'Price'}</option>
                                 <option value="age-asc">Youngest Age</option>
                                 <option value="age-desc">Oldest Age</option>
                             </select>
@@ -809,17 +937,18 @@ export default function BrowseStuds() {
                             </select>
                         </div>
 
-                        {/* Breeder Type */}
+                        {/* Breeder Type - UPDATED WITH RESCUE */}
                         <div className="browse-studs-filter-block">
-                            <h3>Breeder Type</h3>
+                            <h3>Breeder/Organization Type</h3>
                             <select
                                 className="panel-select"
                                 value={selectedBreederType}
                                 onChange={e => setSelectedBreederType(e.target.value)}
                             >
-                                <option value="">All Breeders</option>
+                                <option value="">All Types</option>
                                 <option value="licensed">Licensed Breeders</option>
                                 <option value="hobby">Hobby Breeders</option>
+                                <option value="rescue">Rescue Organizations</option>
                             </select>
                         </div>
 
@@ -869,6 +998,82 @@ export default function BrowseStuds() {
                                     <option value="both">Both Available</option>
                                 </select>
                             </div>
+                        )}
+
+                        {selectedIntent === "rescue" && (
+                            <>
+                                {/* Good with Cats */}
+                                <div className="browse-studs-filter-block">
+                                    <label>Good with Cats</label>
+                                    <select
+                                        className="panel-select"
+                                        value={selectedGoodWithCats}
+                                        onChange={e => setSelectedGoodWithCats(e.target.value)}
+                                    >
+                                        <option value="">Any</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+
+                                {/* Good with Dogs */}
+                                <div className="browse-studs-filter-block">
+                                    <label>Good with Dogs</label>
+                                    <select
+                                        className="panel-select"
+                                        value={selectedGoodWithDogs}
+                                        onChange={e => setSelectedGoodWithDogs(e.target.value)}
+                                    >
+                                        <option value="">Any</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+
+                                {/* Good with Children */}
+                                <div className="browse-studs-filter-block">
+                                    <label>Good with Children</label>
+                                    <select
+                                        className="panel-select"
+                                        value={selectedGoodWithChildren}
+                                        onChange={e => setSelectedGoodWithChildren(e.target.value)}
+                                    >
+                                        <option value="">Any</option>
+                                        <option value="yes">Yes - All Ages</option>
+                                        <option value="older">Older Children Only (12+)</option>
+                                        <option value="no">No Children</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+
+                                {/* Energy Level */}
+                                <div className="browse-studs-filter-block">
+                                    <label>Energy Level</label>
+                                    <select
+                                        className="panel-select"
+                                        value={selectedEnergyLevel}
+                                        onChange={e => setSelectedEnergyLevel(e.target.value)}
+                                    >
+                                        <option value="">Any</option>
+                                        <option value="low">Low - Couch Potato</option>
+                                        <option value="moderate">Moderate - Daily Walks</option>
+                                        <option value="high">High - Very Active</option>
+                                    </select>
+                                </div>
+
+                                {/* Fostering Available */}
+                                <div className="browse-studs-filter-block checkbox-group">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={filters.fosteringAvailable}
+                                            onChange={() => setFilters(f => ({...f, fosteringAvailable: !f.fosteringAvailable}))}
+                                        /> Fostering Available
+                                    </label>
+                                </div>
+                            </>
                         )}
 
                         <div className="browse-studs-filter-block checkbox-group">
@@ -958,7 +1163,7 @@ export default function BrowseStuds() {
                                     </div>
                                 )}
 
-                                {(selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.healthChecked || filters.proven || selectedRegistrationBody || searchKeywords || selectedGender || selectedBreederType) && (
+                                {(selectedBreed || selectedColour || selectedAgeRange || selectedCategory !== "all" || maxFee || filters.kc || filters.healthTested || filters.healthChecked || filters.proven || selectedRegistrationBody || searchKeywords || selectedGender || selectedBreederType || selectedIntent) && (
                                     <>
                                         <div className="browse-studs-divider" />
                                         <div className="browse-studs-active-filters-text">
@@ -968,6 +1173,13 @@ export default function BrowseStuds() {
                                                 <span>
                                                     Keywords: "{searchKeywords}"
                                                     <button onClick={() => setSearchKeywords("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedIntent && (
+                                                <span>
+                                                    Type: {selectedIntent === 'rescue' ? 'For Adoption' : selectedIntent.charAt(0).toUpperCase() + selectedIntent.slice(1)}
+                                                    <button onClick={() => setSelectedIntent("")} className="browse-studs-remove-btn">×</button>&nbsp;
                                                 </span>
                                             )}
 
@@ -1001,7 +1213,7 @@ export default function BrowseStuds() {
 
                                             {maxFee && (
                                                 <span>
-                                                    Max Price: £{maxFee}
+                                                    Max {selectedIntent === 'rescue' ? 'Fee' : 'Price'}: £{maxFee}
                                                     <button onClick={() => setMaxFee("")} className="browse-studs-remove-btn">×</button>&nbsp;
                                                 </span>
                                             )}
@@ -1050,8 +1262,43 @@ export default function BrowseStuds() {
 
                                             {selectedBreederType && (
                                                 <span>
-                                                    Breeder: {selectedBreederType.charAt(0).toUpperCase() + selectedBreederType.slice(1)}
+                                                    {selectedBreederType === 'rescue' ? 'Organization' : 'Breeder'}: {selectedBreederType.charAt(0).toUpperCase() + selectedBreederType.slice(1)}
                                                     <button onClick={() => setSelectedBreederType("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedGoodWithCats && (
+                                                <span>
+                                                    Good with Cats: {selectedGoodWithCats}
+                                                    <button onClick={() => setSelectedGoodWithCats("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedGoodWithDogs && (
+                                                <span>
+                                                    Good with Dogs: {selectedGoodWithDogs}
+                                                    <button onClick={() => setSelectedGoodWithDogs("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedGoodWithChildren && (
+                                                <span>
+                                                    Good with Children: {selectedGoodWithChildren === 'yes' ? 'Yes' : selectedGoodWithChildren === 'older' ? 'Older Only' : selectedGoodWithChildren === 'no' ? 'No' : selectedGoodWithChildren}
+                                                    <button onClick={() => setSelectedGoodWithChildren("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {selectedEnergyLevel && (
+                                                <span>
+                                                    Energy: {selectedEnergyLevel.charAt(0).toUpperCase() + selectedEnergyLevel.slice(1)}
+                                                    <button onClick={() => setSelectedEnergyLevel("")} className="browse-studs-remove-btn">×</button>&nbsp;
+                                                </span>
+                                            )}
+
+                                            {filters.fosteringAvailable && (
+                                                <span>
+                                                    Fostering Available
+                                                    <button onClick={() => setFilters(f => ({ ...f, fosteringAvailable: false }))} className="browse-studs-remove-btn">×</button>&nbsp;
                                                 </span>
                                             )}
                                         </div>
@@ -1064,11 +1311,12 @@ export default function BrowseStuds() {
                             <div
                                 key={ad.id}
                                 className="browse-studs-card"
-                                onClick={() => navigate(`/advert-details/${ad.id}`)
-                                }
+                                onClick={() => navigate(`/advert-details/${ad.id}`)}
                                 style={{cursor: "pointer"}}
                             >
-                                <div className="browse-studs-card-fee-pill">£{ad.fee || ad.price || 0}</div>
+                                <div className="browse-studs-card-fee-pill">
+                                    £{ad.fee || 0}
+                                </div>
                                 <div className="browse-studs-card-image">
                                     <img
                                         src={ad.images?.[0] || "https://placehold.co/400x300"}
@@ -1087,8 +1335,10 @@ export default function BrowseStuds() {
                                         {ad.colour && <span className="browse-studs-pill">{ad.colour}</span>}
                                         {ad.intent && (
                                             <span className="browse-studs-pill">
-            {ad.intent.charAt(0).toUpperCase() + ad.intent.slice(1)}
-        </span>
+                                                {ad.intent === 'stud' ? 'For Stud' :
+                                                    ad.intent === 'rescue' ? 'For Adoption' :
+                                                        'For Sale'}
+                                            </span>
                                         )}
 
                                         {/* Proven and Health Tested pills - only for stud intent */}
@@ -1099,11 +1349,16 @@ export default function BrowseStuds() {
                                             <span className="browse-studs-pill">Health Tested</span>
                                         )}
 
-                                        {/* Licensed breeder pill - always at the end */}
+                                        {/* Breeder type pills */}
                                         {ad.breederType === 'licensed' && (
                                             <span className="browse-studs-pill licensed-breeder">
-            Licensed Breeder
-        </span>
+                                                Licensed Breeder
+                                            </span>
+                                        )}
+                                        {ad.intent === 'rescue' && ad.breederType === 'rescue' && (
+                                            <span className="browse-studs-pill rescue-org">
+                                                Rescue Organization
+                                            </span>
                                         )}
                                     </div>
 
@@ -1165,6 +1420,17 @@ export default function BrowseStuds() {
                                 </div>
                             </div>
                         ))}
+
+                        {filteredAds.length === 0 && (
+                            <div className="browse-studs-no-results">
+
+                                <h3>No results found</h3>
+                                <p>We couldn't find any listings matching your current search criteria. Try adjusting your filters to see more results.</p>
+                                <button onClick={resetFilters} className="browse-studs-reset-btn">
+                                    Reset All Filters
+                                </button>
+                            </div>
+                        )}
 
                         {totalPages > 1 && (
                             <div className="pagination">

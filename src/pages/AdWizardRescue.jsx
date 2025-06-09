@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import SEO from "../components/SEO";
+
 import { db, storage, auth } from "../firebase/firebase";
 import {
     collection,
@@ -22,24 +22,114 @@ import {
 } from "./data/breedOptions";
 
 // Import modernized styles
-import "./AdWizard.css"; // Renamed to match the new style
+import "./AdWizard.css"; // Using same styles as AdWizard
 
-export default function AdWizard({ mode }) {
+export default function AdWizardRescue({ mode }) {
     const { adId } = useParams();
     const [step, setStep] = useState(1);
     const [category, setCategory] = useState("");      // e.g. "dogs", "cats"
-    const [intent, setIntent] = useState("");          // "sale" or "stud"
     const [breedOrType, setBreedOrType] = useState(""); // e.g. "Labrador", "Sheep"
     const [formData, setFormData] = useState({});
     const [images, setImages] = useState([]);
-    const [healthTestsEnabled, setHealthTestsEnabled] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [healthTests, setHealthTests] = useState(Array(10).fill(""));
     const [formFields, setFormFields] = useState([]);
-    const studCategories = ["dogs", "cats"];
     const [mainImageIndex, setMainImageIndex] = useState(null);
 
     const navigate = useNavigate();
+
+    // Rescue-specific field configurations
+    const rescueFieldConfigurations = {
+        ...fieldConfigurations,
+        adoptionFee: {
+            type: "number",
+            label: "Adoption Fee (£)",
+            placeholder: "Enter adoption fee (0 if none)",
+            required: true
+        },
+        rescueStory: {
+            type: "textarea",
+            label: "Rescue Story/Background",
+            placeholder: "Tell this pet's story - where they came from, why they need a new home, etc.",
+            required: false
+        },
+        specialNeeds: {
+            type: "textarea",
+            label: "Special Needs or Medical Conditions",
+            placeholder: "Describe any ongoing medical needs, disabilities, or special care requirements",
+            required: false
+        },
+        behavioralNotes: {
+            type: "textarea",
+            label: "Behavioral Notes",
+            placeholder: "Describe temperament, training needs, any behavioral issues or positive traits",
+            required: false
+        },
+        homeRequirements: {
+            type: "textarea",
+            label: "Ideal Home Requirements",
+            placeholder: "Describe the ideal home (e.g., needs garden, no small children, experienced owner)",
+            required: false
+        },
+        vaccinated: {
+            type: "checkbox",
+            label: "Fully Vaccinated",
+            required: false
+        },
+        microchipped: {
+            type: "checkbox",
+            label: "Microchipped",
+            required: false
+        },
+        goodWithCats: {
+            type: "select",
+            label: "Good with Cats",
+            options: [
+                { value: "yes", label: "Yes" },
+                { value: "no", label: "No" },
+                { value: "unknown", label: "Unknown/Not Tested" }
+            ],
+            required: false
+        },
+        goodWithDogs: {
+            type: "select",
+            label: "Good with Other Dogs",
+            options: [
+                { value: "yes", label: "Yes" },
+                { value: "no", label: "No" },
+                { value: "unknown", label: "Unknown/Not Tested" }
+            ],
+            required: false
+        },
+        goodWithChildren: {
+            type: "select",
+            label: "Good with Children",
+            options: [
+                { value: "yes", label: "Yes - All Ages" },
+                { value: "older", label: "Older Children Only (12+)" },
+                { value: "no", label: "No Children" },
+                { value: "unknown", label: "Unknown/Not Tested" }
+            ],
+            required: false
+        },
+        energyLevel: {
+            type: "select",
+            label: "Energy Level",
+            options: [
+                { value: "low", label: "Low - Couch Potato" },
+                { value: "moderate", label: "Moderate - Daily Walks" },
+                { value: "high", label: "High - Very Active" }
+            ],
+            required: false
+        },
+        fosteringAvailable: {
+            type: "checkbox",
+            label: "Available for Fostering (Trial Period)",
+            required: false
+        }
+    };
+
+    // Merge all field configurations
+    const allFieldConfigurations = { ...fieldConfigurations, ...rescueFieldConfigurations };
 
     // Helper function for image management
     const handleImageChange = (e) => {
@@ -68,64 +158,11 @@ export default function AdWizard({ mode }) {
             // Reset all form state
             setStep(1);
             setCategory("");
-            setIntent("");
             setBreedOrType("");
             setFormData({});
             setImages([]);
-            setHealthTestsEnabled(false);
-            setHealthTests(Array(10).fill(""));
             setFormFields([]);
             setMainImageIndex(null);
-        }
-    };
-
-    // SendGrid email function
-    const sendAdvertSubmittedEmail = async (userData, advertData, user) => {
-        try {
-            console.log('📧 Email payload:', {
-                userEmail: userData.email,
-                userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
-                petName: advertData.name || advertData.breedOrType || 'your pet',
-                advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
-                breedOrType: advertData.breedOrType,
-                price: advertData.price || advertData.fee,
-                imageCount: advertData.images.length,
-                userId: user.uid
-            });
-
-            const response = await fetch('http://localhost:6500/api/send-advert-submitted-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userEmail: userData.email,
-                    userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
-                    petName: advertData.name || advertData.breedOrType || 'your pet',
-                    advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                    categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
-                    breedOrType: advertData.breedOrType,
-                    price: advertData.price || advertData.fee,
-                    imageCount: advertData.images.length,
-                    userId: user.uid
-                }),
-            });
-
-            console.log('📧 Response status:', response.status);
-            console.log('📧 Response headers:', response.headers);
-
-            const result = await response.json();
-            console.log('📧 Response body:', result);
-
-            if (response.ok) {
-                console.log('✅ Advert submitted email sent successfully:', result);
-            } else {
-                console.error('❌ Failed to send advert submitted email:', result);
-            }
-        } catch (error) {
-            console.error('❌ Error sending advert submitted email:', error);
-            console.error('❌ Error details:', error.message, error.stack);
         }
     };
 
@@ -137,24 +174,22 @@ export default function AdWizard({ mode }) {
 
     // Build a dynamic heading
     const getHeading = () => {
-        if (!category) return "Create New Advert";
+        if (!category) return "Create Rescue Listing";
 
-        let base = `Create New ${capitalize(category)}`;
-        if (intent === "sale")      base += " For Sale";
-        else if (intent === "stud") base += " Stud";
-        if (breedOrType)            base += `: ${breedOrType}`;
+        let base = `Create Rescue ${capitalize(category)} Listing`;
+        if (breedOrType) base += `: ${breedOrType}`;
 
         return base;
     };
 
-    // Set up form fields based on selected category and intent
+    // Set up form fields based on selected category
     useEffect(() => {
-        if (!category || !intent) return;
+        if (!category) return;
 
         // 1) Try to find a top-level entry first
         let cfg = petCategories[category];
 
-        // 2) If it exists but has no `fields` array, fall back to your old subcat logic
+        // 2) If it exists but has no `fields` array, fall back to subcat logic
         if (!cfg?.fields) {
             cfg =
                 petCategories.mammals?.subcategories?.[category]       ||
@@ -172,30 +207,47 @@ export default function AdWizard({ mode }) {
             return;
         }
 
-        // 3) Build field list
+        // 3) Build field list - using sale fields as base
         const baseFields = Array.isArray(cfg.fields) ? cfg.fields : [];
-        const saleExtras = intent === "sale" ? cfg.fieldsForSale || [] : [];
-        const studExtras = intent === "stud" ? cfg.fieldsForStud || [] : [];
-        const allFields = [...baseFields, ...saleExtras, ...studExtras];
+        const saleExtras = cfg.fieldsForSale || [];
 
-        setFormFields([...new Set(allFields)]);
-    }, [category, intent]);
+        // Add rescue-specific fields
+        const rescueFields = [
+            "adoptionFee",
+            "rescueStory",
+            "specialNeeds",
+            "behavioralNotes",
+            "homeRequirements",
+            "vaccinated",
+            "microchipped",
+            "goodWithCats",
+            "goodWithDogs",
+            "goodWithChildren",
+            "energyLevel",
+            "fosteringAvailable"
+        ];
+
+        // Remove 'price' field if it exists and replace with adoptionFee
+        const allFields = [...baseFields, ...saleExtras, ...rescueFields];
+        const uniqueFields = [...new Set(allFields)].filter(field => field !== 'price');
+
+        setFormFields(uniqueFields);
+    }, [category]);
 
     // Load data when in edit mode
     useEffect(() => {
         if (mode === "edit" && adId) {
             (async () => {
                 const snap = await getDoc(doc(db, "allListings", adId));
-                if (!snap.exists()) return alert("Advert not found");
+                if (!snap.exists()) return alert("Rescue listing not found");
 
                 const data = snap.data();
 
-                // 1) Populate the wizard
+                // Populate the wizard
                 setCategory(data.category);
-                setIntent(data.intent);
                 setBreedOrType(data.breedOrType);
 
-                // 2) Build formFields exactly as your step-3 logic does
+                // Build formFields
                 let cfg = petCategories[data.category];
                 if (!cfg?.fields) {
                     cfg =
@@ -209,36 +261,36 @@ export default function AdWizard({ mode }) {
                 }
 
                 const base = cfg.fields || [];
-                const extras = data.intent === "sale" ? (cfg.fieldsForSale || []) : (cfg.fieldsForStud || []);
-                setFormFields([...new Set([...base, ...extras])]);
+                const extras = cfg.fieldsForSale || [];
+                const rescueFields = [
+                    "adoptionFee", "rescueStory", "specialNeeds", "behavioralNotes",
+                    "homeRequirements", "vaccinated", "microchipped",
+                    "goodWithCats", "goodWithDogs", "goodWithChildren", "energyLevel",
+                    "fosteringAvailable"
+                ];
 
-                // 3) Pre-fill every form field
+                setFormFields([...new Set([...base, ...extras, ...rescueFields])].filter(f => f !== 'price'));
+
+                // Pre-fill form data
                 setFormData(data);
 
-                setHealthTestsEnabled(!!data.healthTests); // enable toggle if data exists
-                setHealthTests(
-                    Array.isArray(data.healthTests) && data.healthTests.length
-                        ? [...data.healthTests, ...Array(10 - data.healthTests.length).fill("")]
-                        : Array(10).fill("")
-                );
-
-                // 4) Preload images into your state
+                // Preload images
                 setImages(data.images.map(url => ({ url, file: null })));
 
-                // 5) Set main image if available
+                // Set main image if available
                 if (data.mainImageIndex !== undefined) {
                     setMainImageIndex(data.mainImageIndex);
                 }
 
-                // 6) Jump to the right step
-                setStep(4);
+                // Jump to form step
+                setStep(3);
             })();
         }
     }, [mode, adId]);
 
     // Render form fields based on configuration
     const renderField = (fieldName) => {
-        const config = fieldConfigurations[fieldName];
+        const config = allFieldConfigurations[fieldName];
         if (!config) return null;
 
         if (fieldName === "availableDate" || fieldName === "dob") {
@@ -302,7 +354,7 @@ export default function AdWizard({ mode }) {
                             placeholder={config.placeholder || `Enter ${config.label.toLowerCase()}`}
                             className="adwizard-form-control"
                             min="0"
-                            step={fieldName.toLowerCase().includes("price") ? "0.01" : "1"}
+                            step={fieldName.toLowerCase().includes("price") || fieldName === "adoptionFee" ? "0.01" : "1"}
                         />
                     </div>
                 );
@@ -374,9 +426,7 @@ export default function AdWizard({ mode }) {
                     </div>
                 );
             case "date": {
-                // pull the existing value (string like "2023-05-21")
                 const raw = formData[fieldName] || "";
-                // parse into a JS Date or null
                 const parsedDate = raw ? new Date(raw) : null;
 
                 return (
@@ -390,14 +440,14 @@ export default function AdWizard({ mode }) {
                                     onChange={date =>
                                         setFormData(prev => ({
                                             ...prev,
-                                            // store as "YYYY-MM-DD"
                                             [fieldName]: date ? date.toISOString().split("T")[0] : ""
                                         }))
                                     }
                                     dateFormat="yyyy-MM-dd"
                                     placeholderText={`Select ${config.label.toLowerCase()}`}
                                     className="adwizard-form-control"
-                                    showMonthYearDropdown/>
+                                    showMonthYearDropdown
+                                />
                             </div>
                         </div>
                     </div>
@@ -425,7 +475,7 @@ export default function AdWizard({ mode }) {
     const handleSubmit = async () => {
         const user = auth.currentUser;
         if (!user) {
-            return alert("You must be logged in to post an advert.");
+            return alert("You must be logged in to post a rescue listing.");
         }
 
         setIsSubmitting(true);
@@ -449,54 +499,45 @@ export default function AdWizard({ mode }) {
             // 3) Merge hosted + newly uploaded URLs
             const allImageUrls = [...existing, ...uploaded];
 
-            // 4) Prepare the advert payload
-            const advertData = {
+            // 4) Prepare the rescue listing payload
+            const rescueData = {
                 category,
-                intent,
+                intent: "rescue", // Always set intent as rescue
                 breedOrType,
                 createdAt: serverTimestamp(),
                 ownerId: user.uid,
                 images: allImageUrls,
                 approved: false,
                 expired: false,
-                sold: false,
-                kcName: formData.kcName?.trim() || "",
+                adopted: false, // Using adopted instead of sold for rescues
                 mainImageIndex // Store the main image index
             };
 
             // Add all form fields
             formFields.forEach(field => {
                 if (formData[field] !== undefined) {
-                    advertData[field] = formData[field];
+                    rescueData[field] = formData[field];
                 }
             });
 
-            // Add health tests if enabled
-            if (healthTestsEnabled) {
-                const tests = healthTests.filter(str => str.trim() !== "");
-                if (tests.length) advertData.healthTests = tests;
-            }
-
             // Add location from postcode
-            // Get postcode from user profile in Firestore
-            let userData = null; // Store userData for email use later
             try {
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists()) {
-                    userData = userSnap.data();
+                    const userData = userSnap.data();
                     const postcode = formatUKPostcode(userData.postcode);
 
                     if (postcode) {
-                        advertData.postcode = postcode; // Save the postcode to the advert
+                        rescueData.postcode = postcode;
 
                         const apiKey = "pP8O9JNud0upxRnM9Fbs3w45793";
                         const response = await fetch(`https://api.getAddress.io/find/${postcode}?api-key=${apiKey}`);
                         const geo = await response.json();
 
                         if (geo?.latitude && geo?.longitude) {
-                            advertData.location = {
+                            rescueData.location = {
                                 latitude: geo.latitude,
                                 longitude: geo.longitude
                             };
@@ -515,26 +556,16 @@ export default function AdWizard({ mode }) {
 
             // 5) Create or update in Firestore
             if (mode === "create") {
-                await addDoc(collection(db, "allListings"), advertData);
-
-                // Send creation confirmation email using SendGrid template
-                if (userData && userData.email) {
-                    try {
-                        await sendAdvertSubmittedEmail(userData, advertData, user);
-                    } catch (emailError) {
-                        console.error('Failed to send creation email:', emailError);
-                        // Don't block the submission if email fails
-                    }
-                }
+                await addDoc(collection(db, "allListings"), rescueData);
             } else {
-                await updateDoc(doc(db, "allListings", adId), advertData);
+                await updateDoc(doc(db, "allListings", adId), rescueData);
             }
 
             // Move to success step
-            setStep(6);
+            setStep(5);
         } catch (error) {
-            console.error("Failed to submit advert:", error);
-            alert("There was an error submitting your advert.");
+            console.error("Failed to submit rescue listing:", error);
+            alert("There was an error submitting your rescue listing.");
         } finally {
             setIsSubmitting(false);
         }
@@ -542,7 +573,7 @@ export default function AdWizard({ mode }) {
 
     // Generate progress indicator based on current step
     const renderProgressSteps = () => {
-        const totalSteps = 6;
+        const totalSteps = 5;
         const steps = [];
 
         for (let i = 1; i <= totalSteps; i++) {
@@ -569,14 +600,7 @@ export default function AdWizard({ mode }) {
     };
 
     return (
-<>
-        <SEO
-            title="Create Your Pet Advert – Ad Wizard | My Pet Connect"
-            description="Effortlessly craft and publish new pet listings with our Ad Wizard. Add photos, set pricing, and reach local buyers for stud services, puppies, kittens, and more in minutes."
-        />
-
-
-    <div className="adwizard-container">
+        <div className="adwizard-container">
             <h1 className="adwizard-title">{getHeading()}</h1>
 
             {renderProgressSteps()}
@@ -596,22 +620,18 @@ export default function AdWizard({ mode }) {
             {/* Step 1: Category Selection */}
             {step === 1 && (
                 <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 1: Select a Category</h2>
+                    <h2 className="adwizard-subtitle">Step 1: Select Animal Category</h2>
+                    <p className="adwizard-description">
+                        What type of animal are you looking to rehome?
+                    </p>
                     <div className="adwizard-options">
-                        {["dogs", "cats", "livestock", "horses", "birds", "rabbits", "reptiles", "rodents", "fish", "invertebrates", "poultry"].map((cat) => (
+                        {["dogs", "cats", "rabbits", "birds", "rodents", "reptiles", "fish", "horses", "livestock", "poultry", "invertebrates"].map((cat) => (
                             <button
                                 key={cat}
                                 className={`adwizard-option-button ${category === cat ? "selected" : ""}`}
                                 onClick={() => {
                                     setCategory(cat);
-                                    if (studCategories.includes(cat)) {
-                                        // this category supports both Sale and Stud → go to step 2
-                                        setStep(2);
-                                    } else {
-                                        // sale-only → auto-set intent and jump straight to step 3
-                                        setIntent("sale");
-                                        setStep(3);
-                                    }
+                                    setStep(2);
                                 }}
                             >
                                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -621,58 +641,11 @@ export default function AdWizard({ mode }) {
                 </div>
             )}
 
-            {/* Step 2: Intent Selection (Sale or Stud) */}
+            {/* Step 2: Breed or Type Selection */}
             {step === 2 && category && (
                 <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 2: Is your listing for Sale or Stud?</h2>
-                    <div className="adwizard-options">
-                        {["dogs", "cats", "horses"].includes(category) && (
-                            <>
-                                <button
-                                    className={`adwizard-option-button ${intent === 'sale' ? 'selected' : ''}`}
-                                    onClick={() => {
-                                        setIntent("sale");
-                                        setStep(3);
-                                    }}
-                                >
-                                    For Sale
-                                </button>
-                                {category !== "horses" && (
-                                    <button
-                                        className={`adwizard-option-button ${intent === 'stud' ? 'selected' : ''}`}
-                                        onClick={() => {
-                                            setIntent("stud");
-                                            setStep(3);
-                                        }}
-                                    >
-                                        For Stud
-                                    </button>
-                                )}
-                            </>
-                        )}
-                        {!["dogs", "cats", "horses"].includes(category) && (
-                            <button
-                                className="adwizard-option-button"
-                                onClick={() => {
-                                    setIntent("sale");
-                                    setStep(3);
-                                }}
-                            >
-                                Continue
-                            </button>
-                        )}
-                    </div>
-                    <button className="adwizard-back-button" onClick={() => setStep(1)}>
-                        Go Back
-                    </button>
-                </div>
-            )}
-
-            {/* Step 3: Breed or Type Selection */}
-            {step === 3 && intent && (
-                <div className="adwizard-step">
                     <h2 className="adwizard-subtitle">
-                        Step 3: Select a {category === "livestock" ? "Subtype" : "Breed"}
+                        Step 2: Select {category === "livestock" ? "Type" : "Breed"}
                     </h2>
 
                     {petBreedOptions[category] ? (
@@ -683,7 +656,7 @@ export default function AdWizard({ mode }) {
                                     value: breed,
                                     label: breed
                                 }))}
-                                placeholder={`Select a ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                placeholder={`Select ${category === "livestock" ? "type" : "breed"} or choose "Mixed/Unknown"`}
                                 onChange={(selectedOption) => setBreedOrType(selectedOption.value)}
                                 className="adwizard-select"
                                 classNamePrefix="adwizard-select"
@@ -737,11 +710,11 @@ export default function AdWizard({ mode }) {
                         </div>
                     ) : (
                         <div className="adwizard-form-group">
-                            <label htmlFor="breedOrType">{`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}</label>
+                            <label htmlFor="breedOrType">{`Enter ${category === "livestock" ? "Type" : "Breed"}`}</label>
                             <input
                                 type="text"
                                 id="breedOrType"
-                                placeholder={`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                placeholder={`Enter ${category === "livestock" ? "type" : "breed"} or "Mixed/Unknown"`}
                                 value={breedOrType}
                                 onChange={(e) => setBreedOrType(e.target.value)}
                                 className="adwizard-form-control"
@@ -750,12 +723,12 @@ export default function AdWizard({ mode }) {
                     )}
 
                     <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(2)}>
+                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(1)}>
                             Back
                         </button>
                         <button
                             className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => setStep(4)}
+                            onClick={() => setStep(3)}
                             disabled={!breedOrType}
                         >
                             Continue
@@ -764,16 +737,60 @@ export default function AdWizard({ mode }) {
                 </div>
             )}
 
-            {/* Step 4: Advert Details */}
-            {step === 4 && (
+            {/* Step 3: Rescue Details */}
+            {step === 3 && (
                 <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 4: Advert Details</h2>
+                    <h2 className="adwizard-subtitle">Step 3: Rescue Details</h2>
 
-                    {/* Render form fields from configuration */}
+                    {/* Standard pet fields first (non-rescue specific) */}
                     {formFields
-                        .filter(f => f !== "breed")
+                        .filter(f => !["adoptionFee", "availableDate", "vaccinated",
+                            "microchipped", "specialNeeds", "goodWithCats", "goodWithDogs",
+                            "goodWithChildren", "energyLevel", "behavioralNotes", "rescueStory",
+                            "homeRequirements", "fosteringAvailable", "breed", "price"].includes(f))
                         .map(renderField)
                     }
+
+                    {/* Rescue Details Section - all rescue-specific fields */}
+                    <div className="adwizard-section" style={{ marginTop: '2rem' }}>
+                        <h3 className="adwizard-section-title">Rescue Details</h3>
+
+                        {/* Basic Information */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Basic Information</h4>
+                            {formFields
+                                .filter(f => ["availableDate", "adoptionFee"].includes(f))
+                                .map(renderField)
+                            }
+                        </div>
+
+                        {/* Health & Medical */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Health & Medical</h4>
+                            {formFields
+                                .filter(f => ["vaccinated", "microchipped", "specialNeeds"].includes(f))
+                                .map(renderField)
+                            }
+                        </div>
+
+                        {/* Behavior & Compatibility */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Behavior & Compatibility</h4>
+                            {formFields
+                                .filter(f => ["behavioralNotes", "goodWithCats", "goodWithDogs", "goodWithChildren", "energyLevel"].includes(f))
+                                .map(renderField)
+                            }
+                        </div>
+
+                        {/* Story & Home Requirements */}
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '1rem' }}>Story & Home Requirements</h4>
+                            {formFields
+                                .filter(f => ["rescueStory", "homeRequirements", "fosteringAvailable"].includes(f))
+                                .map(renderField)
+                            }
+                        </div>
+                    </div>
 
                     {/* Show CITES field if endangered is checked */}
                     {formData.endangered && (
@@ -786,64 +803,6 @@ export default function AdWizard({ mode }) {
                         </>
                     )}
 
-                    {/* Show KC name field if KC registered is checked */}
-                    {formData.kcRegistered && (
-                        <div className="adwizard-form-group">
-                            <label htmlFor="kcName">KC Registration Name</label>
-                            <input
-                                type="text"
-                                id="kcName"
-                                name="kcName"
-                                value={formData.kcName || ""}
-                                onChange={e =>
-                                    setFormData(prev => ({ ...prev, kcName: e.target.value }))
-                                }
-                                placeholder="Enter kennel club registration name"
-                                className="adwizard-form-control"
-                            />
-                        </div>
-                    )}
-
-                    {/* Health Tests Toggle & Inputs */}
-                    {((category === "dogs" || category === "cats") && intent === "stud") && (
-                        <>
-                            <div className="adwizard-form-checkbox">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={healthTestsEnabled}
-                                        onChange={e => setHealthTestsEnabled(e.target.checked)}
-                                    />{" "}
-                                    Add health test details
-                                </label>
-                            </div>
-
-                            {healthTestsEnabled && (
-                                <div className="adwizard-health-tests-container">
-                                    <div className="adwizard-callout" style={{ marginBottom: '16px' }}>
-                                        <strong>Important:</strong> Only list health tests that your pet has passed or is clear for.
-                                        This helps potential customers make informed decisions about breeding.
-                                    </div>
-                                    {healthTests.map((value, idx) => (
-                                        <div className="adwizard-form-group" key={idx}>
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={e => {
-                                                    const arr = [...healthTests];
-                                                    arr[idx] = e.target.value;
-                                                    setHealthTests(arr);
-                                                }}
-                                                placeholder={`Health Test #${idx + 1} (e.g. Hip Score, DNA…)`}
-                                                className="adwizard-form-control"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-
                     {/* Image Upload Section */}
                     <div className="adwizard-image-upload">
                         <h3>Upload Photos (Max 10)</h3>
@@ -853,7 +812,7 @@ export default function AdWizard({ mode }) {
                             marginBottom: '12px',
                             fontStyle: 'italic'
                         }}>
-                            Click on any uploaded image to set it as the main image for your advert.
+                            Click on any uploaded image to set it as the main image for your listing.
                             The main image will be displayed first and used as the thumbnail.
                         </p>
                         <div>
@@ -897,53 +856,71 @@ export default function AdWizard({ mode }) {
                     </div>
 
                     <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(3)}>
+                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(2)}>
                             Back
                         </button>
                         <button
                             className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => setStep(5)}
+                            onClick={() => setStep(4)}
                             disabled={Object.keys(formData).length === 0 || images.length === 0}
                         >
-                            Continue
+                            Continue to Review
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Step 5: Review Advert */}
-            {step === 5 && (
+            {/* Step 4: Review Listing */}
+            {step === 4 && (
                 <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 5: Review Your Advert</h2>
+                    <h2 className="adwizard-subtitle">Step 4: Review Your Rescue Listing</h2>
 
                     <ul className="adwizard-summary-list">
                         <li><strong>Category:</strong> {category.charAt(0).toUpperCase() + category.slice(1)}</li>
-                        <li><strong>Intent:</strong> {intent === "sale" ? "For Sale" : "For Stud"}</li>
-                        <li><strong>{category === "livestock" ? "Subtype" : "Breed"}:</strong> {breedOrType}</li>
+                        <li><strong>Intent:</strong> Rescue/Adoption</li>
+                        <li><strong>{category === "livestock" ? "Type" : "Breed"}:</strong> {breedOrType}</li>
+
+                        {/* Group fields by section for better review */}
+                        <li><strong>--- Basic Information ---</strong></li>
                         {formFields
-                            .filter(field => formData[field] !== undefined && formData[field] !== "")
+                            .filter(field => ["name", "age", "ageUnit", "sex", "adoptionFee", "availableDate"].includes(field) && formData[field] !== undefined && formData[field] !== "")
                             .map((field) => (
                                 <li key={field}>
-                                    <strong>{fieldConfigurations[field]?.label || field}:</strong>{" "}
-                                    {formData[field] ?
-                                        typeof formData[field] === 'boolean' ?
-                                            formData[field] ? 'Yes' : 'No'
-                                            : String(formData[field])
-                                        : "N/A"}
+                                    <strong>{allFieldConfigurations[field]?.label || field}:</strong>{" "}
+                                    {field === "adoptionFee" ? `£${formData[field]}` :
+                                        typeof formData[field] === 'boolean' ? (formData[field] ? 'Yes' : 'No') :
+                                            String(formData[field])}
                                 </li>
                             ))}
 
-                        {healthTestsEnabled && healthTests.some(test => test.trim() !== "") && (
-                            <li>
-                                <strong>Health Tests:</strong>
-                                <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
-                                    {healthTests
-                                        .filter(test => test.trim() !== "")
-                                        .map((test, idx) => (
-                                            <li key={idx} style={{ marginBottom: '6px' }}>{test}</li>
-                                        ))}
-                                </ul>
-                            </li>
+                        <li><strong>--- Health & Medical ---</strong></li>
+                        {formFields
+                            .filter(field => ["vaccinated", "microchipped", "specialNeeds"].includes(field) && formData[field] !== undefined && formData[field] !== "")
+                            .map((field) => (
+                                <li key={field}>
+                                    <strong>{allFieldConfigurations[field]?.label || field}:</strong>{" "}
+                                    {typeof formData[field] === 'boolean' ? (formData[field] ? 'Yes' : 'No') : String(formData[field])}
+                                </li>
+                            ))}
+
+                        <li><strong>--- Compatibility ---</strong></li>
+                        {formFields
+                            .filter(field => ["goodWithCats", "goodWithDogs", "goodWithChildren", "energyLevel"].includes(field) && formData[field] !== undefined && formData[field] !== "")
+                            .map((field) => (
+                                <li key={field}>
+                                    <strong>{allFieldConfigurations[field]?.label || field}:</strong>{" "}
+                                    {String(formData[field])}
+                                </li>
+                            ))}
+
+                        {(formData.rescueStory || formData.homeRequirements) && (
+                            <li><strong>--- Additional Information ---</strong></li>
+                        )}
+                        {formData.rescueStory && (
+                            <li><strong>Rescue Story:</strong> {formData.rescueStory}</li>
+                        )}
+                        {formData.homeRequirements && (
+                            <li><strong>Home Requirements:</strong> {formData.homeRequirements}</li>
                         )}
 
                         <li>
@@ -984,7 +961,7 @@ export default function AdWizard({ mode }) {
                     </ul>
 
                     <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(4)}>
+                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(3)}>
                             Back to Edit
                         </button>
                         <button
@@ -996,26 +973,26 @@ export default function AdWizard({ mode }) {
                                 <span className="submitting-label">
                                     <span className="spinner" /> Submitting…
                                 </span>
-                            ) : "Submit Advert"}
+                            ) : "Submit Rescue Listing"}
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Step 6: Submission Complete */}
-            {step === 6 && (
+            {/* Step 5: Submission Complete */}
+            {step === 5 && (
                 <div className="adwizard-step adwizard-submitted">
-                    <h2 className="adwizard-subtitle">Advert Submitted</h2>
+                    <h2 className="adwizard-subtitle">Rescue Listing Submitted</h2>
                     <p>
-                        Your advert has been sent for approval. We'll review it as soon as possible
-                        and let you know once it's live.
+                        Your rescue listing has been sent for approval. We'll review it as soon as possible
+                        and let you know once it's live. Thank you for helping find homes for animals in need!
                     </p>
                     <div className="adwizard-summary-actions">
                         <button
                             className="adwizard-btn adwizard-btn-outline"
                             onClick={handleStartOver}
                         >
-                            Create Another Advert
+                            Create Another Listing
                         </button>
                         <button
                             className="adwizard-btn adwizard-btn-primary"
@@ -1030,9 +1007,6 @@ export default function AdWizard({ mode }) {
                     </div>
                 </div>
             )}
-
-            </div>
-</>
-
+        </div>
     );
 }

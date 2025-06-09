@@ -1,11 +1,52 @@
 // src/pages/admin/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy, limit, getDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase/firebase';
+import { collection, getDocs, query, where, orderBy, limit, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../../firebase/firebase'; // Added auth import
 import AdminSidebar from '../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
 import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
 import './AdminDashboard.css';
+
+// Email functions copied from ApproveAdverts
+const sendAdvertApprovedEmail = async (userData, advertData) => {
+    try {
+        const response = await fetch('http://localhost:6500/api/send-advert-approved-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userData, advertData }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log(`✅ Advert approved email sent to ${userData.email}`);
+        } else {
+            console.error('❌ Failed to send advert approved email:', result.error);
+        }
+    } catch (err) {
+        console.error('❌ Failed to send advert approved email:', err);
+    }
+};
+
+const sendAdvertRejectedEmail = async (userData, advertData, rejectionReason) => {
+    try {
+        const response = await fetch('http://localhost:6500/api/send-advert-rejected-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userData, advertData, rejectionReason }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log(`✅ Advert rejected email sent to ${userData.email}`);
+        } else {
+            console.error('❌ Failed to send advert rejected email:', result.error);
+        }
+    } catch (err) {
+        console.error('❌ Failed to send advert rejected email:', err);
+    }
+};
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
@@ -20,7 +61,60 @@ export default function AdminDashboard() {
     });
     const [recentAds, setRecentAds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [pendingAdverts, setPendingAdverts] = useState([]);
+
+    // Rejection modal state
+    const [modalOpen, setModalOpen] = useState(false);
+    const [rejectionTarget, setRejectionTarget] = useState(null);
+
+    // Rejection Modal Component
+    const RejectionModal = ({ isOpen, onClose, onSubmit, dogName }) => {
+        const [selectedReason, setSelectedReason] = useState('');
+        const [customMessage, setCustomMessage] = useState('');
+
+        const reasons = [
+            'Incomplete or missing information',
+            'Inappropriate or misleading content',
+            'Poor quality or unclear photos',
+            'Violates site policies',
+        ];
+
+        const handleSend = () => {
+            const finalMessage = customMessage || selectedReason;
+            if (finalMessage) {
+                onSubmit(finalMessage);
+            }
+        };
+
+        if (!isOpen) return null;
+
+        return (
+            <div className="approve-adverts-modal-backdrop">
+                <div className="approve-adverts-modal">
+                    <h2>Reject Advert for {dogName}</h2>
+                    <p>Select a reason or type your own:</p>
+                    <select
+                        value={selectedReason}
+                        onChange={(e) => setSelectedReason(e.target.value)}
+                    >
+                        <option value="">-- Choose a reason --</option>
+                        {reasons.map((reason, index) => (
+                            <option key={index} value={reason}>{reason}</option>
+                        ))}
+                    </select>
+                    <textarea
+                        placeholder="Optional custom message"
+                        value={customMessage}
+                        onChange={(e) => setCustomMessage(e.target.value)}
+                        rows={4}
+                    />
+                    <div className="approve-adverts-modal-actions">
+                        <button onClick={handleSend} className="approve-adverts-btn-approve">Send Rejection</button>
+                        <button onClick={onClose} className="approve-adverts-btn-reject">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -49,9 +143,7 @@ export default function AdminDashboard() {
                         usersRef,
                         where('lastSeen', '>=', tenMinutesAgo),
                     )
-
                 );
-
 
                 const weeklyUsersSnap = await getDocs(
                     query(usersRef, where('createdAt', '>=', oneWeekAgo))
@@ -105,7 +197,6 @@ export default function AdminDashboard() {
                     })
                 );
 
-
                 setRecentAds(recentUnapproved);
 
             } catch (err) {
@@ -123,6 +214,35 @@ export default function AdminDashboard() {
             const adRef = doc(db, "allListings", advertId);
             await updateDoc(adRef, { approved: true });
 
+            // Get the advert data for email
+            const adSnap = await getDoc(adRef);
+            const ad = adSnap.data();
+
+            // Send approval email
+            if (ad.ownerId) {
+                const userSnap = await getDoc(doc(db, 'users', ad.ownerId));
+                if (userSnap.exists()) {
+                    const user = userSnap.data();
+
+                    // Prepare user data
+                    const userData = {
+                        email: user.email,
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || ''
+                    };
+
+                    // Prepare advert data
+                    const advertData = {
+                        id: advertId,
+                        petName: ad.name || ad.title || 'your pet',
+                        type: ad.petType || 'pet'
+                    };
+
+                    // Send approval email
+                    await sendAdvertApprovedEmail(userData, advertData);
+                }
+            }
+
             alert("Advert approved successfully.");
 
             // Update the visible list of recent unapproved ads
@@ -139,10 +259,88 @@ export default function AdminDashboard() {
         }
     };
 
+    // Reject advert function
+    const rejectAdvert = async (id, reasonText) => {
+        try {
+            const adRef = doc(db, 'allListings', id);
+            const adSnap = await getDoc(adRef);
+            const ad = adSnap.data();
 
+            if (!adSnap.exists()) return;
 
+            const rejectedAt = new Date();
 
+            // Save rejection details to rejectedAdverts collection for record keeping
+            try {
+                await setDoc(doc(db, 'rejectedAdverts', id), {
+                    ...ad,
+                    rejectedAt: rejectedAt.toISOString(),
+                    rejectionReason: reasonText,
+                    reviewedBy: auth.currentUser?.uid || "admin",
+                });
+            } catch (permissionError) {
+                console.error('Failed to save to rejectedAdverts:', permissionError);
+            }
 
+            // Update the advert to include rejection info
+            try {
+                await updateDoc(adRef, {
+                    lastRejectedAt: rejectedAt.toISOString(),
+                    lastRejectionReason: reasonText,
+                    approved: false
+                });
+            } catch (updateError) {
+                console.error('Failed to update advert with rejection info:', updateError);
+            }
+
+            // Send notification email to the owner using SendGrid template
+            if (ad.ownerId) {
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', ad.ownerId));
+                    if (userSnap.exists()) {
+                        const user = userSnap.data();
+
+                        // Prepare user data
+                        const userData = {
+                            email: user.email,
+                            firstName: user.firstName || '',
+                            lastName: user.lastName || ''
+                        };
+
+                        // Prepare advert data
+                        const advertData = {
+                            id: id,
+                            petName: ad.name || ad.title || 'your pet',
+                            type: ad.petType || 'pet'
+                        };
+
+                        // Send using SendGrid template
+                        await sendAdvertRejectedEmail(userData, advertData, reasonText);
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send rejection email:', emailError);
+                }
+            }
+
+            // Remove from the current view
+            setRecentAds(prev => prev.filter(ad => ad.id !== id));
+
+            // Decrement the pending ads count
+            setStats(prev => ({
+                ...prev,
+                pendingAds: Math.max(prev.pendingAds - 1, 0),
+            }));
+
+            setModalOpen(false);
+            setRejectionTarget(null);
+
+            alert("Advert rejected successfully.");
+
+        } catch (error) {
+            console.error('Error rejecting advert:', error);
+            alert('Failed to reject advert. Please try again.');
+        }
+    };
 
     return (
         <div className="admin-dashboard-page">
@@ -300,8 +498,6 @@ export default function AdminDashboard() {
                                                 </div>
                                             )}
 
-
-
                                             <div className="item-content">
                                                 <h3 className="item-title">
                                                     {ad.breedOrType || 'Unknown Breed'}
@@ -335,11 +531,16 @@ export default function AdminDashboard() {
                                                 <button className="action-button approve" onClick={() => handleApprove(ad.id)}>
                                                     <FaCheck /> Approve
                                                 </button>
-                                                <button className="action-button reject" disabled title="Reject functionality coming soon">
+                                                <button
+                                                    className="action-button reject"
+                                                    onClick={() => {
+                                                        setRejectionTarget(ad);
+                                                        setModalOpen(true);
+                                                    }}
+                                                >
                                                     <FaTimes /> Reject
                                                 </button>
                                             </div>
-
                                         </div>
                                     ))}
                                 </div>
@@ -348,6 +549,19 @@ export default function AdminDashboard() {
                     </>
                 )}
             </div>
+
+            {/* Rejection Modal */}
+            {modalOpen && rejectionTarget && (
+                <RejectionModal
+                    isOpen={modalOpen}
+                    onClose={() => {
+                        setModalOpen(false);
+                        setRejectionTarget(null);
+                    }}
+                    onSubmit={(reason) => rejectAdvert(rejectionTarget.id, reason)}
+                    dogName={rejectionTarget.name || 'this pet'}
+                />
+            )}
         </div>
     );
 }

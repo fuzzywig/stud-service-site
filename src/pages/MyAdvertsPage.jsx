@@ -1,6 +1,6 @@
 // src/pages/MyAdvertsPage.jsx
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom"; // ✅ Add useSearchParams
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPencilAlt, faTrashAlt,
@@ -13,11 +13,15 @@ import {
 import { db } from "../firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase.js";
+import { Helmet } from "react-helmet-async";
+import { useLoginModal } from "../context/LoginContext"; // ✅ Add login modal
 
 import "./MyAdvertsPage.css";
 
 export default function MyAdvertsPage() {
     const navigate = useNavigate();
+    const { openLogin } = useLoginModal(); // ✅ Add login modal hook
+    const [searchParams] = useSearchParams(); // ✅ Add search params
 
     // State management
     const [currentUserId, setCurrentUserId] = useState(null);
@@ -26,9 +30,32 @@ export default function MyAdvertsPage() {
     const [activeTab, setActiveTab] = useState("active");
     const [showInfoPanel, setShowInfoPanel] = useState(true);
     const [showTooltip, setShowTooltip] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false); // ✅ Add auth check state
     const [filters, setFilters] = useState({
         sortBy: "newest"
     });
+
+    // ✅ NEW: Handle login redirect from email links
+    useEffect(() => {
+        // Check if user came from email link and needs to log in
+        const shouldLogin = searchParams.get('login') === 'true';
+        const tabFromUrl = searchParams.get('tab'); // Get the tab parameter
+
+        if (shouldLogin && !currentUserId && authChecked) {
+            // Save the redirect URL (including tab parameter if present)
+            const redirectUrl = tabFromUrl ? `/my-adverts?tab=${tabFromUrl}` : '/my-adverts';
+            sessionStorage.setItem('redirectAfterLogin', redirectUrl);
+
+            // Open the login modal
+            openLogin();
+
+            // Clean up the URL to remove the login parameter (keep tab for after login)
+            const url = new URLSearchParams(window.location.search);
+            url.delete('login');
+            const cleanUrl = url.toString() ? `/my-adverts?${url.toString()}` : '/my-adverts';
+            window.history.replaceState(null, '', cleanUrl);
+        }
+    }, [currentUserId, openLogin, searchParams, authChecked]);
 
     // Check info panel preference
     useEffect(() => {
@@ -48,14 +75,22 @@ export default function MyAdvertsPage() {
         setShowTooltip(!showTooltip);
     };
 
-    // Authentication check
+    // ✅ UPDATED: Authentication check with auth state tracking
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (user) => {
-            if (user) setCurrentUserId(user.uid);
-            else navigate("/login");
+            setAuthChecked(true); // ✅ Mark auth as checked
+            if (user) {
+                setCurrentUserId(user.uid);
+            } else {
+                // Only redirect to login if not coming from email link
+                const shouldLogin = searchParams.get('login') === 'true';
+                if (!shouldLogin) {
+                    navigate("/login");
+                }
+            }
         });
         return unsub;
-    }, [navigate]);
+    }, [navigate, searchParams]);
 
     // Fetch user's ads with favorite counts
     useEffect(() => {
@@ -99,7 +134,8 @@ export default function MyAdvertsPage() {
                         price: ad.price || 0,
                         description: ad.description || "",
                         favoriteCount: favoriteCount,
-                        views: ad.views || 0
+                        views: ad.views || 0,
+                        intent: ad.intent || 'sale' // ADD THIS LINE
                     };
                 }));
 
@@ -113,6 +149,21 @@ export default function MyAdvertsPage() {
 
         fetchUserAds();
     }, [currentUserId]);
+
+    useEffect(() => {
+        const tabFromUrl = searchParams.get('tab');
+
+        // Only set the tab if it's a valid tab and user is authenticated
+        if (tabFromUrl && currentUserId && ['active', 'pending', 'expired', 'sold'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl);
+
+            // Clean up the URL to remove the tab parameter after setting it
+            const url = new URLSearchParams(window.location.search);
+            url.delete('tab');
+            const cleanUrl = url.toString() ? `/my-adverts?${url.toString()}` : '/my-adverts';
+            window.history.replaceState(null, '', cleanUrl);
+        }
+    }, [currentUserId, searchParams]);
 
     function formatAge(dob) {
         if (!dob) return "";
@@ -247,7 +298,8 @@ export default function MyAdvertsPage() {
         }).format(date);
     }
 
-    if (loading) {
+    // ✅ Show loading while checking auth
+    if (!authChecked || loading) {
         return (
             <div className="my-ads-loading-container">
                 <div className="my-ads-loading-spinner"></div>
@@ -256,23 +308,66 @@ export default function MyAdvertsPage() {
         );
     }
 
+    // ✅ Don't render content if user isn't logged in and came from email
+    if (!currentUserId) {
+        return (
+            <div className="my-ads-loading-container">
+                <div className="my-ads-loading-spinner"></div>
+                <p>Please log in to view your adverts...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="my-ads-container">
-            {/* Header Section */}
-            <div className="my-ads-header">
-                <h1>My Pet Adverts</h1>
-                {!showInfoPanel && (
-                    <div className="my-ads-info-tooltip-container">
+
+        <>
+            <Helmet>
+                <title>My Adverts | My Pet Connect</title>
+                <meta name="robots" content="noindex,follow" />
+            </Helmet>
+
+            <div className="my-ads-container">
+                {/* Header Section */}
+                <div className="my-ads-header">
+                    <h1>My Pet Adverts</h1>
+                    {!showInfoPanel && (
+                        <div className="my-ads-info-tooltip-container">
+                            <button
+                                className="my-ads-info-icon-btn"
+                                onClick={toggleTooltip}
+                                aria-label="Show advert information"
+                            >
+                                <FontAwesomeIcon icon={faInfoCircle} />
+                            </button>
+                            {showTooltip && (
+                                <div className="my-ads-info-tooltip">
+                                    <h4>How Adverts Work</h4>
+                                    <ul>
+                                        <li><strong>New Adverts:</strong> After submission, your advert will be reviewed by our team within 24 hours.</li>
+                                        <li><strong>Active Period:</strong> Adverts are live for 30 days, after which they expire automatically.</li>
+                                        <li><strong>Republishing:</strong> Expired adverts can be republished with one click, requiring approval again.</li>
+                                        <li><strong>Deletion Policy:</strong> Expired adverts not republished within 14 days will be permanently deleted.</li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Info Panel */}
+                {showInfoPanel && (
+                    <div className="my-ads-info-panel">
                         <button
-                            className="my-ads-info-icon-btn"
-                            onClick={toggleTooltip}
-                            aria-label="Show advert information"
+                            className="my-ads-info-close"
+                            onClick={handleDismissInfoPanel}
+                            aria-label="Close information panel"
                         >
-                            <FontAwesomeIcon icon={faInfoCircle} />
+                            <FontAwesomeIcon icon={faTimes} />
                         </button>
-                        {showTooltip && (
-                            <div className="my-ads-info-tooltip">
-                                <h4>How Adverts Work</h4>
+                        <div className="my-ads-info-content">
+                            <FontAwesomeIcon icon={faInfoCircle} className="my-ads-info-icon" />
+                            <div>
+                                <h3>How Adverts Work</h3>
                                 <ul>
                                     <li><strong>New Adverts:</strong> After submission, your advert will be reviewed by our team within 24 hours.</li>
                                     <li><strong>Active Period:</strong> Adverts are live for 30 days, after which they expire automatically.</li>
@@ -280,224 +375,205 @@ export default function MyAdvertsPage() {
                                     <li><strong>Deletion Policy:</strong> Expired adverts not republished within 14 days will be permanently deleted.</li>
                                 </ul>
                             </div>
-                        )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Tabs */}
+                <div className="my-ads-controls">
+                    <div className="my-ads-tabs">
+                        <button
+                            className={`my-ads-tab ${activeTab === 'active' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('active')}
+                        >
+                            Active
+                            <span className="my-ads-count">
+                            {userAds.filter(ad => !ad.expired && ad.approved).length}
+                        </span>
+                        </button>
+                        <button
+                            className={`my-ads-tab ${activeTab === 'pending' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('pending')}
+                        >
+                            Pending
+                            <span className="my-ads-count">
+                            {userAds.filter(ad => !ad.approved && !ad.expired).length}
+                        </span>
+                        </button>
+                        <button
+                            className={`my-ads-tab ${activeTab === 'sold' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('sold')}
+                        >
+                            Sold
+                            <span className="my-ads-count">
+                            {userAds.filter(ad => ad.sold).length}
+                        </span>
+                        </button>
+                        <button
+                            className={`my-ads-tab ${activeTab === 'expired' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('expired')}
+                        >
+                            Expired
+                            <span className="my-ads-count">
+                            {userAds.filter(ad => ad.expired).length}
+                        </span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Empty State */}
+                {sortedAds.length === 0 ? (
+                    <div className="my-ads-empty">
+                        <div className="my-ads-empty-icon">
+                            {activeTab === 'active' && <FontAwesomeIcon icon={faInfoCircle} />}
+                            {activeTab === 'pending' && <FontAwesomeIcon icon={faInfoCircle} />}
+                            {activeTab === 'expired' && <FontAwesomeIcon icon={faSync} />}
+                        </div>
+                        <h3>No adverts found</h3>
+                        <p>
+                            {activeTab === 'active' && "You don't have any active adverts at the moment."}
+                            {activeTab === 'pending' && "You don't have any adverts pending approval."}
+                            {activeTab === 'expired' && "You don't have any expired adverts."}
+                        </p>
+                    </div>
+                ) : (
+                    /* Main Content: Cards View */
+                    <div className="my-ads-grid">
+                        {sortedAds.map((ad) => (
+                            <div key={ad.id} className="my-ads-card">
+                                {/* Status Labels */}
+                                {!ad.approved && !ad.expired && (
+                                    <div className="my-ads-status pending">Pending Approval</div>
+                                )}
+                                {ad.expired && (
+                                    <div className="my-ads-status expired">Expired</div>
+                                )}
+                                {ad.sold && (
+                                    <div className="my-ads-status sold">Sold</div>
+                                )}
+
+                                {/* Image Section */}
+                                <div className="my-ads-image-container">
+                                    <Link to={`/advert-details/${ad.id}`} className="my-ads-image-link">
+                                        <img
+                                            src={ad.images[0] || "https://placehold.co/600x400?text=No+Image"}
+                                            alt={ad.title}
+                                            className="my-ads-image"
+                                        />
+                                    </Link>
+
+                                    {/* Direct Action Buttons */}
+                                    <div className="my-ads-action-buttons">
+                                        {!ad.sold && (
+                                            <>
+                                                <button
+                                                    className="my-ads-action-btn my-ads-edit-btn"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        // Check if it's a rescue advert
+                                                        if (ad.intent === 'rescue') {
+                                                            navigate(`/adwizard-rescue/edit/${ad.id}`);
+                                                        } else {
+                                                            navigate(`/edit/${ad.id}`);
+                                                        }
+                                                    }}
+                                                    aria-label="Edit advert"
+                                                >
+                                                    <FontAwesomeIcon icon={faPencilAlt} />
+                                                </button>
+
+                                                {ad.expired ? (
+                                                    <button
+                                                        className="my-ads-action-btn my-ads-republish-btn"
+                                                        onClick={(e) => handleRepublishAd(ad.id, e)}
+                                                        aria-label="Republish advert"
+                                                    >
+                                                        <FontAwesomeIcon icon={faSync} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="my-ads-action-btn my-ads-delete-btn"
+                                                        onClick={(e) => handleDeleteAd(ad.id, e)}
+                                                        aria-label="Delete advert"
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrashAlt} />
+                                                    </button>
+                                                )}
+                                                {!ad.expired && ad.approved && !ad.sold && (
+                                                    <button
+                                                        className="my-ads-action-btn my-ads-sold-btn"
+                                                        onClick={async (e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (window.confirm("Mark this advert as sold? It will be removed from public listings.")) {
+                                                                try {
+                                                                    await updateDoc(doc(db, "allListings", ad.id), { sold: true });
+                                                                    setUserAds(prev => prev.map(a =>
+                                                                        a.id === ad.id ? { ...a, sold: true } : a
+                                                                    ));
+                                                                } catch (err) {
+                                                                    console.error("Failed to mark as sold:", err);
+                                                                    alert("Something went wrong.");
+                                                                }
+                                                            }
+                                                        }}
+                                                        aria-label="Mark as Sold"
+                                                    >
+                                                        <FontAwesomeIcon icon={faCheck} />
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Content Section */}
+                                <div className="my-ads-content">
+                                    <Link to={`/advert-details/${ad.id}`} className="my-ads-title-link">
+                                        <h3 className="my-ads-title">{ad.title.length > 33 ? ad.title.slice(0, 33) + '…' : ad.title}</h3>
+                                    </Link>
+
+                                    <div className="my-ads-tags">
+                                    <span className="my-ads-tag my-ads-breed-tag">
+                                        {formatBreed(ad.breed)}
+                                    </span>
+                                        <span className="my-ads-tag my-ads-age-tag">
+                                        {ad.ageLabel}
+                                    </span>
+                                        {ad.price > 0 && (
+                                            <span className="my-ads-tag my-ads-price-tag">
+                                            £{ad.price.toLocaleString()}
+                                        </span>
+                                        )}
+                                    </div>
+
+                                    {/* Stats Section - New! */}
+                                    <div className="my-ads-stats">
+                                        <div className="my-ads-stat">
+                                            <FontAwesomeIcon icon={faHeart} className="my-ads-stat-icon favorites" />
+                                            <span className="my-ads-stat-value">{ad.favoriteCount}</span>
+                                            <span className="my-ads-stat-label">Favourited</span>
+                                        </div>
+                                        {ad.views > 0 && (
+                                            <div className="my-ads-stat">
+                                                <FontAwesomeIcon icon={faInfoCircle} className="my-ads-stat-icon views" />
+                                                <span className="my-ads-stat-value">{ad.views}</span>
+                                                <span className="my-ads-stat-label">views</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="my-ads-date">
+                                        {ad.expired ? 'Expired on' : 'Created on'}: {formatDate(ad.createdAt)}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
 
-            {/* Info Panel */}
-            {showInfoPanel && (
-                <div className="my-ads-info-panel">
-                    <button
-                        className="my-ads-info-close"
-                        onClick={handleDismissInfoPanel}
-                        aria-label="Close information panel"
-                    >
-                        <FontAwesomeIcon icon={faTimes} />
-                    </button>
-                    <div className="my-ads-info-content">
-                        <FontAwesomeIcon icon={faInfoCircle} className="my-ads-info-icon" />
-                        <div>
-                            <h3>How Adverts Work</h3>
-                            <ul>
-                                <li><strong>New Adverts:</strong> After submission, your advert will be reviewed by our team within 24 hours.</li>
-                                <li><strong>Active Period:</strong> Adverts are live for 30 days, after which they expire automatically.</li>
-                                <li><strong>Republishing:</strong> Expired adverts can be republished with one click, requiring approval again.</li>
-                                <li><strong>Deletion Policy:</strong> Expired adverts not republished within 14 days will be permanently deleted.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Tabs */}
-            <div className="my-ads-controls">
-                <div className="my-ads-tabs">
-                    <button
-                        className={`my-ads-tab ${activeTab === 'active' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('active')}
-                    >
-                        Active
-                        <span className="my-ads-count">
-                            {userAds.filter(ad => !ad.expired && ad.approved).length}
-                        </span>
-                    </button>
-                    <button
-                        className={`my-ads-tab ${activeTab === 'pending' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('pending')}
-                    >
-                        Pending
-                        <span className="my-ads-count">
-                            {userAds.filter(ad => !ad.approved && !ad.expired).length}
-                        </span>
-                    </button>
-                    <button
-                        className={`my-ads-tab ${activeTab === 'sold' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('sold')}
-                    >
-                        Sold
-                        <span className="my-ads-count">
-                            {userAds.filter(ad => ad.sold).length}
-                        </span>
-                    </button>
-                    <button
-                        className={`my-ads-tab ${activeTab === 'expired' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('expired')}
-                    >
-                        Expired
-                        <span className="my-ads-count">
-                            {userAds.filter(ad => ad.expired).length}
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Empty State */}
-            {sortedAds.length === 0 ? (
-                <div className="my-ads-empty">
-                    <div className="my-ads-empty-icon">
-                        {activeTab === 'active' && <FontAwesomeIcon icon={faInfoCircle} />}
-                        {activeTab === 'pending' && <FontAwesomeIcon icon={faInfoCircle} />}
-                        {activeTab === 'expired' && <FontAwesomeIcon icon={faSync} />}
-                    </div>
-                    <h3>No adverts found</h3>
-                    <p>
-                        {activeTab === 'active' && "You don't have any active adverts at the moment."}
-                        {activeTab === 'pending' && "You don't have any adverts pending approval."}
-                        {activeTab === 'expired' && "You don't have any expired adverts."}
-                    </p>
-                </div>
-            ) : (
-                /* Main Content: Cards View */
-                <div className="my-ads-grid">
-                    {sortedAds.map((ad) => (
-                        <div key={ad.id} className="my-ads-card">
-                            {/* Status Labels */}
-                            {!ad.approved && !ad.expired && (
-                                <div className="my-ads-status pending">Pending Approval</div>
-                            )}
-                            {ad.expired && (
-                                <div className="my-ads-status expired">Expired</div>
-                            )}
-                            {ad.sold && (
-                                <div className="my-ads-status sold">Sold</div>
-                            )}
-
-                            {/* Image Section */}
-                            <div className="my-ads-image-container">
-                                <Link to={`/advert-details/${ad.id}`} className="my-ads-image-link">
-                                    <img
-                                        src={ad.images[0] || "https://placehold.co/600x400?text=No+Image"}
-                                        alt={ad.title}
-                                        className="my-ads-image"
-                                    />
-                                </Link>
-
-                                {/* Direct Action Buttons */}
-                                <div className="my-ads-action-buttons">
-                                    {!ad.sold && (
-                                        <>
-                                            <button
-                                                className="my-ads-action-btn my-ads-edit-btn"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    navigate(`/edit/${ad.id}`);
-                                                }}
-                                                aria-label="Edit advert"
-                                            >
-                                                <FontAwesomeIcon icon={faPencilAlt} />
-                                            </button>
-
-                                            {ad.expired ? (
-                                                <button
-                                                    className="my-ads-action-btn my-ads-republish-btn"
-                                                    onClick={(e) => handleRepublishAd(ad.id, e)}
-                                                    aria-label="Republish advert"
-                                                >
-                                                    <FontAwesomeIcon icon={faSync} />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    className="my-ads-action-btn my-ads-delete-btn"
-                                                    onClick={(e) => handleDeleteAd(ad.id, e)}
-                                                    aria-label="Delete advert"
-                                                >
-                                                    <FontAwesomeIcon icon={faTrashAlt} />
-                                                </button>
-                                            )}
-                                            {!ad.expired && ad.approved && !ad.sold && (
-                                                <button
-                                                    className="my-ads-action-btn my-ads-sold-btn"
-                                                    onClick={async (e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        if (window.confirm("Mark this advert as sold? It will be removed from public listings.")) {
-                                                            try {
-                                                                await updateDoc(doc(db, "allListings", ad.id), { sold: true });
-                                                                setUserAds(prev => prev.map(a =>
-                                                                    a.id === ad.id ? { ...a, sold: true } : a
-                                                                ));
-                                                            } catch (err) {
-                                                                console.error("Failed to mark as sold:", err);
-                                                                alert("Something went wrong.");
-                                                            }
-                                                        }
-                                                    }}
-                                                    aria-label="Mark as Sold"
-                                                >
-                                                    <FontAwesomeIcon icon={faCheck} />
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Content Section */}
-                            <div className="my-ads-content">
-                                <Link to={`/advert-details/${ad.id}`} className="my-ads-title-link">
-                                    <h3 className="my-ads-title">{ad.title.length > 33 ? ad.title.slice(0, 33) + '…' : ad.title}</h3>
-                                </Link>
-
-                                <div className="my-ads-tags">
-                                    <span className="my-ads-tag my-ads-breed-tag">
-                                        {formatBreed(ad.breed)}
-                                    </span>
-                                    <span className="my-ads-tag my-ads-age-tag">
-                                        {ad.ageLabel}
-                                    </span>
-                                    {ad.price > 0 && (
-                                        <span className="my-ads-tag my-ads-price-tag">
-                                            £{ad.price.toLocaleString()}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Stats Section - New! */}
-                                <div className="my-ads-stats">
-                                    <div className="my-ads-stat">
-                                        <FontAwesomeIcon icon={faHeart} className="my-ads-stat-icon favorites" />
-                                        <span className="my-ads-stat-value">{ad.favoriteCount}</span>
-                                        <span className="my-ads-stat-label">Favourited</span>
-                                    </div>
-                                    {ad.views > 0 && (
-                                        <div className="my-ads-stat">
-                                            <FontAwesomeIcon icon={faInfoCircle} className="my-ads-stat-icon views" />
-                                            <span className="my-ads-stat-value">{ad.views}</span>
-                                            <span className="my-ads-stat-label">views</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="my-ads-date">
-                                    {ad.expired ? 'Expired on' : 'Created on'}: {formatDate(ad.createdAt)}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+        </>
     );
 }

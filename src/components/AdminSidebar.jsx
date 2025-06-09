@@ -2,24 +2,33 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../firebase/firebaseAuth';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase/firebase';
 import {
-    FaBars,
-    FaTimes,
-    FaTachometerAlt,
-    FaClipboardCheck,
-    FaUsers,
-    FaStar,
-    FaGlobe,
-    FaSignOutAlt,
-    FaUser,
-    FaSearch,
-    FaShieldAlt
-} from 'react-icons/fa';
+    Menu,
+    X,
+    BarChart3,
+    CheckSquare,
+    Users,
+    Star,
+    Globe,
+    LogOut,
+    User,
+    Search,
+    Shield,
+    MessageSquare
+} from 'lucide-react';
 import './AdminSidebar.css';
 
 export default function AdminSidebar() {
     const [isOpen, setIsOpen] = useState(false);
-    const { userData } = useAuth(); // Grab user context
+    const [notificationCounts, setNotificationCounts] = useState({
+        pendingAdverts: 0,
+        pendingReviews: 0,
+        reportedUsers: 0,
+        supportTickets: 0
+    });
+    const { userData } = useAuth();
     const location = useLocation();
 
     const openSidebar = () => setIsOpen(true);
@@ -32,6 +41,68 @@ export default function AdminSidebar() {
         }
         return path !== '/admin' && location.pathname.startsWith(path);
     };
+
+    // Fetch notification counts with loading state
+    useEffect(() => {
+        const fetchNotificationCounts = async () => {
+            try {
+                // Count pending adverts
+                const pendingAdvertsQuery = query(
+                    collection(db, 'allListings'),
+                    where('approved', '==', false)
+                );
+                const pendingAdvertsSnapshot = await getDocs(pendingAdvertsQuery);
+                const pendingAdvertsCount = pendingAdvertsSnapshot.size;
+
+                // Count pending reviews (adjust this based on your reviews structure)
+                const pendingReviewsQuery = query(
+                    collection(db, 'reviews'),
+                    where('approved', '==', false)
+                );
+                const pendingReviewsSnapshot = await getDocs(pendingReviewsQuery);
+                const pendingReviewsCount = pendingReviewsSnapshot.size;
+
+                // Count reported users (adjust this based on your reports structure)
+                const reportedUsersQuery = query(
+                    collection(db, 'reportedUsers'),
+                    where('resolved', '==', false)
+                );
+                const reportedUsersSnapshot = await getDocs(reportedUsersQuery);
+                const reportedUsersCount = reportedUsersSnapshot.size;
+
+                // Count support tickets (adjust this based on your tickets structure)
+                const supportTicketsQuery = query(
+                    collection(db, 'supportTickets'),
+                    where('status', '==', 'open')
+                );
+                const supportTicketsSnapshot = await getDocs(supportTicketsQuery);
+                const supportTicketsCount = supportTicketsSnapshot.size;
+
+                setNotificationCounts({
+                    pendingAdverts: pendingAdvertsCount,
+                    pendingReviews: pendingReviewsCount,
+                    reportedUsers: reportedUsersCount,
+                    supportTickets: supportTicketsCount
+                });
+
+            } catch (error) {
+                console.error('Error fetching notification counts:', error);
+                // Set to 0 on error to avoid showing stale data
+                setNotificationCounts({
+                    pendingAdverts: 0,
+                    pendingReviews: 0,
+                    reportedUsers: 0,
+                    supportTickets: 0
+                });
+            }
+        };
+
+        fetchNotificationCounts();
+
+        // Refresh counts every 30 seconds
+        const interval = setInterval(fetchNotificationCounts, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const handleEscape = (e) => {
@@ -57,10 +128,30 @@ export default function AdminSidebar() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Simple, clean notification badge
+    const NotificationBadge = ({ count, isLoading = false }) => {
+        if (isLoading) {
+            return <span className="admin-sidebar-notification-badge loading">•••</span>;
+        }
+
+        if (count === 0) return null;
+
+        const displayCount = count > 99 ? '99+' : count;
+
+        return (
+            <span
+                className="admin-sidebar-notification-badge"
+                title={`${count} pending item${count !== 1 ? 's' : ''}`}
+            >
+                {displayCount}
+            </span>
+        );
+    };
+
     return (
         <>
             <button className="admin-sidebar-toggle" onClick={openSidebar} aria-label="Open menu">
-                <FaBars />
+                <Menu size={20} strokeWidth={2} />
             </button>
 
             {isOpen && (
@@ -73,7 +164,7 @@ export default function AdminSidebar() {
                         <img src="https://placehold.co/100x100?text=Logo" alt="Admin Logo" />
                     </div>
                     <button className="admin-sidebar-close" onClick={closeSidebar} aria-label="Close menu">
-                        <FaTimes />
+                        <X size={20} strokeWidth={2} />
                     </button>
                 </div>
 
@@ -84,7 +175,7 @@ export default function AdminSidebar() {
                             className={`admin-sidebar-link ${isActive('/admin') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaTachometerAlt className="admin-sidebar-icon" />
+                            <BarChart3 className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Dashboard</span>
                         </Link>
 
@@ -93,8 +184,9 @@ export default function AdminSidebar() {
                             className={`admin-sidebar-link ${isActive('/admin/approve-adverts') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaClipboardCheck className="admin-sidebar-icon" />
+                            <CheckSquare className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Approve Adverts</span>
+                            <NotificationBadge count={notificationCounts.pendingAdverts} />
                         </Link>
 
                         <Link
@@ -102,8 +194,9 @@ export default function AdminSidebar() {
                             className={`admin-sidebar-link ${isActive('/admin/approve-reviews') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaStar className="admin-sidebar-icon" />
+                            <Star className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Approve Reviews</span>
+                            <NotificationBadge count={notificationCounts.pendingReviews} />
                         </Link>
 
                         <Link
@@ -111,36 +204,38 @@ export default function AdminSidebar() {
                             className={`admin-sidebar-link ${isActive('/admin/manage-users') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaUsers className="admin-sidebar-icon" />
+                            <Users className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Manage Users</span>
                         </Link>
+
                         <Link
                             to="/admin/reported-users"
                             className={`admin-sidebar-link ${isActive('/admin/reported-users') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaShieldAlt className="admin-sidebar-icon" />
+                            <Shield className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Reported Users</span>
+                            <NotificationBadge count={notificationCounts.reportedUsers} />
                         </Link>
+
                         <Link
                             to="/admin/uid-inspector"
                             className={`admin-sidebar-link ${isActive('/admin/uid-inspector') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaSearch className="admin-sidebar-icon" />
+                            <Search className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>UID Inspector</span>
                         </Link>
+
                         <Link
                             to="/admin/tickets"
                             className={`admin-sidebar-link ${isActive('/admin/tickets') ? 'active' : ''}`}
                             onClick={closeSidebar}
                         >
-                            <FaClipboardCheck className="admin-sidebar-icon" /> {/* or choose a different icon */}
+                            <MessageSquare className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Support Tickets</span>
+                            <NotificationBadge count={notificationCounts.supportTickets} />
                         </Link>
-
-
-
 
                         <a
                             href="/"
@@ -149,7 +244,7 @@ export default function AdminSidebar() {
                             className="admin-sidebar-link external"
                             onClick={closeSidebar}
                         >
-                            <FaGlobe className="admin-sidebar-icon" />
+                            <Globe className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Visit Website</span>
                         </a>
                     </nav>
@@ -168,11 +263,11 @@ export default function AdminSidebar() {
                                     className="admin-sidebar-username"
                                 >
                                     <span className="admin-sidebar-name">{userData.firstName} {userData.lastName}</span>
-                                    <FaUser className="admin-sidebar-profile-icon" />
+                                    <User className="admin-sidebar-profile-icon" size={16} strokeWidth={2} />
                                 </Link>
 
                                 <Link to="/logout" className="admin-sidebar-logout" onClick={closeSidebar}>
-                                    <FaSignOutAlt className="admin-sidebar-logout-icon" />
+                                    <LogOut className="admin-sidebar-logout-icon" size={16} strokeWidth={2} />
                                     <span>Log Out</span>
                                 </Link>
                             </div>

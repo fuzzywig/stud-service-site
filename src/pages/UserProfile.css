@@ -1021,6 +1021,10 @@
     background-color: #b83c56;
     color: white;
 }
+.up-advert-intent.rescue {
+    background-color: #1e3a8a;
+    color: white;
+}
 
 .up-advert-image-container {
     position: relative;
@@ -1336,7 +1340,8 @@
 }
 
 .up-show-more-btn:hover {
-    background-color: #e5e7eb;
+    background-color: #256845 ;
+    color: #fff;
 }
 
 /* Contact Section */
@@ -2299,7 +2304,7 @@
     .up-nav-tabs {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 4px;
         background-color: transparent;
         padding: 0;
     }
@@ -2472,8 +2477,19 @@
     }
 
     .up-nav-tabs {
-        grid-template-columns: 1fr;
-        gap: 6px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        background-color: transparent;
+        padding: 0;
+    }
+    .up-profile-nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .up-nav-tabs .up-nav-button:nth-child(4) {
+        grid-column: 1 / -1;
     }
 
     .up-nav-button {
@@ -2494,5 +2510,553 @@
     .up-uid-value {
         font-size: 0.7rem;
         word-break: break-all;
+    }
+    .up-nav-button.up-report-button {
+        width: 100%;
+        margin-left: 0; /* Remove the auto margin */
+        margin-top: 0;
+        grid-column: 1 / -1;
+        padding: 12px;
+        background-color: #fff;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+        font-weight: 500;
+        justify-content: center;
+    }
+}
+
+
+/* For even larger screens */
+
+@media (max-width: 768px) {
+    .up-profile-nav {
+        flex-direction: column;
+        gap: 12px;
+        padding: 8px;
+    }
+
+    .up-nav-tabs {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .up-nav-button {
+        flex: 1 1 calc(50% - 4px); /* Two buttons per row */
+        min-width: 0;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+        text-align: center;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Make Feature Requests button full width if it exists */
+    .up-nav-tabs .up-nav-button:nth-child(4):last-child {
+        flex: 1 1 100%;
+    }
+
+    /* Report button styling */
+    .up-nav-button.up-report-button {
+        flex: 1 1 100%;
+        margin-left: 0;
+        margin-top: 0;
+        background-color: #fff;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+        font-weight: 500;
+        justify-content: center;
+    }
+
+    .up-nav-button.up-report-button:hover {
+        background: #fee2e2;
+        border-color: #dc2626;
+        color: #dc2626;
+    }
+}
+
+@media (max-width: 480px) {
+    .up-nav-button {
+        flex: 1 1 100%; /* Single column on mobile */
+    }
+}
+
+/* Add this CSS to your UserProfile.css file in the @media (max-width: 768px) section */
+
+/* Bio Section Mobile Fix - Around line 3200 in the existing media query */
+@media (max-width: 768px) {
+    /* Fix bio section edit button pushing content */
+    .up-bio-section {
+        position: relative;
+    }
+
+    .up-bio-section .up-section-header {
+        display: block; /* Change from flex to block */
+        margin-bottom: 16px;
+    }
+
+    .up-bio-section .up-section-title {
+        margin-bottom: 16px;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e6f0ea;
+    }
+
+    /* Place edit button below the content */
+    .up-edit-bio-btn {
+        display: flex;
+        width: 100%;
+        margin-top: 16px;
+        margin-bottom: 0;
+        justify-content: center;
+    }
+
+    /* Restructure the bio section for mobile */
+    .up-bio-editing .up-bio-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .up-bio-editing .up-bio-cancel-btn,
+    .up-bio-editing .up-bio-save-btn {
+        width: 100%;
+    }
+}
+
+/* Additional fix for very small screens */
+@media (max-width: 480px) {
+    .up-edit-bio-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .up-bio-section {
+        padding: 16px;
+    }
+}
+/* Desktop/Mobile visibility helpers */
+.up-desktop-only {
+    display: flex;
+}
+
+.up-mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .up-desktop-only {
+        display: none !important;
+    }
+
+    .up-mobile-only {
+        display: flex !important;
+        width: 100%;
+        margin-top: 16px;
+        justify-content: center;
+    }
+
+    /* Ensure section headers don't have gap on mobile */
+    .up-bio-section .up-section-header,
+    .up-adoption-process-section .up-section-header {
+        gap: 0;
+    }
+
+    /* Optional: Add some bottom margin to content before button */
+    .up-bio-content,
+    .up-process-content {
+        margin-bottom: 8px;
+    }
+}
+/* Enhanced Adoption Process Section Styles - Matching Site Colors */
+
+/* Main section container */
+.up-adoption-process-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add a subtle pattern overlay */
+.up-adoption-process-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(28, 82, 53, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(50px, -50px);
+}
+
+/* Section header */
+.up-adoption-process-section .up-section-header {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.up-adoption-process-section .up-section-title {
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    padding-bottom: 0;
+    border: none;
+    display: flex;
+    align-items: center;
+}
+
+.up-adoption-process-section .up-section-title svg {
+    color: #1c5235;
+    font-size: 24px;
+}
+
+/* Process content container */
+.up-process-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Main process description */
+.up-process-content > p:first-child {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border-left: 4px solid #1c5235;
+}
+
+/* Requirements box */
+.up-requirements-box {
+    background: #e6f0ea;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #bfd6cc;
+    margin-top: 16px;
+}
+
+.up-requirements-box h4 {
+    color: #1c5235;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.up-requirements-box h4::before {
+    content: "✓";
+    width: 24px;
+    height: 24px;
+    background: #1c5235;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Styled bullet points */
+.up-requirements-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.up-requirements-box ul li {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+/* Custom bullet with checkmark */
+.up-requirements-box ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background: #256845;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Hover effect for list items */
+.up-requirements-box ul li:hover {
+    transform: translateX(4px);
+    color: #1c5235;
+}
+
+/* Placeholder styling */
+.up-adoption-process-section .up-bio-placeholder {
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+.up-adoption-process-section .up-bio-placeholder svg {
+    color: #9ca3af;
+    font-size: 16px;
+}
+
+/* Edit button styling for this section - matching site style */
+.up-adoption-process-section .up-edit-bio-btn {
+    background: none;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.up-adoption-process-section .up-edit-bio-btn:hover {
+    background: #f9fafb;
+    color: #4b5563;
+    border-color: #d1d5db;
+}
+
+/* Mobile button style */
+.up-adoption-process-section .up-edit-bio-btn.up-mobile-only {
+    background: #1c5235;
+    color: white;
+    border: none;
+    width: 100%;
+    justify-content: center;
+}
+
+.up-adoption-process-section .up-edit-bio-btn.up-mobile-only:hover {
+    background: #153d28;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .up-adoption-process-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .up-adoption-process-section::before {
+        width: 150px;
+        height: 150px;
+        transform: translate(30px, -30px);
+    }
+
+    .up-adoption-process-section .up-section-title {
+        font-size: 18px;
+    }
+
+    .up-process-content > p:first-child {
+        font-size: 14px;
+        padding: 16px;
+    }
+
+    .up-requirements-box {
+        padding: 16px;
+    }
+
+    .up-requirements-box h4 {
+        font-size: 15px;
+    }
+
+    .up-requirements-box ul li {
+        font-size: 13px;
+        padding-left: 28px;
+        margin-bottom: 10px;
+    }
+
+    .up-requirements-box ul li::before {
+        width: 18px;
+        height: 18px;
+        font-size: 14px;
+    }
+}
+
+/* Animation for when section loads */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.up-adoption-process-section {
+    animation: fadeIn 0.3s ease-in-out;
+}
+/* User Profile Message Button - Matching site colors */
+.up-message-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    transition: all 0.2s ease;
+    border: 2px solid #b83c56; /* Using your red/pink color */
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    background-color: #b83c56; /* Using your red/pink color */
+    color: white;
+    width: auto;
+    justify-content: center;
+}
+
+.up-message-btn:hover {
+    background-color: #a32e45; /* Darker shade for hover */
+    border-color: #a32e45;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.up-message-btn:active {
+    transform: translateY(0);
+}
+
+.up-message-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.up-message-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Message button icon */
+.up-message-btn svg {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.up-message-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Message button text */
+.up-message-text {
+    display: inline;
+}
+
+/* Alternative: If you want it to match the green primary color instead */
+.up-message-btn.primary-green {
+    background-color: #1c5235;
+    border-color: #1c5235;
+}
+
+.up-message-btn.primary-green:hover {
+    background-color: #153d28;
+    border-color: #153d28;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .up-message-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .up-message-btn svg {
+        font-size: 0.9rem;
+    }
+}
+/* Mobile fixes for profile actions - ensure both buttons go full width */
+@media (max-width: 768px) {
+    /* Make the profile actions container stack vertically on mobile */
+    .up-profile-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+
+    /* Force all direct children to be full width */
+    .up-profile-actions > * {
+        width: 100% !important;
+    }
+
+    /* Specifically target the follow button container */
+    .up-profile-actions .follow-button-container {
+        width: 100% !important;
+    }
+
+    /* Make the follow button itself full width */
+    .up-profile-actions .follow-button {
+        width: 100% !important;
+        justify-content: center;
+    }
+
+    /* Ensure message button is also full width */
+    .up-profile-actions .up-message-btn {
+        width: 100% !important;
+        justify-content: center;
+    }
+
+    /* If the buttons are still not working, try this more specific selector */
+    .up-profile-hero .up-profile-actions .follow-button-container,
+    .up-profile-hero .up-profile-actions .follow-button,
+    .up-profile-hero .up-profile-actions .up-message-btn {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .up-profile-actions {
+        gap: 0.5rem;
+    }
+
+    /* Ensure consistent button styling */
+    .up-profile-actions .follow-button,
+    .up-profile-actions .up-message-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
     }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Mail, Info, AlertCircle, Users, Ban, CheckCircle, Scale, Calendar, Shield } from 'lucide-react';
 import './TermsOfServicePage.css'
+import { Helmet } from "react-helmet-async";
 const TermsOfServicePage = () => {
     const lastUpdated = new Date().toLocaleDateString("en-GB", {
         year: 'numeric',
@@ -10,6 +11,16 @@ const TermsOfServicePage = () => {
 
     return (
         <>
+
+            <Helmet>
+                <title>Terms of Service | My Pet Connect</title>
+                <meta
+                    name="description"
+                    content="Read the My Pet Connect Terms of Service to understand the rules and regulations for using our platform."
+                />
+                <meta name="robots" content="noindex,nofollow" />
+            </Helmet>
+
 
 
             <div className="terms-container">

@@ -44,6 +44,7 @@ import TermsOfServicePage from "./pages/TermsOfServicePage";
 import AboutUs from './pages/AboutUs';
 import FollowingFeed from "./pages/FollowingFeed";
 import DogRescueDashboard from './pages/DogRescueDashboard';
+import AdWizardRescue from './pages/AdWizardRescue';
 
 function App() {
     const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
@@ -175,7 +176,8 @@ function App() {
                     <Route path="about" element={<AboutUs />} />
                     <Route path="following-feed" element={<FollowingFeed />} />
                     <Route path="dog-rescue" element={<DogRescueDashboard />} />
-
+                    <Route path="/adwizard-rescue" element={<AdWizardRescue mode="create" />} />
+                    <Route path="/adwizard-rescue/edit/:adId" element={<AdWizardRescue mode="edit" />} />
                     <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
                 </Route>
 

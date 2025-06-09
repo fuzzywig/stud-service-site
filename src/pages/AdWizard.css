@@ -860,3 +860,15 @@ textarea.adwizard-form-control {
     margin-right: 6px;
     font-style: normal;
 }
+.adwizard-section {
+    margin-bottom: 2rem;
+}
+
+.adwizard-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1c5235;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e7ecf3;
+}

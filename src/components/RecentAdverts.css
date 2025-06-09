@@ -304,6 +304,10 @@
     background-color: #1c5235;
     color: #fff;
 }
+.recent-studs-intent.intent-rescue {
+    background-color: #1e3a8a;
+    color: #fff;
+}
 
 .recent-studs-intent.intent-other {
     background-color: rgba(60, 179, 113, 0.95); /* MediumSeaGreen with higher opacity */
