@@ -10,18 +10,21 @@ const GA_MEASUREMENT_ID = 'G-N966Z6R5QJ';
 const hasAnalyticsConsent = () => {
     try {
         const consent = localStorage.getItem('cookieConsent');
-        const preferences = localStorage.getItem('cookiePreferences');
 
         console.log('Cookie consent:', consent);
-        console.log('Cookie preferences:', preferences);
 
         // Handle simple 'accepted' string
         if (consent === 'accepted') return true;
 
-        // Handle detailed preferences object
-        if (preferences) {
-            const parsedPreferences = JSON.parse(preferences);
-            return parsedPreferences.analytics === true;
+        // Handle JSON object with detailed preferences
+        if (consent && consent !== 'declined') {
+            try {
+                const parsedConsent = JSON.parse(consent);
+                return parsedConsent.analytics === true;
+            } catch {
+                // If it's not JSON, check if it's just 'accepted'
+                return consent === 'accepted';
+            }
         }
 
         return false;
@@ -35,7 +38,7 @@ const hasAnalyticsConsent = () => {
 export const initGA = () => {
     console.log('initGA called');
     try {
-        if (!hasAnalyticsConsent() || GA_MEASUREMENT_ID === 'G-XXXXXXXXXX') {
+        if (!hasAnalyticsConsent() || GA_MEASUREMENT_ID === 'G-N966Z6R5QJ') {
             console.log('GA4 not initialized - missing requirements');
             return false;
         }
