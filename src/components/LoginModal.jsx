@@ -7,10 +7,11 @@ import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import "./LoginModal.css";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { notifyPasswordReset } from '../utils/emailNotifications';
 
 function LoginModal({ isOpen, onClose }) {
     const navigate = useNavigate();
-    const location = useLocation(); // Get current location
+    const location = useLocation();
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [resetEmail, setResetEmail] = useState("");
@@ -20,14 +21,11 @@ function LoginModal({ isOpen, onClose }) {
     // Effect to control body scrolling
     React.useEffect(() => {
         if (isOpen) {
-            // Prevent scrolling when modal is open
             document.body.classList.add('login-modal-open');
         } else {
-            // Re-enable scrolling when modal is closed
             document.body.classList.remove('login-modal-open');
         }
 
-        // Cleanup function to ensure we remove the class when component unmounts
         return () => {
             document.body.classList.remove('login-modal-open');
         };
@@ -73,39 +71,25 @@ function LoginModal({ isOpen, onClose }) {
                     lastLogin: serverTimestamp()
                 });
 
-                // FIXED: Don't navigate if already on an admin page
                 const currentPath = location.pathname;
                 console.log('LoginModal: Current path:', currentPath);
                 console.log('LoginModal: User is admin:', data.isAdmin);
 
-                // Close the modal first
+                // Close the modal
                 onClose();
 
-                // Only navigate if necessary
-                if (currentPath.startsWith('/admin')) {
-                    // Already on an admin page, don't navigate
-                    console.log('LoginModal: Already on admin page, not navigating');
-                    // The RequireAdmin component will re-check auth and render appropriately
-                } else if (data.isAdmin) {
-                    // Not on admin page but user is admin, go to admin dashboard
-                    console.log('LoginModal: Navigating to admin dashboard');
+                // Only redirect admin users from homepage to admin dashboard
+                if (data.isAdmin && currentPath === '/') {
+                    console.log('LoginModal: Admin on home page, navigating to admin dashboard');
                     navigate("/admin");
                 } else {
-                    // Regular user, go to home if not already there
-                    if (currentPath !== '/') {
-                        console.log('LoginModal: Navigating to home');
-                        navigate("/");
-                    }
+                    console.log('LoginModal: Staying on current page:', currentPath);
                 }
-            } else {
-                // No user document found, just close modal
-                console.log('LoginModal: No user document found');
-                onClose();
 
-                // Only navigate to home if not already there
-                if (location.pathname !== '/') {
-                    navigate("/");
-                }
+            } else {
+                // No user document found, just close modal and stay on current page
+                console.log('LoginModal: No user document found, staying on current page');
+                onClose();
             }
         } catch (err) {
             console.error("Login error:", err.message);
@@ -123,6 +107,38 @@ function LoginModal({ isOpen, onClose }) {
         } catch (err) {
             console.error("Resend verification error:", err.message);
             alert("Failed to resend verification email.");
+        }
+    };
+
+    const handleForgotPasswordClick = async () => {
+        const emailToUse = formData.email.trim();
+        if (!emailToUse) {
+            alert("Please enter your email above to reset your password.");
+            return;
+        }
+
+        try {
+            // Send Firebase password reset email
+            await sendPasswordResetEmail(auth, emailToUse);
+
+            // Send custom notification (optional, since Firebase already sends an email)
+            try {
+                console.log('📧 Sending password reset notification...');
+                const userData = {
+                    email: emailToUse,
+                    firstName: emailToUse.split('@')[0] || 'User'
+                };
+                await notifyPasswordReset(userData);
+                console.log('✅ Password reset notification sent');
+            } catch (emailError) {
+                console.error('❌ Custom notification failed:', emailError);
+                // Don't block the reset process if our custom email fails
+            }
+
+            alert("Password reset email sent. Check your inbox and follow the instructions.");
+        } catch (err) {
+            console.error("Password reset error:", err.message);
+            alert("Failed to send reset email. Please check the email address.");
         }
     };
 
@@ -196,20 +212,7 @@ function LoginModal({ isOpen, onClose }) {
                         </p>
                         <p
                             className="login-forgot-link"
-                            onClick={() => {
-                                const emailToUse = formData.email.trim();
-                                if (!emailToUse) {
-                                    alert("Please enter your email above to reset your password.");
-                                    return;
-                                }
-
-                                sendPasswordResetEmail(auth, emailToUse)
-                                    .then(() => alert("Password reset email sent. Check your inbox."))
-                                    .catch((err) => {
-                                        console.error("Password reset error:", err.message);
-                                        alert("Failed to send reset email. Please check the email address.");
-                                    });
-                            }}
+                            onClick={handleForgotPasswordClick}
                         >
                             Forgot your password?
                         </p>

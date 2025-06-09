@@ -192,3 +192,82 @@
 .admin-user-filter {
     width: 180px;
 }
+/* Add this to your existing AdminSidebar.css file */
+
+/* Notification Badge Styles */
+.admin-sidebar-notification-badge {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    animation: pulse-badge 2s infinite;
+    z-index: 1;
+}
+
+/* Update the sidebar link to accommodate the badge */
+.admin-sidebar-link {
+    position: relative;
+    padding-right: 45px; /* Make room for badge */
+    /* ... your existing sidebar link styles ... */
+}
+
+/* Optional: Different colors for different badge types */
+.admin-sidebar-link[href*="approve-adverts"] .admin-sidebar-notification-badge {
+    background: #f59e0b; /* Amber for pending adverts */
+}
+
+.admin-sidebar-link[href*="approve-reviews"] .admin-sidebar-notification-badge {
+    background: #8b5cf6; /* Purple for pending reviews */
+}
+
+.admin-sidebar-link[href*="reported-users"] .admin-sidebar-notification-badge {
+    background: #ef4444; /* Red for reported users */
+}
+
+.admin-sidebar-link[href*="tickets"] .admin-sidebar-notification-badge {
+    background: #06b6d4; /* Cyan for support tickets */
+}
+
+/* Pulse animation for badges */
+@keyframes pulse-badge {
+    0%, 100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-50%) scale(1.05);
+    }
+}
+
+/* Hide badge animation on hover to reduce distraction */
+.admin-sidebar-link:hover .admin-sidebar-notification-badge {
+    animation: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-sidebar-notification-badge {
+        right: 8px;
+        font-size: 10px;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+    }
+
+    .admin-sidebar-link {
+        padding-right: 35px;
+    }
+}

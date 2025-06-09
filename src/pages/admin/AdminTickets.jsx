@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, deleteDoc, where, updateDoc, doc, addDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
+import { doc as firestoreDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase"; // adjust path as needed
 
 import './AdminTickets.css';
 import AdminSidebar from '../../components/AdminSidebar';
+
+// Add email notification imports
+import { sendTicketUpdateNotification, sendTicketClosedNotification, getUserDataForEmail } from '../../utils/emailNotifications';
 
 import {
     Search, Filter, ChevronDown, ChevronUp, Clock, AlertCircle,
@@ -34,6 +38,24 @@ const AdminTickets = ({ currentUser }) => {
     });
 
     const [tickets, setTickets] = useState([]);
+
+    // Add utility function to get user data for emails
+    const getUserData = async (userId) => {
+        try {
+            if (!userId) return null;
+
+            const userDocRef = firestoreDoc(db, 'users', userId);
+            const userSnap = await getDoc(userDocRef);
+
+            if (userSnap.exists()) {
+                return userSnap.data();
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    };
 
     useEffect(() => {
         const usersQuery = query(collection(db, 'users'), where('isAdmin', '==', true));
@@ -132,7 +154,6 @@ const AdminTickets = ({ currentUser }) => {
         }
     };
 
-
     const handleDeleteTicket = async (ticketId) => {
         const ticket = tickets.find(t => t.id === ticketId);
         if (!ticket) {
@@ -168,15 +189,11 @@ const AdminTickets = ({ currentUser }) => {
 
             console.log("Deleted ticket:", ticketId);
 
-            // Optional: Show success message
-            // alert(`Ticket ${ticket.ticketNumber} has been deleted successfully`);
-
         } catch (err) {
             console.error("Failed to delete ticket:", err);
             alert("Failed to delete ticket. Please try again.");
         }
     };
-
 
     // Update the stats calculation to be more accurate:
     const stats = {
@@ -190,7 +207,6 @@ const AdminTickets = ({ currentUser }) => {
     };
 
     // Filter tickets based on view and search
-    // Update the filteredTickets filter logic:
     const filteredTickets = tickets.filter(ticket => {
         // View filter
         if (activeView === 'archived') {
@@ -228,45 +244,147 @@ const AdminTickets = ({ currentUser }) => {
         return true;
     });
 
+    // UPDATED HANDLERS WITH EMAIL NOTIFICATIONS
 
-    // Handlers
+    // Updated handleAssignTicket with email notification
     const handleAssignTicket = async (ticketId, assigneeId, assigneeName) => {
         try {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+
             const ticketRef = doc(db, "supportTickets", ticketId);
             await updateDoc(ticketRef, {
                 assignedTo: assigneeName,
                 assignedToId: assigneeId,
                 lastUpdated: serverTimestamp()
             });
+
+            // Send email notification for assignment (optional)
+            if (assigneeId && assigneeName) {
+                try {
+                    const userData = await getUserData(ticket.customerId);
+
+                    if (userData && userData.email) {
+                        console.log('📧 Sending assignment notification email...');
+
+                        await sendTicketUpdateNotification(
+                            ticketData,     // ✅ The ticket object with assignment info
+                            'assignment',   // ✅ Update type
+                            adminMessage,   // ✅ The assignment message
+                            userData        // ✅ Customer's user data
+                        );
+
+                        console.log('✅ Assignment notification email sent');
+                    }
+                } catch (emailError) {
+                    console.error('❌ Failed to send assignment notification email:', emailError);
+                    // Don't fail the assignment if email fails
+                }
+            }
+
         } catch (err) {
             console.error("Failed to assign ticket:", err);
         }
     };
 
+    // Updated handleUpdateStatus with email notification
     const handleUpdateStatus = async (ticketId, newStatus) => {
         try {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+
             const ticketRef = doc(db, "supportTickets", ticketId);
             await updateDoc(ticketRef, {
                 status: newStatus,
                 lastUpdated: serverTimestamp()
             });
+
+            // Send email notification for status changes
+            try {
+                const userData = await getUserData(ticket.customerId);
+
+                if (userData && userData.email) {
+                    console.log('📧 Sending status update notification email...');
+
+                    // If ticket is being closed, send closure email
+                    if (newStatus === 'closed' || newStatus === 'resolved') {
+                        await sendTicketClosedNotification(
+                            {
+                                ...ticket,
+                                status: newStatus
+                            },
+                            `Your ticket has been ${newStatus}. Thank you for contacting our support team.`,
+                            userData
+                        );
+                    } else {
+                        // Send regular update notification
+                        await sendTicketUpdateNotification(
+                            {
+                                ...ticket,
+                                status: newStatus
+                            },
+                            'status_change',
+                            `Ticket status has been updated to: ${newStatus}`,
+                            userData
+                        );
+                    }
+
+                    console.log('✅ Status update notification email sent');
+                }
+            } catch (emailError) {
+                console.error('❌ Failed to send status update notification email:', emailError);
+                // Don't fail the status update if email fails
+            }
+
         } catch (err) {
             console.error("Failed to update status:", err);
         }
     };
 
+    // Updated handleUpdatePriority with email notification
     const handleUpdatePriority = async (ticketId, newPriority) => {
         try {
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+
             const ticketRef = doc(db, "supportTickets", ticketId);
             await updateDoc(ticketRef, {
                 priority: newPriority,
                 lastUpdated: serverTimestamp()
             });
+
+            // Send email notification for priority changes (optional - only for high/urgent)
+            if (newPriority === 'high' || newPriority === 'urgent') {
+                try {
+                    const userData = await getUserData(ticket.customerId);
+
+                    if (userData && userData.email) {
+                        console.log('📧 Sending priority update notification email...');
+
+                        await sendTicketUpdateNotification(
+                            {
+                                ...ticket,
+                                priority: newPriority
+                            },
+                            'priority_change',
+                            `Your ticket priority has been updated to: ${newPriority}. We will respond as soon as possible.`,
+                            userData
+                        );
+
+                        console.log('✅ Priority update notification email sent');
+                    }
+                } catch (emailError) {
+                    console.error('❌ Failed to send priority update notification email:', emailError);
+                    // Don't fail the priority update if email fails
+                }
+            }
+
         } catch (err) {
             console.error("Failed to update priority:", err);
         }
     };
 
+    // Updated handleSendReply with email notification
     const handleSendReply = async () => {
         if (!replyMessage.trim() || !selectedTicket) return;
 
@@ -286,6 +404,28 @@ const AdminTickets = ({ currentUser }) => {
                 responses: selectedTicket.responses + 1,
                 lastUpdated: serverTimestamp()
             });
+
+            // Send email notification to customer
+            try {
+                const userData = await getUserData(selectedTicket.customerId);
+
+                if (userData && userData.email) {
+                    console.log('📧 Sending reply notification email...');
+
+                    await sendTicketUpdateNotification(
+                        selectedTicket,
+                        'reply',
+                        replyMessage,
+                        userData
+                    );
+
+                    console.log('✅ Reply notification email sent');
+                }
+            } catch (emailError) {
+                console.error('❌ Failed to send reply notification email:', emailError);
+                // Don't fail the reply if email fails
+            }
+
             setReplyMessage('');
         } catch (err) {
             console.error("Failed to send reply:", err);
@@ -588,7 +728,7 @@ const AdminTickets = ({ currentUser }) => {
                                         Delete
                                     </button>
                                 </div>
-                            </div> {/* Properly closed ticket-details-header */}
+                            </div>
 
                             {/* Customer Info */}
                             <div className="ts-customer-info">
@@ -638,8 +778,6 @@ const AdminTickets = ({ currentUser }) => {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Rest of the component continues as is... */}
 
                             {/* Quick Actions */}
                             <div className="ts-quick-actions">

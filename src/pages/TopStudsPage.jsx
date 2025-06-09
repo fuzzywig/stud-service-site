@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { collection, deleteDoc,setDoc, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, deleteDoc, setDoc, query, where, orderBy, limit, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faTrophy, faCrown, faMedal, faStar, faFire, faChartLine,
     faEye, faHeart, faPaw, faAward, faGem, faBolt,
-    faMapMarkerAlt, faPoundSign, faDog, faCat
+    faMapMarkerAlt, faPoundSign, faDog, faCat, faChevronDown
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import "./TopStudsPage.css";
 
+// Import your breed data
+import { petBreedOptions } from "./data/breedOptions";
+
 export default function TopStudsPage() {
     const [dogStuds, setDogStuds] = useState([]);
     const [catStuds, setCatStuds] = useState([]);
+    const [filteredDogStuds, setFilteredDogStuds] = useState([]);
+    const [filteredCatStuds, setFilteredCatStuds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favourites, setFavourites] = useState({});
     const [user, setUser] = useState(null);
     const [hoveredCard, setHoveredCard] = useState(null);
     const [activeCategory, setActiveCategory] = useState('dogs'); // 'dogs' or 'cats'
+    const [selectedBreed, setSelectedBreed] = useState('all'); // 'all' or specific breed
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const auth = getAuth();
 
     // Track auth state
@@ -121,6 +130,8 @@ export default function TopStudsPage() {
 
                 setDogStuds(enrichedDogs);
                 setCatStuds(enrichedCats);
+                setFilteredDogStuds(enrichedDogs);
+                setFilteredCatStuds(enrichedCats);
 
             } catch (err) {
                 console.error("Error loading top studs:", err);
@@ -131,6 +142,48 @@ export default function TopStudsPage() {
 
         fetchTopStuds();
     }, []);
+
+    // Filter studs by breed when breed selection changes
+    useEffect(() => {
+        if (selectedBreed === 'all') {
+            setFilteredDogStuds(dogStuds);
+            setFilteredCatStuds(catStuds);
+        } else {
+            // Convert selected breed to kebab-case for database comparison
+            const breedForDb = toKebabCase(selectedBreed);
+
+            const filteredDogs = dogStuds.filter(stud => {
+                const studBreed = stud.breedOrType?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                return studBreed === breedForDb;
+            });
+            const filteredCats = catStuds.filter(stud => {
+                const studBreed = stud.breedOrType?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                return studBreed === breedForDb;
+            });
+            setFilteredDogStuds(filteredDogs);
+            setFilteredCatStuds(filteredCats);
+        }
+    }, [selectedBreed, dogStuds, catStuds]);
+
+    // Reset breed filter when category changes
+    useEffect(() => {
+        setSelectedBreed('all');
+        setIsDropdownOpen(false);
+    }, [activeCategory]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isDropdownOpen && !event.target.closest('.elite-breed-dropdown')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
 
     const toggleFavourite = async (e, adId) => {
         e.preventDefault();
@@ -185,6 +238,29 @@ export default function TopStudsPage() {
             .join(" ");
     };
 
+    // Convert breed name to match database format (kebab-case)
+    const toKebabCase = (str) => {
+        if (!str) return "";
+        return str
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+    };
+
+    // Convert from database format back to display format
+    const fromKebabCase = (str) => {
+        if (!str) return "";
+        return str
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+    const handleBreedSelect = (breed) => {
+        setSelectedBreed(breed);
+        setIsDropdownOpen(false);
+    };
+
     if (loading) {
         return (
             <div className="elite-loading">
@@ -195,313 +271,416 @@ export default function TopStudsPage() {
     }
 
     // Get current category data
-    const currentStuds = activeCategory === 'dogs' ? dogStuds : catStuds;
+    const currentStuds = activeCategory === 'dogs' ? filteredDogStuds : filteredCatStuds;
     const categoryIcon = activeCategory === 'dogs' ? faDog : faCat;
     const categoryName = activeCategory === 'dogs' ? 'Dog' : 'Cat';
+    const currentBreeds = petBreedOptions[activeCategory];
+
+    // Get breed counts for the current category
+    const originalStuds = activeCategory === 'dogs' ? dogStuds : catStuds;
+    const breedCounts = {};
+    originalStuds.forEach(stud => {
+        const breed = stud.breedOrType;
+        if (breed) {
+            // Normalize the breed name for counting
+            const normalizedBreed = breed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+            // Find matching breed from our breed list
+            const matchingBreed = currentBreeds.find(b =>
+                toKebabCase(b) === normalizedBreed
+            );
+
+            if (matchingBreed) {
+                breedCounts[matchingBreed] = (breedCounts[matchingBreed] || 0) + 1;
+            }
+        }
+    });
 
     return (
-        <div className="elite-studs-page">
-            {/* Animated background elements */}
-            <div className="elite-bg-glow"></div>
-            <div className="elite-particles"></div>
+        <>
+            <SEO
+                title="Elite Stud Dogs & Cats – Top 1% Performers | My Pet Connect"
+                description="Explore the Elite Hall of Fame on My Pet Connect: the top 1% of stud dogs and cats, ranked by performance, ratings, and reviews. Discover proven sires with exceptional genetics and join the leaders in breeding excellence."
+            />
+            <div className="elite-studs-page">
+                {/* Animated background elements */}
+                <div className="elite-bg-glow"></div>
+                <div className="elite-particles"></div>
 
-            {/* Hero Section */}
-            <section className="elite-hero">
-                <div className="elite-hero-content">
-                    <div className="elite-badge-container">
-                        <FontAwesomeIcon icon={faCrown} className="elite-crown-icon" />
-                    </div>
-                    <h1 className="elite-title">
-                        <span className="elite-title-accent">Elite</span> Hall of Fame
-                    </h1>
-                    <p className="elite-subtitle">
-                        Where Excellence Meets Recognition
-                    </p>
-
-                    {/* Filter Buttons */}
-                    <div className="elite-filter-container">
-                        <button
-                            className={`elite-filter-btn ${activeCategory === 'dogs' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('dogs')}
-                        >
-                            <FontAwesomeIcon icon={faDog} />
-                            <span>Elite Dogs ({dogStuds.length})</span>
-                        </button>
-                        <button
-                            className={`elite-filter-btn ${activeCategory === 'cats' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('cats')}
-                        >
-                            <FontAwesomeIcon icon={faCat} />
-                            <span>Elite Cats ({catStuds.length})</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            {/* Explanation Section */}
-            <section className="elite-explanation">
-                <div className="elite-explanation-content">
-                    <div className="elite-explanation-grid">
-                        <div className="elite-explanation-card">
-                            <FontAwesomeIcon icon={faTrophy} className="elite-explanation-icon" />
-                            <h3>Merit-Based Rankings</h3>
-                            <p>Our sophisticated algorithm combines views, ratings, and reviews to identify truly exceptional studs. This isn't just popularity – it's proven excellence backed by real breeding success.</p>
+                {/* Hero Section */}
+                <section className="elite-hero">
+                    <div className="elite-hero-content">
+                        <div className="elite-badge-container">
+                            <FontAwesomeIcon icon={faCrown} className="elite-crown-icon" />
                         </div>
-                        <div className="elite-explanation-card">
-                            <FontAwesomeIcon icon={faChartLine} className="elite-explanation-icon" />
-                            <h3>Performance Metrics</h3>
-                            <p>Every stud here has earned their position through consistent high ratings, extensive positive reviews, and genuine interest from the breeding community.</p>
-                        </div>
-                        <div className="elite-explanation-card">
-                            <FontAwesomeIcon icon={faGem} className="elite-explanation-icon" />
-                            <h3>Elite Recognition</h3>
-                            <p>Being featured here means standing among the top 1% of all studs. These are proven sires with exceptional genetics, temperament, and breeding success rates.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                        <h1 className="elite-title">
+                            <span className="elite-title-accent">Elite</span> Hall of Fame
+                        </h1>
+                        <p className="elite-subtitle">
+                            Where Excellence Meets Recognition
+                        </p>
 
-            {/* Top 3 Showcase */}
-            {currentStuds.length >= 3 && (
-                <section className="elite-podium-section">
-                    <h2 className="elite-section-title">
-                        <FontAwesomeIcon icon={faCrown} /> Top 3 {categoryName} Champions <FontAwesomeIcon icon={faCrown} />
-                    </h2>
-                    <div className="elite-podium">
-                        {/* Silver - 2nd Place */}
-                        <div className="elite-podium-spot elite-podium-second">
-                            <div className="elite-podium-card">
-                                <div className="elite-rank-badge rank-silver">
-                                    <FontAwesomeIcon icon={faTrophy} />
-                                    <span>2nd</span>
-                                </div>
-                                <Link to={`/advert-details/${currentStuds[1].id}`} className="elite-podium-image">
-                                    <img src={currentStuds[1].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[1].name} />
-                                    <div className="elite-podium-overlay">
-                                        <span>View Profile</span>
-                                    </div>
-                                </Link>
-                                <div className="elite-podium-info">
-                                    <h3 className="elite-podium-name">{currentStuds[1].name || "Unknown"}</h3>
-                                    <p className="elite-podium-breed">{currentStuds[1].breedOrType ? humanize(currentStuds[1].breedOrType) : "Unknown Breed"}</p>
-                                </div>
-                                <div className="elite-podium-stats">
-                                    <span><FontAwesomeIcon icon={faStar} /> {currentStuds[1].avgRating.toFixed(1)}</span>
-                                    <span><FontAwesomeIcon icon={faEye} /> {currentStuds[1].views || 0}</span>
-                                </div>
-                            </div>
-                            <div className="elite-podium-base elite-podium-base-2">2</div>
+                        {/* Filter Buttons */}
+                        <div className="elite-filter-container">
+                            <button
+                                className={`elite-filter-btn ${activeCategory === 'dogs' ? 'active' : ''}`}
+                                onClick={() => setActiveCategory('dogs')}
+                            >
+                                <FontAwesomeIcon icon={faDog} />
+                                <span>Elite Dogs ({dogStuds.length})</span>
+                            </button>
+                            <button
+                                className={`elite-filter-btn ${activeCategory === 'cats' ? 'active' : ''}`}
+                                onClick={() => setActiveCategory('cats')}
+                            >
+                                <FontAwesomeIcon icon={faCat} />
+                                <span>Elite Cats ({catStuds.length})</span>
+                            </button>
                         </div>
 
-                        {/* Gold - 1st Place */}
-                        <div className="elite-podium-spot elite-podium-first">
-                            <div className="elite-crown-animation">
-                                <FontAwesomeIcon icon={faCrown} />
-                            </div>
-                            <div className="elite-podium-card">
-                                <div className="elite-rank-badge rank-gold">
-                                    <FontAwesomeIcon icon={faCrown} />
-                                    <span>1st</span>
-                                </div>
-                                <Link to={`/advert-details/${currentStuds[0].id}`} className="elite-podium-image">
-                                    <img src={currentStuds[0].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[0].name} />
-                                    <div className="elite-podium-overlay">
-                                        <span>View Profile</span>
-                                    </div>
-                                </Link>
-                                <div className="elite-podium-info">
-                                    <h3 className="elite-podium-name">{currentStuds[0].name || "Unknown"}</h3>
-                                    <p className="elite-podium-breed">{currentStuds[0].breedOrType ? humanize(currentStuds[0].breedOrType) : "Unknown Breed"}</p>
-                                </div>
-                                <div className="elite-podium-stats">
-                                    <span><FontAwesomeIcon icon={faStar} /> {currentStuds[0].avgRating.toFixed(1)}</span>
-                                    <span><FontAwesomeIcon icon={faEye} /> {currentStuds[0].views || 0}</span>
-                                </div>
-                            </div>
-                            <div className="elite-podium-base elite-podium-base-1">1</div>
-                        </div>
-
-                        {/* Bronze - 3rd Place */}
-                        <div className="elite-podium-spot elite-podium-third">
-                            <div className="elite-podium-card">
-                                <div className="elite-rank-badge rank-bronze">
-                                    <FontAwesomeIcon icon={faMedal} />
-                                    <span>3rd</span>
-                                </div>
-                                <Link to={`/advert-details/${currentStuds[2].id}`} className="elite-podium-image">
-                                    <img src={currentStuds[2].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[2].name} />
-                                    <div className="elite-podium-overlay">
-                                        <span>View Profile</span>
-                                    </div>
-                                </Link>
-                                <div className="elite-podium-info">
-                                    <h3 className="elite-podium-name">{currentStuds[2].name || "Unknown"}</h3>
-                                    <p className="elite-podium-breed">{currentStuds[2].breedOrType ? humanize(currentStuds[2].breedOrType) : "Unknown Breed"}</p>
-                                </div>
-                                <div className="elite-podium-stats">
-                                    <span><FontAwesomeIcon icon={faStar} /> {currentStuds[2].avgRating.toFixed(1)}</span>
-                                    <span><FontAwesomeIcon icon={faEye} /> {currentStuds[2].views || 0}</span>
-                                </div>
-                            </div>
-                            <div className="elite-podium-base elite-podium-base-3">3</div>
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Show message if category has less than 3 studs */}
-            {currentStuds.length > 0 && currentStuds.length < 3 && (
-                <section className="elite-limited-section">
-                    <div className="elite-limited-message">
-                        <FontAwesomeIcon icon={faAward} className="elite-limited-icon" />
-                        <h3>Limited Elite {categoryName} Studs Available</h3>
-                        <p>Only {currentStuds.length} elite {activeCategory === 'dogs' ? 'dog' : 'cat'} stud{currentStuds.length === 1 ? '' : 's'} currently meet our prestigious standards</p>
-                    </div>
-                </section>
-            )}
-
-            {/* Elite Grid - Rest of the studs */}
-            {currentStuds.length > 3 && (
-                <section className="elite-grid-section">
-                    <h2 className="elite-section-title">
-                        <FontAwesomeIcon icon={faFire} /> More Elite {categoryName} Studs <FontAwesomeIcon icon={faFire} />
-                    </h2>
-                    <div className="elite-grid">
-                        {currentStuds.slice(3).map((stud, index) => {
-                            const rank = index + 4;
-                            const rankInfo = getRankIcon(rank);
-                            const tierInfo = getPerformanceTier(stud.performanceScore);
-                            const breedLabel = stud.breedOrType ? humanize(stud.breedOrType) : "Unknown Breed";
-                            const title = stud.title || stud.name || "Unnamed Stud";
-                            const { city, county } = stud.ownerData || {};
-                            const areaLabel = city || county
-                                ? [city, county].filter(Boolean).join(", ")
-                                : "Location N/A";
-
-                            return (
-                                <div
-                                    key={stud.id}
-                                    className={`elite-card ${hoveredCard === stud.id ? 'elite-card-hovered' : ''}`}
-                                    onMouseEnter={() => setHoveredCard(stud.id)}
-                                    onMouseLeave={() => setHoveredCard(null)}
+                        {/* Breed Dropdown */}
+                        <div className="elite-breed-filter">
+                            <div className="elite-breed-dropdown">
+                                <button
+                                    className={`elite-breed-btn ${isDropdownOpen ? 'open' : ''}`}
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                 >
-                                    {/* Rank Badge */}
-                                    <div className={`elite-rank-corner ${rankInfo.class}`}>
-                                        <FontAwesomeIcon icon={rankInfo.icon} />
-                                        <span>#{rank}</span>
+                                    <span>
+                                        {selectedBreed === 'all'
+                                            ? `All ${categoryName} Breeds`
+                                            : selectedBreed
+                                        }
+                                    </span>
+                                    <FontAwesomeIcon
+                                        icon={faChevronDown}
+                                        className={`dropdown-arrow ${isDropdownOpen ? 'rotated' : ''}`}
+                                    />
+                                </button>
+
+                                {isDropdownOpen && (
+                                    <div className="elite-breed-menu">
+                                        <div
+                                            className={`elite-breed-option ${selectedBreed === 'all' ? 'selected' : ''}`}
+                                            onClick={() => handleBreedSelect('all')}
+                                        >
+                                            <span>All {categoryName} Breeds</span>
+                                            <span className="breed-count">({originalStuds.length})</span>
+                                        </div>
+                                        {currentBreeds.map(breed => {
+                                            const count = breedCounts[breed] || 0;
+                                            return count > 0 ? (
+                                                <div
+                                                    key={breed}
+                                                    className={`elite-breed-option ${selectedBreed === breed ? 'selected' : ''}`}
+                                                    onClick={() => handleBreedSelect(breed)}
+                                                >
+                                                    <span>{breed}</span>
+                                                    <span className="breed-count">({count})</span>
+                                                </div>
+                                            ) : null;
+                                        })}
                                     </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                                    {/* Performance Tier */}
-                                    <div className={`elite-tier-badge ${tierInfo.class}`}>
-                                        <FontAwesomeIcon icon={tierInfo.icon} />
-                                        <span>{tierInfo.tier}</span>
+                {/* Explanation Section */}
+                <section className="elite-explanation">
+                    <div className="elite-explanation-content">
+                        <div className="elite-explanation-grid">
+                            <div className="elite-explanation-card">
+                                <FontAwesomeIcon icon={faTrophy} className="elite-explanation-icon" />
+                                <h3>Merit-Based Rankings</h3>
+                                <p>Our sophisticated algorithm combines views, ratings, and reviews to identify truly exceptional studs. This isn't just popularity – it's proven excellence backed by real breeding success.</p>
+                            </div>
+                            <div className="elite-explanation-card">
+                                <FontAwesomeIcon icon={faChartLine} className="elite-explanation-icon" />
+                                <h3>Performance Metrics</h3>
+                                <p>Every stud here has earned their position through consistent high ratings, extensive positive reviews, and genuine interest from the breeding community.</p>
+                            </div>
+                            <div className="elite-explanation-card">
+                                <FontAwesomeIcon icon={faGem} className="elite-explanation-icon" />
+                                <h3>Elite Recognition</h3>
+                                <p>Being featured here means standing among the top 1% of all studs. These are proven sires with exceptional genetics, temperament, and breeding success rates.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Breed Filter Results Notice */}
+                {selectedBreed !== 'all' && (
+                    <section className="elite-breed-notice">
+                        <div className="elite-breed-notice-content">
+                            <h3>
+                                Showing Elite {selectedBreed} {categoryName}s
+                                <span className="result-count">({currentStuds.length})</span>
+                            </h3>
+                            <button
+                                className="clear-filter-btn"
+                                onClick={() => setSelectedBreed('all')}
+                            >
+                                Show All {categoryName} Breeds
+                            </button>
+                        </div>
+                    </section>
+                )}
+
+                {/* Top 3 Showcase */}
+                {currentStuds.length >= 3 && (
+                    <section className="elite-podium-section">
+                        <h2 className="elite-section-title">
+                            <FontAwesomeIcon icon={faCrown} />
+                            Top 3 {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{categoryName} Champions
+                            <FontAwesomeIcon icon={faCrown} />
+                        </h2>
+                        <div className="elite-podium">
+                            {/* Silver - 2nd Place */}
+                            <div className="elite-podium-spot elite-podium-second">
+                                <div className="elite-podium-card">
+                                    <div className="elite-rank-badge rank-silver">
+                                        <FontAwesomeIcon icon={faTrophy} />
+                                        <span>2nd</span>
                                     </div>
-
-                                    {/* Favorite Button */}
-                                    <button
-                                        className={`elite-favorite-btn ${favourites[stud.id] ? 'active' : ''}`}
-                                        onClick={(e) => toggleFavourite(e, stud.id)}
-                                    >
-                                        <FontAwesomeIcon icon={favourites[stud.id] ? faHeart : farHeart} />
-                                    </button>
-
-                                    {/* Image */}
-                                    <Link to={`/advert-details/${stud.id}`} className="elite-card-image">
-                                        <img src={stud.images?.[0] || "https://placehold.co/400x300"} alt={title} />
-                                        <div className="elite-card-overlay">
-                                            <div className="elite-overlay-content">
-                                                <FontAwesomeIcon icon={faPaw} className="elite-overlay-icon" />
-                                                <span>View Elite Profile</span>
-                                            </div>
+                                    <Link to={`/advert-details/${currentStuds[1].id}`} className="elite-podium-image">
+                                        <img src={currentStuds[1].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[1].name} />
+                                        <div className="elite-podium-overlay">
+                                            <span>View Profile</span>
                                         </div>
                                     </Link>
+                                    <div className="elite-podium-info">
+                                        <h3 className="elite-podium-name">{currentStuds[1].name || "Unknown"}</h3>
+                                        <p className="elite-podium-breed">{currentStuds[1].breedOrType ? humanize(currentStuds[1].breedOrType) : "Unknown Breed"}</p>
+                                    </div>
+                                    <div className="elite-podium-stats">
+                                        <span><FontAwesomeIcon icon={faStar} /> {currentStuds[1].avgRating.toFixed(1)}</span>
+                                        <span><FontAwesomeIcon icon={faEye} /> {currentStuds[1].views || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="elite-podium-base elite-podium-base-2">2</div>
+                            </div>
 
-                                    {/* Content */}
-                                    <div className="elite-card-content">
-                                        <h3 className="elite-card-title">
-                                            {title.length > 50 ? title.slice(0, 50) + "..." : title}
-                                        </h3>
+                            {/* Gold - 1st Place */}
+                            <div className="elite-podium-spot elite-podium-first">
+                                <div className="elite-crown-animation">
+                                    <FontAwesomeIcon icon={faCrown} />
+                                </div>
+                                <div className="elite-podium-card">
+                                    <div className="elite-rank-badge rank-gold">
+                                        <FontAwesomeIcon icon={faCrown} />
+                                        <span>1st</span>
+                                    </div>
+                                    <Link to={`/advert-details/${currentStuds[0].id}`} className="elite-podium-image">
+                                        <img src={currentStuds[0].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[0].name} />
+                                        <div className="elite-podium-overlay">
+                                            <span>View Profile</span>
+                                        </div>
+                                    </Link>
+                                    <div className="elite-podium-info">
+                                        <h3 className="elite-podium-name">{currentStuds[0].name || "Unknown"}</h3>
+                                        <p className="elite-podium-breed">{currentStuds[0].breedOrType ? humanize(currentStuds[0].breedOrType) : "Unknown Breed"}</p>
+                                    </div>
+                                    <div className="elite-podium-stats">
+                                        <span><FontAwesomeIcon icon={faStar} /> {currentStuds[0].avgRating.toFixed(1)}</span>
+                                        <span><FontAwesomeIcon icon={faEye} /> {currentStuds[0].views || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="elite-podium-base elite-podium-base-1">1</div>
+                            </div>
 
-                                        <div className="elite-card-details">
-                                            <div className="elite-detail">
-                                                <FontAwesomeIcon icon={stud.category === "cats" ? faCat : faDog} />
-                                                <span>{breedLabel}</span>
-                                            </div>
-                                            <div className="elite-detail">
-                                                <FontAwesomeIcon icon={faMapMarkerAlt} />
-                                                <span>{areaLabel}</span>
-                                            </div>
+                            {/* Bronze - 3rd Place */}
+                            <div className="elite-podium-spot elite-podium-third">
+                                <div className="elite-podium-card">
+                                    <div className="elite-rank-badge rank-bronze">
+                                        <FontAwesomeIcon icon={faMedal} />
+                                        <span>3rd</span>
+                                    </div>
+                                    <Link to={`/advert-details/${currentStuds[2].id}`} className="elite-podium-image">
+                                        <img src={currentStuds[2].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[2].name} />
+                                        <div className="elite-podium-overlay">
+                                            <span>View Profile</span>
+                                        </div>
+                                    </Link>
+                                    <div className="elite-podium-info">
+                                        <h3 className="elite-podium-name">{currentStuds[2].name || "Unknown"}</h3>
+                                        <p className="elite-podium-breed">{currentStuds[2].breedOrType ? humanize(currentStuds[2].breedOrType) : "Unknown Breed"}</p>
+                                    </div>
+                                    <div className="elite-podium-stats">
+                                        <span><FontAwesomeIcon icon={faStar} /> {currentStuds[2].avgRating.toFixed(1)}</span>
+                                        <span><FontAwesomeIcon icon={faEye} /> {currentStuds[2].views || 0}</span>
+                                    </div>
+                                </div>
+                                <div className="elite-podium-base elite-podium-base-3">3</div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* Show message if category has less than 3 studs */}
+                {currentStuds.length > 0 && currentStuds.length < 3 && (
+                    <section className="elite-limited-section">
+                        <div className="elite-limited-message">
+                            <FontAwesomeIcon icon={faAward} className="elite-limited-icon" />
+                            <h3>
+                                Limited Elite {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{categoryName} Studs Available
+                            </h3>
+                            <p>
+                                Only {currentStuds.length} elite {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{activeCategory === 'dogs' ? 'dog' : 'cat'} stud{currentStuds.length === 1 ? '' : 's'} currently meet our prestigious standards
+                            </p>
+                        </div>
+                    </section>
+                )}
+
+                {/* Elite Grid - Rest of the studs */}
+                {currentStuds.length > 3 && (
+                    <section className="elite-grid-section">
+                        <h2 className="elite-section-title">
+                            <FontAwesomeIcon icon={faFire} />
+                            More Elite {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{categoryName} Studs
+                            <FontAwesomeIcon icon={faFire} />
+                        </h2>
+                        <div className="elite-grid">
+                            {currentStuds.slice(3).map((stud, index) => {
+                                const rank = index + 4;
+                                const rankInfo = getRankIcon(rank);
+                                const tierInfo = getPerformanceTier(stud.performanceScore);
+                                const breedLabel = stud.breedOrType ? humanize(stud.breedOrType) : "Unknown Breed";
+                                const title = stud.title || stud.name || "Unnamed Stud";
+                                const { city, county } = stud.ownerData || {};
+                                const areaLabel = city || county
+                                    ? [city, county].filter(Boolean).join(", ")
+                                    : "Location N/A";
+
+                                return (
+                                    <div
+                                        key={stud.id}
+                                        className={`elite-card ${hoveredCard === stud.id ? 'elite-card-hovered' : ''}`}
+                                        onMouseEnter={() => setHoveredCard(stud.id)}
+                                        onMouseLeave={() => setHoveredCard(null)}
+                                    >
+                                        {/* Rank Badge */}
+                                        <div className={`elite-rank-corner ${rankInfo.class}`}>
+                                            <FontAwesomeIcon icon={rankInfo.icon} />
+                                            <span>#{rank}</span>
                                         </div>
 
-                                        {/* Stats Bar */}
-                                        <div className="elite-stats-bar">
-                                            <div className="elite-stat">
-                                                <FontAwesomeIcon icon={faStar} className="stat-icon-gold" />
-                                                <span>{stud.avgRating ? stud.avgRating.toFixed(1) : "N/A"}</span>
-                                            </div>
-                                            <div className="elite-stat">
-                                                <FontAwesomeIcon icon={faEye} />
-                                                <span>{stud.views || 0}</span>
-                                            </div>
-                                            <div className="elite-stat">
-                                                <span className="elite-review-count">{stud.reviewCount}</span>
-                                                <span className="elite-review-label">Reviews</span>
-                                            </div>
+                                        {/* Performance Tier */}
+                                        <div className={`elite-tier-badge ${tierInfo.class}`}>
+                                            <FontAwesomeIcon icon={tierInfo.icon} />
+                                            <span>{tierInfo.tier}</span>
                                         </div>
 
-                                        {/* Price Badge */}
-                                        <div className="elite-price-badge">
-                                            <FontAwesomeIcon icon={faPoundSign} />
-                                            <span>{stud.price || stud.fee || "200"}</span>
-                                        </div>
+                                        {/* Favorite Button */}
+                                        <button
+                                            className={`elite-favorite-btn ${favourites[stud.id] ? 'active' : ''}`}
+                                            onClick={(e) => toggleFavourite(e, stud.id)}
+                                        >
+                                            <FontAwesomeIcon icon={favourites[stud.id] ? faHeart : farHeart} />
+                                        </button>
 
-                                        {/* Performance Meter */}
-                                        <div className="elite-performance-meter">
-                                            <div className="elite-meter-label">Performance Score</div>
-                                            <div className="elite-meter-bar">
-                                                <div
-                                                    className="elite-meter-fill"
-                                                    style={{ width: `${stud.performanceScore}%` }}
-                                                ></div>
+                                        {/* Image */}
+                                        <Link to={`/advert-details/${stud.id}`} className="elite-card-image">
+                                            <img src={stud.images?.[0] || "https://placehold.co/400x300"} alt={title} />
+                                            <div className="elite-card-overlay">
+                                                <div className="elite-overlay-content">
+                                                    <FontAwesomeIcon icon={faPaw} className="elite-overlay-icon" />
+                                                    <span>View Elite Profile</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+
+                                        {/* Content */}
+                                        <div className="elite-card-content">
+                                            <h3 className="elite-card-title">
+                                                {title.length > 50 ? title.slice(0, 50) + "..." : title}
+                                            </h3>
+
+                                            <div className="elite-card-details">
+                                                <div className="elite-detail">
+                                                    <FontAwesomeIcon icon={stud.category === "cats" ? faCat : faDog} />
+                                                    <span>{breedLabel}</span>
+                                                </div>
+                                                <div className="elite-detail">
+                                                    <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                                    <span>{areaLabel}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Stats Bar */}
+                                            <div className="elite-stats-bar">
+                                                <div className="elite-stat">
+                                                    <FontAwesomeIcon icon={faStar} className="stat-icon-gold" />
+                                                    <span>{stud.avgRating ? stud.avgRating.toFixed(1) : "N/A"}</span>
+                                                </div>
+                                                <div className="elite-stat">
+                                                    <FontAwesomeIcon icon={faEye} />
+                                                    <span>{stud.views || 0}</span>
+                                                </div>
+                                                <div className="elite-stat">
+                                                    <span className="elite-review-count">{stud.reviewCount}</span>
+                                                    <span className="elite-review-label">Reviews</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Price Badge */}
+                                            <div className="elite-price-badge">
+                                                <FontAwesomeIcon icon={faPoundSign} />
+                                                <span>{stud.price || stud.fee || "200"}</span>
+                                            </div>
+
+                                            {/* Performance Meter */}
+                                            <div className="elite-performance-meter">
+                                                <div className="elite-meter-label">Performance Score</div>
+                                                <div className="elite-meter-bar">
+                                                    <div
+                                                        className="elite-meter-fill"
+                                                        style={{ width: `${stud.performanceScore}%` }}
+                                                    ></div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* No studs message */}
+                {currentStuds.length === 0 && (
+                    <section className="elite-empty-section">
+                        <div className="elite-empty-message">
+                            <FontAwesomeIcon icon={categoryIcon} className="elite-empty-icon" />
+                            <h3>
+                                No Elite {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{categoryName} Studs Yet
+                            </h3>
+                            <p>
+                                Be the first to list an elite {selectedBreed !== 'all' ? selectedBreed + ' ' : ''}{activeCategory === 'dogs' ? 'dog' : 'cat'} stud!
+                            </p>
+                            <Link to="/create-listing" className="elite-cta-primary">
+                                List Your Stud
+                            </Link>
+                        </div>
+                    </section>
+                )}
+
+                {/* CTA Section */}
+                <section className="elite-cta-section">
+                    <div className="elite-cta-content">
+                        <h2>Want to Join the Elite?</h2>
+                        <p>List your stud and start building your reputation today</p>
+                        <div className="elite-cta-buttons">
+                            <Link to="/create-listing" className="elite-cta-primary">
+                                List Your Stud
+                            </Link>
+                            <Link to="/browse" className="elite-cta-secondary">
+                                Browse All Studs
+                            </Link>
+                        </div>
                     </div>
                 </section>
-            )}
-
-            {/* No studs message */}
-            {currentStuds.length === 0 && (
-                <section className="elite-empty-section">
-                    <div className="elite-empty-message">
-                        <FontAwesomeIcon icon={categoryIcon} className="elite-empty-icon" />
-                        <h3>No Elite {categoryName} Studs Yet</h3>
-                        <p>Be the first to list an elite {activeCategory === 'dogs' ? 'dog' : 'cat'} stud!</p>
-                        <Link to="/create-listing" className="elite-cta-primary">
-                            List Your Stud
-                        </Link>
-                    </div>
-                </section>
-            )}
-
-            {/* CTA Section */}
-            <section className="elite-cta-section">
-                <div className="elite-cta-content">
-                    <h2>Want to Join the Elite?</h2>
-                    <p>List your stud and start building your reputation today</p>
-                    <div className="elite-cta-buttons">
-                        <Link to="/create-listing" className="elite-cta-primary">
-                            List Your Stud
-                        </Link>
-                        <Link to="/browse" className="elite-cta-secondary">
-                            Browse All Studs
-                        </Link>
-                    </div>
-                </div>
-            </section>
-        </div>
+            </div>
+        </>
     );
 }

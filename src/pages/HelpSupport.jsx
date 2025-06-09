@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
 import { storage } from "../firebase/firebase";
 import { db } from "../firebase/firebase";
 import './HelpSupport.css';
+import { sendTicketSubmittedNotification } from '../utils/emailNotifications';
 import {
     Search, ChevronRight, ChevronDown, MessageCircle, Mail, Phone,
     Send, Clock, AlertCircle, FileText, User, PenLine, Paperclip,
@@ -15,13 +16,12 @@ import {
     Flag, Briefcase, Star, CreditCard, Shield, MessageSquare, RefreshCw, CheckCircle, XCircle, Loader,
     Calendar, Eye, Inbox, Filter, HelpCircle, BookOpen, Headphones
 } from 'lucide-react';
+import {Helmet} from "react-helmet-async";
 
 const HelpSupport = () => {
     const { currentUser, userData, loading } = useAuth();
     const { openLogin } = useLoginModal();
     const [userTickets, setUserTickets] = useState([]);
-
-    console.log('HelpSupport - Auth state:', { currentUser, loading });
 
     // State declarations
     const location = useLocation();
@@ -105,6 +105,18 @@ const HelpSupport = () => {
     };
 
 
+    // In your help page component
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rating = urlParams.get('rating');
+        const ticketId = urlParams.get('ticket');
+
+        if (rating && ticketId) {
+            handleSatisfactionRating(rating, ticketId);
+        }
+    }, []);
+
+
 
     // Update ticket data when user changes
     useEffect(() => {
@@ -144,6 +156,21 @@ const HelpSupport = () => {
         // Cleanup listener on unmount
         return () => unsubscribe();
     }, [currentUser]);
+
+    useEffect(() => {
+        const subject = queryParams.get('subject');
+        const message = queryParams.get('message');
+
+        if (subject || message) {
+            setTicketData(prev => ({
+                ...prev,
+                subject: subject || prev.subject,
+                message: message || prev.message,
+                ticketType: subject?.includes('Password') ? 'account-registration' : prev.ticketType,
+                priority: subject?.includes('Unauthorized') ? 'high' : prev.priority
+            }));
+        }
+    }, [location.search]);
 
     // Loading state
     if (loading) {
@@ -380,6 +407,8 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
         }));
     };
 
+    // Replace your current handleSubmit function with this updated version:
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -389,6 +418,8 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
         }
 
         try {
+            console.log('🎫 Creating support ticket...');
+
             // Upload attachments to Firebase Storage and get URLs
             const uploadedUrls = [];
 
@@ -401,6 +432,7 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
 
             const newTicketNumber = 'TKT-' + Math.floor(100000 + Math.random() * 900000);
 
+            // Prepare ticket data for Firestore
             const ticketToSave = {
                 ticketNumber: newTicketNumber,
                 userId: currentUser.uid,
@@ -416,13 +448,47 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
                 attachments: uploadedUrls,
                 status: 'open',
                 responses: 0,
-                messages: [], // Initialize empty messages array
+                messages: [],
                 createdAt: serverTimestamp(),
                 lastUpdated: serverTimestamp(),
             };
 
-            await addDoc(collection(db, "supportTickets"), ticketToSave);
+            console.log('📤 Submitting ticket to Firestore...');
 
+            // Add ticket to Firestore
+            const docRef = await addDoc(collection(db, "supportTickets"), ticketToSave);
+
+            console.log('✅ Ticket created with ID:', docRef.id);
+
+            // Send email notification
+            // Send email notification
+            console.log('📧 Sending confirmation email...');
+            try {
+                const emailPayload = {
+                    userEmail: currentUser.email,
+                    userName: userData?.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : currentUser.displayName || 'Customer',
+                    ticketNumber: newTicketNumber,
+                    subject: ticketData.subject,
+                    ticketType: ticketData.ticketType,
+                    priority: ticketData.priority,
+                    message: ticketData.message,
+                    userId: currentUser.uid
+                };
+
+                console.log('📧 Email payload:', emailPayload);
+
+                const emailResult = await sendTicketSubmittedNotification(emailPayload, {});
+
+                if (emailResult.success) {
+                    console.log('✅ Email notification sent successfully');
+                } else {
+                    console.warn('⚠️ Email notification failed, but ticket was created:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('❌ Email notification error:', emailError);
+            }
+
+            // Show success message
             setTicketNumber(newTicketNumber);
             setSubmitStatus('success');
 
@@ -439,8 +505,10 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
                 setSubmitStatus(null);
             }, 3000);
 
+            console.log('🎉 Ticket submission process completed successfully');
+
         } catch (error) {
-            console.error("Error submitting ticket:", error);
+            console.error('❌ Error creating support ticket:', error);
             setSubmitStatus('error');
         }
     };
@@ -476,6 +544,13 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
     }
 
     return (
+
+        <>
+            <Helmet>
+                <title>Help & Support | My Pet Connect</title>
+                <meta name="robots" content="noindex,follow" />
+            </Helmet>
+
         <div className="hp-container">
             {/* Header */}
             <header className="hp-header">
@@ -1000,6 +1075,8 @@ For **litters and dogs for sale**, there’s a cap of **3 listings every 12 mont
                 )}
             </main>
         </div>
+
+        </>
     );
 };
 

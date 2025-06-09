@@ -11,7 +11,7 @@ function Logout() {
             try {
                 await signOut(auth);
                 console.log("👋 User signed out");
-                navigate("/login");
+                navigate("/");
             } catch (error) {
                 console.error("Error signing out:", error);
             }

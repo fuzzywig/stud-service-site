@@ -47,15 +47,26 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
     useEffect(() => {
         const db = getFirestore();
         async function load() {
-            // Define filters only once
+            // Define filters based on intent
             const filters = [
                 where("approved", "==", true),
-                where("category", "==", category),
-                where("sold", "==", false),  // exclude sold adverts
             ];
 
+            // Add category filter if provided
+            if (category) {
+                filters.push(where("category", "==", category));
+            }
+
+            // Add intent filter if provided
             if (intent) {
                 filters.push(where("intent", "==", intent));
+            }
+
+            // For rescue listings, check 'adopted' field, otherwise check 'sold'
+            if (intent === "rescue") {
+                filters.push(where("adopted", "==", false));
+            } else {
+                filters.push(where("sold", "==", false));
             }
 
             const q = query(
@@ -82,8 +93,6 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
         }
         load().catch(console.error);
     }, [category, intent, limitCount]);
-
-
 
     // 2️⃣ favourites
     useEffect(() => {
@@ -126,9 +135,7 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
         loadRatings().catch(console.error);
     }, [ads]);
 
-
     // toggle fav
-    // Replace the existing toggleFav function (around line 108-124) with this:
     const toggleFav = async (e, id) => {
         e.preventDefault();
         if (!currentUser) {
@@ -195,6 +202,10 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
         }
     };
 
+    // 🚀 NEW: Don't render if no ads
+    if (ads.length === 0) {
+        return null;
+    }
 
     return (
         <section className="recent-studs-section">
@@ -204,7 +215,10 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
                     {ads.map(ad => {
                         const breed = humanize(ad.breedOrType);
                         const cat = humanize(ad.category);
-                        const price = ad.price ?? ad.fee ?? 0;
+                        // For rescue ads, use adoptionFee instead of price
+                        const price = ad.intent === "rescue"
+                            ? (ad.adoptionFee ?? 0)
+                            : (ad.price ?? ad.fee ?? 0);
                         const user = usersMap[ad.ownerId] || {};
                         const area = user.city || user.county
                             ? [user.city, user.county].filter(Boolean).join(", ")
@@ -264,27 +278,30 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
                                     </div>
                                     <div className="recent-studs-card-footer">
                                         {ad.intent === "stud" && ratingsMap[ad.id] > 0 && (
-                                        <div className="recent-studs-rating">
-                                            <FontAwesomeIcon icon={faStar} />
-                                            <span className="recent-studs-rating-value">{rate}</span>
-                                        </div>
+                                            <div className="recent-studs-rating">
+                                                <FontAwesomeIcon icon={faStar} />
+                                                <span className="recent-studs-rating-value">{rate}</span>
+                                            </div>
                                         )}
                                         {ad.intent && (() => {
                                             const normalisedIntent = ad.intent.trim().toLowerCase().replace(/\s+/g, '');
                                             const isStud = normalisedIntent === "stud";
                                             const isSale = normalisedIntent === "sale";
+                                            const isRescue = normalisedIntent === "rescue";
                                             return (
                                                 <div
                                                     className={`recent-studs-intent ${
                                                         isStud ? "intent-stud" :
                                                             isSale ? "intent-sale" :
-                                                                "intent-other"
+                                                                isRescue ? "intent-rescue" :
+                                                                    "intent-other"
                                                     }`}
                                                     data-intent={ad.intent}
                                                 >
                                                     {isStud ? "For Stud" :
                                                         isSale ? "For Sale" :
-                                                            humanize(ad.intent)}
+                                                            isRescue ? "For Adoption" :
+                                                                humanize(ad.intent)}
                                                 </div>
                                             );
                                         })()}
@@ -300,8 +317,11 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
                     })}
                 </div>
                 <div className="recent-studs-more">
-                    <Link to={`/browse?category=${category}`} className="recent-studs-more-button">
-                        Browse All {humanize(category)}
+                    <Link
+                        to={intent ? `/browse?category=${category}&intent=${intent}` : `/browse?category=${category}`}
+                        className="recent-studs-more-button"
+                    >
+                        Browse All {humanize(category)} {intent === "rescue" ? "For Adoption" : ""}
                     </Link>
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, orderBy, limit, onSnapshot } from "f
 import { getPopularBreeds } from "../utils/getPopularBreeds";
 import {
     FaBars,
+    FaLifeRing,
     FaUser,
     FaUsers,
     FaCat,
@@ -15,6 +16,7 @@ import {
     FaSignOutAlt,
     FaSignInAlt,
     FaUserPlus,
+    FaHandHoldingHeart,
     FaPaw,
     FaPlus,
     FaHome,
@@ -211,6 +213,44 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
     const isActive = (path) => activeItem === path;
 
 
+    const handleNewAdvertClick = async () => {
+        if (!userLoaded) return;
+
+        if (!currentUser) {
+            alert("To publish a new advert, please sign in or register first.");
+            handleMenuItemClick(); // close sidebar
+            onLoginClick(); // open modal instead of navigating to /login
+        } else {
+            // Check user's breeder type
+            try {
+                let breederType = userProfile?.breederType;
+
+                // If userProfile isn't loaded yet, fetch it
+                if (!breederType && currentUser) {
+                    const userRef = doc(db, "users", currentUser.uid);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        breederType = userSnap.data().breederType;
+                    }
+                }
+
+                // Route based on breeder type
+                if (breederType === 'rescue') {
+                    handleMenuItemClick("/adwizard-rescue");
+                    navigate("/adwizard-rescue");
+                } else {
+                    handleMenuItemClick("/new-advert");
+                    navigate("/new-advert");
+                }
+            } catch (error) {
+                console.error("Error checking breeder type:", error);
+                // Default to regular advert if there's an error
+                handleMenuItemClick("/new-advert");
+                navigate("/new-advert");
+            }
+        }
+    };
+
     return (
         <>
             {/* Redesigned Top Navbar */}
@@ -241,7 +281,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                         <button
                             type="button"
                             className="navbar-new-advert-btn"
-                            onClick={() => {
+                            onClick={async () => {
                                 if (!userLoaded) return;
 
                                 if (!currentUser) {
@@ -249,11 +289,35 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                     handleMenuItemClick(); // close sidebar
                                     onLoginClick(); // ✅ open modal instead of navigating to /login
                                 } else {
-                                    handleMenuItemClick("/new-advert");
-                                    navigate("/new-advert");
+                                    // Check user's breeder type
+                                    try {
+                                        let breederType = userProfile?.breederType;
+
+                                        // If userProfile isn't loaded yet, fetch it
+                                        if (!breederType && currentUser) {
+                                            const userRef = doc(db, "users", currentUser.uid);
+                                            const userSnap = await getDoc(userRef);
+                                            if (userSnap.exists()) {
+                                                breederType = userSnap.data().breederType;
+                                            }
+                                        }
+
+                                        // Route based on breeder type
+                                        if (breederType === 'rescue') {
+                                            handleMenuItemClick("/adwizard-rescue");
+                                            navigate("/adwizard-rescue");
+                                        } else {
+                                            handleMenuItemClick("/new-advert");
+                                            navigate("/new-advert");
+                                        }
+                                    } catch (error) {
+                                        console.error("Error checking breeder type:", error);
+                                        // Default to regular advert if there's an error
+                                        handleMenuItemClick("/new-advert");
+                                        navigate("/new-advert");
+                                    }
                                 }
                             }}
-
                         >
                             <FaPlus className="navbar-new-advert-icon" />
                             <span className="navbar-new-advert-text">New Advert</span>
@@ -332,6 +396,17 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                             >
                                                 <FaListAlt className="dropdown-icon" />
                                                 <span>My Adverts</span>
+                                            </Link>
+                                            <Link
+                                                to="/help"
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    setActiveItem('/my-adverts');
+                                                }}
+                                            >
+                                                <FaLifeRing className="dropdown-icon" />
+                                                <span>Help & Support</span>
                                             </Link>
 
                                             <button
@@ -537,7 +612,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                             <button
                                 type="button"
                                 className="navbar-sidebar-new-advert-btn"
-                                onClick={() => {
+                                onClick={async () => {
                                     if (!userLoaded) return;
 
                                     if (!currentUser) {
@@ -545,15 +620,49 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                         handleMenuItemClick(); // close sidebar
                                         onLoginClick(); // ✅ open modal instead of navigating to /login
                                     } else {
-                                        handleMenuItemClick("/new-advert");
-                                        navigate("/new-advert");
+                                        // Check user's breeder type
+                                        try {
+                                            let breederType = userProfile?.breederType;
+
+                                            // If userProfile isn't loaded yet, fetch it
+                                            if (!breederType && currentUser) {
+                                                const userRef = doc(db, "users", currentUser.uid);
+                                                const userSnap = await getDoc(userRef);
+                                                if (userSnap.exists()) {
+                                                    breederType = userSnap.data().breederType;
+                                                }
+                                            }
+
+                                            // Route based on breeder type
+                                            if (breederType === 'rescue') {
+                                                handleMenuItemClick("/adwizard-rescue");
+                                                navigate("/adwizard-rescue");
+                                            } else {
+                                                handleMenuItemClick("/new-advert");
+                                                navigate("/new-advert");
+                                            }
+                                        } catch (error) {
+                                            console.error("Error checking breeder type:", error);
+                                            // Default to regular advert if there's an error
+                                            handleMenuItemClick("/new-advert");
+                                            navigate("/new-advert");
+                                        }
                                     }
                                 }}
-
                             >
                                 <FaPlus className="menu-icon" />
                                 <span>New Advert</span>
                             </button>
+                        </li>
+                        <li className="menu-item">
+                            <Link
+                                to="/browse?intent=rescue"
+                                onClick={() => handleMenuItemClick('/browse?intent=rescue')}
+                                className={isActive('/browse?intent=rescue') ? 'active' : ''}
+                            >
+                                <FaHandHoldingHeart className="menu-icon" />
+                                <span>Adoption</span>
+                            </Link>
                         </li>
 
 

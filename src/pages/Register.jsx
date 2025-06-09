@@ -19,9 +19,33 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Register.css";
+import { useLoginModal } from "../context/LoginContext";
+
+
+const sendWelcomeEmail = async (userData) => {
+    try {
+        const response = await fetch('http://localhost:6500/api/send-welcome-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userData }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('✅ Welcome email sent successfully');
+        } else {
+            console.error('❌ Failed to send welcome email:', result.error);
+        }
+    } catch (err) {
+        console.error('❌ Failed to send welcome email:', err);
+    }
+};
+
 
 function Register() {
     const navigate = useNavigate();
+    const { openLogin } = useLoginModal(); // Add this line
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -39,7 +63,12 @@ function Register() {
         breederType: "",
         licenceNumber: "",
         localAuthority: "",
+        organizationName: "",
+        charityNumber: "",
+        websiteUrl: "",
     });
+
+
 
     const [errors, setErrors] = useState({});
     const [confirmationMessage, setConfirmationMessage] = useState("");
@@ -106,6 +135,23 @@ function Register() {
                 return newErrors;
             });
         }
+
+        // Clear rescue fields if breeder type is changed from rescue
+        if (name === "breederType" && value !== "rescue") {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                organizationName: "",
+                charityNumber: "",
+                websiteUrl: ""
+            }));
+            // Clear any errors for these fields
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors.organizationName;
+                return newErrors;
+            });
+        }
     };
 
     const validate = () => {
@@ -116,12 +162,17 @@ function Register() {
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
         if (!formData.phone) newErrors.phone = "Phone is required";
         if (!formData.postcode) newErrors.postcode = "Postcode is required";
-        if (!formData.breederType) newErrors.breederType = "Breeder type is required";
+        if (!formData.breederType) newErrors.breederType = "Account type is required";
 
         // Validate license fields if breeder type is licensed
         if (formData.breederType === "licensed") {
             if (!formData.licenceNumber) newErrors.licenceNumber = "Licence number is required for licensed breeders";
             if (!formData.localAuthority) newErrors.localAuthority = "Local authority is required for licensed breeders";
+        }
+
+        // Validate rescue fields if type is rescue
+        if (formData.breederType === "rescue") {
+            if (!formData.organizationName) newErrors.organizationName = "Organization name is required for rescue organizations";
         }
 
         if (!formData.password) newErrors.password = "Password is required";
@@ -218,9 +269,34 @@ function Register() {
                 userData.localAuthority = formData.localAuthority;
             }
 
+            // Add rescue fields if type is rescue
+            if (formData.breederType === "rescue") {
+                userData.organizationName = formData.organizationName;
+                userData.charityNumber = formData.charityNumber || "";
+                userData.websiteUrl = formData.websiteUrl || "";
+            }
+
             // Write user document
             try {
                 await setDoc(doc(db, "users", user.uid), userData);
+
+                // Send welcome email after successful user creation
+                // Send welcome email after successful user creation
+                try {
+                    await sendWelcomeEmail({
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        email: formData.email,
+                        accountType: formData.breederType,
+                        breederType: formData.breederType,
+                        licenceNumber: formData.licenceNumber || null,
+                        organizationName: formData.organizationName || null
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send welcome email:', emailError);
+                    // Don't block registration if email fails
+                }
+
             } catch (firestoreError) {
                 console.error("❌ Firestore write failed:", firestoreError);
                 // Delete the auth user if Firestore write fails
@@ -260,6 +336,9 @@ function Register() {
                 breederType: "",
                 licenceNumber: "",
                 localAuthority: "",
+                organizationName: "",
+                charityNumber: "",
+                websiteUrl: "",
             });
 
             setConfirmationMessage(
@@ -295,7 +374,7 @@ function Register() {
 
     return (
         <>
-            <Navbar />
+            <Navbar onLoginClick={openLogin} />
 
             <div className="register-page">
                 <div className="register-container">
@@ -379,7 +458,7 @@ function Register() {
 
                             <div className="form-row">
                                 <div className="form-group full-width">
-                                    <label htmlFor="breederType">Breeder Type<span className="required">*</span></label>
+                                    <label htmlFor="breederType">Account Type<span className="required">*</span></label>
                                     <select
                                         id="breederType"
                                         name="breederType"
@@ -387,9 +466,10 @@ function Register() {
                                         onChange={handleChange}
                                         className={`form-select ${errors.breederType ? "input-error" : ""}`}
                                     >
-                                        <option value="">Select breeder type</option>
+                                        <option value="">Select account type</option>
                                         <option value="hobby">Hobby Breeder</option>
                                         <option value="licensed">Licensed Breeder</option>
+                                        <option value="rescue">Rescue Organization</option>
                                     </select>
                                     {errors.breederType && <p className="error">{errors.breederType}</p>}
                                     <div className="breeder-type-info">
@@ -401,6 +481,11 @@ function Register() {
                                         {formData.breederType === "hobby" && (
                                             <p className="info-text">
                                                 <strong>Hobby Breeders:</strong> Typically breed infrequently (1–2 litters per year). Often own dogs as pets and focus on improving the breed. May not be licensed if under the threshold but still operate ethically.
+                                            </p>
+                                        )}
+                                        {formData.breederType === "rescue" && (
+                                            <p className="info-text">
+                                                <strong>Rescue Organizations:</strong> Non-profit organizations dedicated to rescuing, rehabilitating, and rehoming animals in need. May be registered charities or volunteer-run groups.
                                             </p>
                                         )}
                                     </div>
@@ -438,6 +523,55 @@ function Register() {
                                         {errors.localAuthority && <p className="error">{errors.localAuthority}</p>}
                                     </div>
                                 </div>
+                            )}
+
+                            {/* Rescue fields - only show if account type is rescue */}
+                            {formData.breederType === "rescue" && (
+                                <>
+                                    <div className="form-row">
+                                        <div className="form-group full-width">
+                                            <label htmlFor="organizationName">
+                                                Organization Name<span className="required">*</span>
+                                            </label>
+                                            <input
+                                                id="organizationName"
+                                                type="text"
+                                                name="organizationName"
+                                                value={formData.organizationName}
+                                                onChange={handleChange}
+                                                className={errors.organizationName ? "input-error" : ""}
+                                                placeholder="e.g. Happy Paws Rescue"
+                                            />
+                                            {errors.organizationName && <p className="error">{errors.organizationName}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="charityNumber">Charity Registration Number</label>
+                                            <input
+                                                id="charityNumber"
+                                                type="text"
+                                                name="charityNumber"
+                                                value={formData.charityNumber}
+                                                onChange={handleChange}
+                                                placeholder="If registered charity"
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label htmlFor="websiteUrl">Website or Social Media</label>
+                                            <input
+                                                id="websiteUrl"
+                                                type="url"
+                                                name="websiteUrl"
+                                                value={formData.websiteUrl}
+                                                onChange={handleChange}
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
 

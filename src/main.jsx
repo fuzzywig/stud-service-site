@@ -5,15 +5,19 @@ import "./index.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { BrowserRouter } from "react-router-dom";
 import { LoginProvider } from "./context/LoginContext";
-import ScrollToTop from "./components/ScrollToTop.jsx";  // <-- import here
+// 1) Import HelmetProvider from react-helmet-async
+import { HelmetProvider } from "react-helmet-async";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <BrowserRouter>
-            <ScrollToTop />   {/* <-- add here */}
-            <LoginProvider>
-                <App />
-            </LoginProvider>
-        </BrowserRouter>
+        <HelmetProvider>
+            <BrowserRouter>
+                <ScrollToTop />
+                <LoginProvider>
+                    <App />
+                </LoginProvider>
+            </BrowserRouter>
+        </HelmetProvider>
     </React.StrictMode>
 );

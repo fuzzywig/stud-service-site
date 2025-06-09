@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "./AdvertDetails.css";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { db } from "../firebase/firebase";
 import { updateDoc, increment } from "firebase/firestore";
+import SEO from '../components/SEO';
 import FollowButton from '../components/FollowButton';
 import {
     doc,
@@ -20,6 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle,
     faSearch,
+    faHandshake,
     faEye,
     faPenToSquare,
     faEnvelopeOpenText,
@@ -36,6 +38,7 @@ import {
     faPoundSign,
     faRuler,
     faWeight,
+    faCat,
     faInfoCircle,
     faSyringe,
     faLayerGroup,
@@ -54,14 +57,6 @@ import { auth } from "../firebase/firebaseAuth";
 import AdvertUpdates from "../components/AdvertUpdates";
 import "../components/AdvertUpdates.css";
 import { useLoginModal } from "../context/LoginContext";
-
-// Helper function to calculate age
-function calculateAge(dob) {
-    const birth = dob.toDate ? dob.toDate() : new Date(dob);
-    const diff = Date.now() - birth.getTime();
-    const ageDate = new Date(diff);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
-}
 
 // Helper function to format member since date
 function formatMemberSince(timestamp) {
@@ -111,9 +106,29 @@ function formatLastActive(timestamp) {
     }
 }
 
+// Helper function to format date
+function formatDate(value) {
+    if (!value) return null;
+
+    try {
+        const date = value.toDate ? value.toDate() : new Date(value);
+        if (isNaN(date.getTime())) return null;
+
+        return date.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    } catch {
+        return null;
+    }
+}
+
 function AdvertDetails() {
     const { id } = useParams();
     const { openLogin } = useLoginModal();
+    const navigate = useNavigate();
+    const currentUser = auth.currentUser;
 
     console.log("🔍 Advert ID:", id);
 
@@ -127,7 +142,6 @@ function AdvertDetails() {
     const [ownerLastActive, setOwnerLastActive] = useState(null);
     const [ownerBreederType, setOwnerBreederType] = useState("");
     const [averageRating, setAverageRating] = useState(null);
-    const navigate = useNavigate();
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState("");
@@ -141,12 +155,9 @@ function AdvertDetails() {
     const [reportComments, setReportComments] = useState('');
     const [reportSubmitting, setReportSubmitting] = useState(false);
     const [healthTestsExpanded, setHealthTestsExpanded] = useState(false);
-    const currentUser = auth.currentUser;
-    const [updatesCount, setUpdatesCount] = useState(null);
     const [isFavorite, setIsFavorite] = useState(false);
     const [ownerAvatar, setOwnerAvatar] = useState("");
     const [totalAdverts, setTotalAdverts] = useState(0);
-    const [councilRating, setCouncilRating] = useState(4);
     const [ownerLicenceNumber, setOwnerLicenceNumber] = useState("");
     const [ownerLocalAuthority, setOwnerLocalAuthority] = useState("");
     const [currentUserFullData, setCurrentUserFullData] = useState(null);
@@ -156,8 +167,27 @@ function AdvertDetails() {
     const [similarRatingsMap, setSimilarRatingsMap] = useState({});
     const [userData, setUserData] = useState({});
 
-    const handleMessageOwner = () => {
-        const currentUser = auth.currentUser;
+    // Calculate title and description only when advert is loaded
+    const getSEOData = useCallback(() => {
+        if (!advert) {
+            return {
+                title: "Pet Advert | My Pet Connect",
+                description: "View this pet advert on My Pet Connect"
+            };
+        }
+
+        const breedLabel = advert.breedOrType || advert.breed || "Pet";
+        const title = `${advert.title || advert.name || breedLabel} — ${breedLabel} in ${ownerLocation || advert.location || "UK"}`;
+
+        // Keep descriptions under ~160 characters
+        const description = advert.description && advert.description.length > 160
+            ? advert.description.slice(0, 157) + '…'
+            : advert.description || `${breedLabel} available in ${ownerLocation || "UK"}`;
+
+        return { title, description };
+    }, [advert, ownerLocation]);
+
+    const handleMessageOwner = useCallback(() => {
         if (!currentUser || !advert?.ownerId) {
             alert("Please log in to message the owner.");
             return;
@@ -168,26 +198,31 @@ function AdvertDetails() {
             `&advert=${advert.id}` +
             `&title=${encodeURIComponent(advert.title)}`
         );
-    }
+    }, [currentUser, advert, navigate]);
 
-    // Check if advert is favorited
-    useEffect(() => {
-        if (!currentUser || !advert?.id) return;
+    // Add this function at the top of your AdvertDetails.jsx file
+    const sendNewReviewEmail = useCallback(async (ownerData, reviewerData, reviewData, advertData) => {
+        try {
+            const response = await fetch('http://localhost:6500/api/send-new-review-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ownerData, reviewerData, reviewData, advertData }),
+            });
 
-        const checkFavorite = async () => {
-            try {
-                const favDoc = await getDoc(doc(db, "users", currentUser.uid, "favourites", advert.id));
-                setIsFavorite(favDoc.exists());
-            } catch (error) {
-                console.error("Error checking favorite status:", error);
+            const result = await response.json();
+
+            if (result.success) {
+                console.log(`✅ New review email sent to ${ownerData.email}`);
+            } else {
+                console.error('❌ Failed to send new review email:', result.error);
             }
-        };
-
-        checkFavorite();
-    }, [currentUser, advert?.id]);
+        } catch (err) {
+            console.error('❌ Failed to send new review email:', err);
+        }
+    }, []);
 
     // Toggle favorite function
-    const toggleFavorite = async (e) => {
+    const toggleFavorite = useCallback(async (e) => {
         e.preventDefault();
         if (!currentUser) {
             alert("Please log in to add favorites");
@@ -245,9 +280,9 @@ function AdvertDetails() {
             console.error("Error toggling favorite:", error);
             alert("Failed to update favorite. Please try again.");
         }
-    };
+    }, [currentUser, advert?.id, isFavorite]);
 
-    const getIpAddress = async () => {
+    const getIpAddress = useCallback(async () => {
         try {
             const response = await fetch('https://api.ipify.org?format=json');
             const data = await response.json();
@@ -255,7 +290,7 @@ function AdvertDetails() {
         } catch {
             return "Unknown";
         }
-    };
+    }, []);
 
     const aspectOptions = [
         "Handler Professionalism",
@@ -264,6 +299,22 @@ function AdvertDetails() {
         "Aftercare Advice",
         "Pet as Described"
     ];
+
+    // Check if advert is favorited
+    useEffect(() => {
+        if (!currentUser || !advert?.id) return;
+
+        const checkFavorite = async () => {
+            try {
+                const favDoc = await getDoc(doc(db, "users", currentUser.uid, "favourites", advert.id));
+                setIsFavorite(favDoc.exists());
+            } catch (error) {
+                console.error("Error checking favorite status:", error);
+            }
+        };
+
+        checkFavorite();
+    }, [currentUser, advert?.id]);
 
     useEffect(() => {
         const fetchAdvert = async () => {
@@ -307,13 +358,19 @@ function AdvertDetails() {
                             breederType,
                             avatar,
                             licenceNumber,
-                            localAuthority
+                            localAuthority,
+                            organizationName
                         } = userSnap.data();
 
-                        setOwnerName(`${firstName} ${lastName?.charAt(0) || ""}.`);
-                        setOwnerLocation(
-                            `${city || ""}${city && postcode ? ", " : ""}${postcode || ""}`
-                        );
+                        // Update the name logic to check for rescue organizations
+                        if (breederType === 'rescue' && organizationName) {
+                            setOwnerName(organizationName);
+                        } else {
+                            setOwnerName(`${firstName} ${lastName?.charAt(0) || ""}.`);
+                        }
+
+                        const location = `${city || ""}${city && postcode ? ", " : ""}${postcode || ""}`;
+                        setOwnerLocation(location);
 
                         setOwnerMemberSince(createdAt);
                         setOwnerLastActive(lastSeen);
@@ -478,17 +535,18 @@ function AdvertDetails() {
         fetchSimilarAds();
     }, [advert?.breedOrType, advert?.intent, advert?.id]);
 
-    const submitReview = async () => {
+    const submitReview = useCallback(async () => {
         try {
             if (!advert) {
                 alert("Advert data not available!");
                 return;
             }
-            const currentUser = auth.currentUser;
             if (!currentUser) {
                 alert("Please log in before leaving a review.");
                 return;
             }
+
+            // Get reviewer data
             const userRef = doc(db, "users", currentUser.uid);
             const userSnap = await getDoc(userRef);
             if (!userSnap.exists()) {
@@ -500,6 +558,7 @@ function AdvertDetails() {
             const reviewerAvatar = avatar || "";
             const ipAddress = await getIpAddress();
 
+            // Submit review to Firestore
             await addDoc(collection(db, "reviews"), {
                 advertId: advert.id,
                 reviewerId: currentUser.uid,
@@ -514,6 +573,46 @@ function AdvertDetails() {
                 ownerId: advert.ownerId,
             });
 
+            // Send email notification to advert owner
+            try {
+                // Get owner data
+                const ownerRef = doc(db, "users", advert.ownerId);
+                const ownerSnap = await getDoc(ownerRef);
+
+                if (ownerSnap.exists()) {
+                    const ownerData = ownerSnap.data();
+
+                    // Prepare email data
+                    // Prepare email data
+                    const emailOwnerData = {
+                        uid: advert.ownerId,  // 👈 Add this line
+                        email: ownerData.email,
+                        firstName: ownerData.firstName || 'Pet Owner'
+                    };
+
+                    const emailReviewerData = {
+                        name: reviewerName,
+                        avatar: reviewerAvatar
+                    };
+
+                    const emailReviewData = {
+                        rating: rating,
+                        text: reviewText.trim()
+                    };
+
+                    const emailAdvertData = {
+                        id: advert.id,
+                        petName: advert.name || advert.title || 'your pet'
+                    };
+
+                    // Send email using SendGrid template
+                    await sendNewReviewEmail(emailOwnerData, emailReviewerData, emailReviewData, emailAdvertData);
+                }
+            } catch (emailError) {
+                console.error('Failed to send review notification email:', emailError);
+                // Don't show error to user since review was saved successfully
+            }
+
             alert("Review submitted!");
             setShowReviewModal(false);
             setRating(0);
@@ -523,29 +622,40 @@ function AdvertDetails() {
             console.error("Review failed:", err);
             alert("Something went wrong. Please try again.");
         }
-    };
+    }, [advert, currentUser, rating, reviewText, reviewAspects, getIpAddress, sendNewReviewEmail]);
 
-    const handleTouch = () => {
+    const handleTouch = useCallback(() => {
         // Placeholder function for touch events
-    };
+    }, []);
 
+    // Early returns for loading and not found states
     if (loading) return (
-        <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading advert...</p>
-        </div>
+        <>
+            <SEO title="Loading Pet Advert" description="Loading pet advert details..." />
+            <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading advert...</p>
+            </div>
+        </>
     );
 
     if (!advert) return (
-        <div className="not-found-container">
-            <div className="not-found-icon">🐾</div>
-            <p>Advert not found.</p>
-            <button className="back-button" onClick={() => navigate("/browse")}>
-                Return to Browse
-            </button>
-        </div>
+        <>
+            <SEO title="Pet Advert Not Found" description="The requested pet advert could not be found." />
+            <div className="not-found-container">
+                <div className="not-found-icon">🐾</div>
+                <p>Advert not found.</p>
+                <button className="back-button" onClick={() => navigate("/browse")}>
+                    Return to Browse
+                </button>
+            </div>
+        </>
     );
 
+    // Get SEO data now that advert is loaded
+    const { title: seoTitle, description: seoDescription } = getSEOData();
+
+    // Rest of your component logic...
     const handleSwipe = () => {
         if (isArrowTapped) {
             setIsArrowTapped(false);
@@ -587,8 +697,11 @@ function AdvertDetails() {
 
     const breedLabel = advert.breedOrType || advert.breed || "—";
     const colorValue = advert.dogColor || advert.catColor || advert.otherColor || null;
-    const feeValue = advert.fee ?? advert.price ?? "N/A";
+    const feeValue = advert.intent === 'rescue'
+        ? (advert.adoptionFee ?? "N/A")
+        : (advert.fee ?? advert.price ?? "N/A");
 
+    // Age calculation logic...
     let ageValue = null;
     if (advert?.dob) {
         const birth = new Date(advert.dob);
@@ -616,25 +729,9 @@ function AdvertDetails() {
 
     const hasHealthTests = Array.isArray(advert.healthTests) && advert.healthTests.length > 0;
 
-    function formatDate(value) {
-        if (!value) return null;
-
-        try {
-            const date = value.toDate ? value.toDate() : new Date(value);
-            if (isNaN(date.getTime())) return null;
-
-            return date.toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-            });
-        } catch {
-            return null;
-        }
-    }
-
     return (
         <>
+            <SEO title={seoTitle} description={seoDescription} />
             <div className="stud-details-container">
                 <div className="stud-details-layout">
                     {/* LEFT COLUMN */}
@@ -856,9 +953,13 @@ function AdvertDetails() {
 
                                     {ownerBreederType && (
                                         <div className="owner-badge-section">
-                                            <div className={`breeder-badge ${ownerBreederType === 'licensed' ? 'licensed' : 'hobby'}`}>
-                                                <FontAwesomeIcon icon={faCertificate} className="badge-icon" />
-                                                <span>{ownerBreederType === "licensed" ? "Licensed Breeder" : "Hobby Breeder"}</span>
+                                            <div className={`breeder-badge ${ownerBreederType === 'licensed' ? 'licensed' : ownerBreederType === 'rescue' ? 'rescue' : 'hobby'}`}>
+                                                <FontAwesomeIcon icon={ownerBreederType === 'rescue' ? faHandshake : faCertificate} className="badge-icon" />
+                                                <span>
+                                                    {ownerBreederType === "licensed" ? "Licensed Breeder" :
+                                                        ownerBreederType === "rescue" ? "Rescue Organization" :
+                                                            "Hobby Breeder"}
+                                                </span>
                                             </div>
                                         </div>
                                     )}
@@ -931,12 +1032,12 @@ function AdvertDetails() {
                                         <FollowButton
                                             targetUserId={advert.ownerId}
                                             currentUserId={currentUser.uid}
-                                            targetUserName={ownerName.split(' ')[0]}
+                                            targetUserName={ownerBreederType === 'rescue' ? ownerName : ownerName.split(' ')[0]}
                                             currentUserName={currentUserFullData.firstName}
                                         />
                                     )}
 
-                                    {advert.intent !== 'sale' && (
+                                    {advert.intent === 'stud' && (
                                         <button
                                             className="secondary-button review-button"
                                             onClick={() => {
@@ -1137,6 +1238,75 @@ function AdvertDetails() {
                                                     </div>
                                                     <div className="pet-detail-value">{advert.matings}</div>
                                                 </li>
+                                            )}
+
+                                            {/* Rescue-specific fields */}
+                                            {advert.intent === 'rescue' && (
+                                                <>
+                                                    {advert.goodWithCats && (
+                                                        <li className="pet-detail-row">
+                                                            <div className="pet-detail-label">
+                                                                <FontAwesomeIcon icon={faCat} />
+                                                                <span>Good with Cats:</span>
+                                                            </div>
+                                                            <div className="pet-detail-value">
+                                                                {advert.goodWithCats === 'yes' ? 'Yes' :
+                                                                    advert.goodWithCats === 'no' ? 'No' : 'Unknown'}
+                                                            </div>
+                                                        </li>
+                                                    )}
+
+                                                    {advert.goodWithDogs && (
+                                                        <li className="pet-detail-row">
+                                                            <div className="pet-detail-label">
+                                                                <FontAwesomeIcon icon={faDog} />
+                                                                <span>Good with Dogs:</span>
+                                                            </div>
+                                                            <div className="pet-detail-value">
+                                                                {advert.goodWithDogs === 'yes' ? 'Yes' :
+                                                                    advert.goodWithDogs === 'no' ? 'No' : 'Unknown'}
+                                                            </div>
+                                                        </li>
+                                                    )}
+
+                                                    {advert.goodWithChildren && (
+                                                        <li className="pet-detail-row">
+                                                            <div className="pet-detail-label">
+                                                                <FontAwesomeIcon icon={faUser} />
+                                                                <span>Good with Children:</span>
+                                                            </div>
+                                                            <div className="pet-detail-value">
+                                                                {advert.goodWithChildren === 'yes' ? 'Yes - All Ages' :
+                                                                    advert.goodWithChildren === 'older' ? 'Older Children Only (12+)' :
+                                                                        advert.goodWithChildren === 'no' ? 'No Children' : 'Unknown'}
+                                                            </div>
+                                                        </li>
+                                                    )}
+
+                                                    {advert.energyLevel && (
+                                                        <li className="pet-detail-row">
+                                                            <div className="pet-detail-label">
+                                                                <FontAwesomeIcon icon={solidStar} />
+                                                                <span>Energy Level:</span>
+                                                            </div>
+                                                            <div className="pet-detail-value">
+                                                                {advert.energyLevel === 'low' ? 'Low - Couch Potato' :
+                                                                    advert.energyLevel === 'moderate' ? 'Moderate - Daily Walks' :
+                                                                        advert.energyLevel === 'high' ? 'High - Very Active' : advert.energyLevel}
+                                                            </div>
+                                                        </li>
+                                                    )}
+
+                                                    {advert.fosteringAvailable && (
+                                                        <li className="pet-detail-row">
+                                                            <div className="pet-detail-label">
+                                                                <FontAwesomeIcon icon={faHandshake} />
+                                                                <span>Fostering Available:</span>
+                                                            </div>
+                                                            <div className="pet-detail-value">Yes - Trial Period Available</div>
+                                                        </li>
+                                                    )}
+                                                </>
                                             )}
                                         </ul>
                                     </div>

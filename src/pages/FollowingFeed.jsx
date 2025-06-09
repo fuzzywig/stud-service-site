@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+
 import {
     FaUsers,
     FaDog,
@@ -398,6 +400,12 @@ export default function FollowingFeed() {
     }
 
     return (
+        <>
+            <Helmet>
+                <title>Your Following Feed | My Pet Connect</title>
+                <meta name="robots" content="noindex,follow" />
+            </Helmet>
+
         <div className="ff-container">
             <div className="ff-header">
                 <h1 className="ff-title">
@@ -690,5 +698,7 @@ export default function FollowingFeed() {
                 </div>
             )}
         </div>
+
+</>
     );
 }

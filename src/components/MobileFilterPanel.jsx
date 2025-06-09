@@ -39,9 +39,21 @@ export default function MobileFilterPanel({
                                               availableBreedsOrTypes,
                                               resetFilters,
                                               searchRadius,
-                                              setSearchRadius
+                                              setSearchRadius,
+                                              // Rescue-specific props
+                                              selectedGoodWithCats,
+                                              setSelectedGoodWithCats,
+                                              selectedGoodWithDogs,
+                                              setSelectedGoodWithDogs,
+                                              selectedGoodWithChildren,
+                                              setSelectedGoodWithChildren,
+                                              selectedEnergyLevel,
+                                              setSelectedEnergyLevel
                                           }) {
     if (!isOpen) return null;
+
+    // Check if we're in rescue mode
+    const isRescueMode = selectedIntent === "rescue";
 
     return (
         <div className="mobile-filter-fullscreen">
@@ -58,6 +70,7 @@ export default function MobileFilterPanel({
                         <option value="">All Types</option>
                         <option value="sale">For Sale</option>
                         <option value="stud">For Stud</option>
+                        <option value="rescue">For Adoption</option>
                     </select>
                 </div>
 
@@ -87,6 +100,83 @@ export default function MobileFilterPanel({
                         {(availableBreedsOrTypes || topBreeds.map(([breed]) => breed)).map(breed => (
                             <option key={breed} value={breed}>{breed}</option>
                         ))}
+                    </select>
+                </div>
+
+                {/* Rescue-specific filters - match browse page exactly */}
+                {isRescueMode && (
+                    <>
+                        {/* Good with Cats */}
+                        <div className="filter-group">
+                            <label>Good with Cats</label>
+                            <select
+                                value={selectedGoodWithCats || ""}
+                                onChange={e => setSelectedGoodWithCats && setSelectedGoodWithCats(e.target.value)}
+                            >
+                                <option value="">Any</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                        </div>
+
+                        {/* Good with Dogs */}
+                        <div className="filter-group">
+                            <label>Good with Dogs</label>
+                            <select
+                                value={selectedGoodWithDogs || ""}
+                                onChange={e => setSelectedGoodWithDogs && setSelectedGoodWithDogs(e.target.value)}
+                            >
+                                <option value="">Any</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                        </div>
+
+                        {/* Good with Children */}
+                        <div className="filter-group">
+                            <label>Good with Children</label>
+                            <select
+                                value={selectedGoodWithChildren || ""}
+                                onChange={e => setSelectedGoodWithChildren && setSelectedGoodWithChildren(e.target.value)}
+                            >
+                                <option value="">Any</option>
+                                <option value="yes">Yes - All Ages</option>
+                                <option value="older">Older Children Only (12+)</option>
+                                <option value="no">No Children</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                        </div>
+
+                        {/* Energy Level */}
+                        <div className="filter-group">
+                            <label>Energy Level</label>
+                            <select
+                                value={selectedEnergyLevel || ""}
+                                onChange={e => setSelectedEnergyLevel && setSelectedEnergyLevel(e.target.value)}
+                            >
+                                <option value="">Any</option>
+                                <option value="low">Low - Couch Potato</option>
+                                <option value="moderate">Moderate - Daily Walks</option>
+                                <option value="high">High - Very Active</option>
+                            </select>
+                        </div>
+                    </>
+                )}
+
+                {/* Age Range */}
+                <div className="filter-group">
+                    <label>Age Range</label>
+                    <select
+                        value={selectedAgeRange}
+                        onChange={e => setSelectedAgeRange(e.target.value)}
+                    >
+                        <option value="">Any Age</option>
+                        <option value="Under 1 year">Under 1 year</option>
+                        <option value="1 - 2 years">1 - 2 years</option>
+                        <option value="2 - 4 years">2 - 4 years</option>
+                        <option value="4+ years">4+ years</option>
                     </select>
                 </div>
 
@@ -144,9 +234,9 @@ export default function MobileFilterPanel({
                     </div>
                 </div>
 
-                {/* Price */}
+                {/* Price/Adoption Fee */}
                 <div className="filter-group">
-                    <label>Max Price: £{maxFee || 1000}</label>
+                    <label>{isRescueMode ? 'Max Adoption Fee' : 'Max Price'}: £{maxFee || 1000}</label>
                     <input
                         type="range"
                         min="0"
@@ -168,8 +258,8 @@ export default function MobileFilterPanel({
                     <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
-                        <option value="fee-asc">Lowest Price</option>
-                        <option value="fee-desc">Highest Price</option>
+                        <option value="fee-asc">Lowest {isRescueMode ? 'Fee' : 'Price'}</option>
+                        <option value="fee-desc">Highest {isRescueMode ? 'Fee' : 'Price'}</option>
                         <option value="age-asc">Youngest Age</option>
                         <option value="age-desc">Oldest Age</option>
                     </select>
@@ -186,15 +276,18 @@ export default function MobileFilterPanel({
                     />
                 </div>
 
-                {/* Breeder Type */}
-                <div className="filter-group">
-                    <label>Breeder Type</label>
-                    <select value={selectedBreederType} onChange={e => setSelectedBreederType(e.target.value)}>
-                        <option value="">All Breeders</option>
-                        <option value="licensed">Licensed Breeders</option>
-                        <option value="hobby">Hobby Breeders</option>
-                    </select>
-                </div>
+                {/* Breeder Type - updated to match browse page */}
+                {!isRescueMode && (
+                    <div className="filter-group">
+                        <label>Breeder/Organization Type</label>
+                        <select value={selectedBreederType} onChange={e => setSelectedBreederType(e.target.value)}>
+                            <option value="">All Types</option>
+                            <option value="licensed">Licensed Breeders</option>
+                            <option value="hobby">Hobby Breeders</option>
+                            <option value="rescue">Rescue Organizations</option>
+                        </select>
+                    </div>
+                )}
 
                 {/* Colour - only for dogs and cats */}
                 {(selectedCategory === "dogs" || selectedCategory === "cats") && (
@@ -214,8 +307,8 @@ export default function MobileFilterPanel({
                     </div>
                 )}
 
-                {/* Registration Body - only for cats */}
-                {selectedCategory === "cats" && (
+                {/* Registration Body - only for cats and not rescue */}
+                {selectedCategory === "cats" && !isRescueMode && (
                     <div className="filter-group">
                         <label>Registration Body</label>
                         <select
@@ -264,7 +357,8 @@ export default function MobileFilterPanel({
                 {/* Checkboxes */}
                 <div className="filter-group checkbox-group">
                     <h3>Additional Options</h3>
-                    {selectedCategory === "dogs" && (
+
+                    {selectedCategory === "dogs" && !isRescueMode && (
                         <label className="checkbox-label">
                             <input
                                 type="checkbox"
@@ -274,22 +368,28 @@ export default function MobileFilterPanel({
                             <span className="checkbox-text">KC Registered</span>
                         </label>
                     )}
-                    <label className="checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={filters.healthTested}
-                            onChange={() => setFilters(f => ({ ...f, healthTested: !f.healthTested }))}
-                        />
-                        <span className="checkbox-text">Health Tested</span>
-                    </label>
-                    <label className="checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={filters.healthChecked}
-                            onChange={() => setFilters(f => ({ ...f, healthChecked: !f.healthChecked }))}
-                        />
-                        <span className="checkbox-text">Health Checked</span>
-                    </label>
+
+                    {!isRescueMode && (
+                        <>
+                            <label className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.healthTested}
+                                    onChange={() => setFilters(f => ({ ...f, healthTested: !f.healthTested }))}
+                                />
+                                <span className="checkbox-text">Health Tested</span>
+                            </label>
+                            <label className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.healthChecked}
+                                    onChange={() => setFilters(f => ({ ...f, healthChecked: !f.healthChecked }))}
+                                />
+                                <span className="checkbox-text">Health Checked</span>
+                            </label>
+                        </>
+                    )}
+
                     {selectedIntent === "stud" && (
                         <label className="checkbox-label">
                             <input
@@ -298,6 +398,17 @@ export default function MobileFilterPanel({
                                 onChange={() => setFilters(f => ({ ...f, proven: !f.proven }))}
                             />
                             <span className="checkbox-text">Proven</span>
+                        </label>
+                    )}
+
+                    {isRescueMode && (
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={filters.fosteringAvailable}
+                                onChange={() => setFilters(f => ({ ...f, fosteringAvailable: !f.fosteringAvailable }))}
+                            />
+                            <span className="checkbox-text">Fostering Available</span>
                         </label>
                     )}
                 </div>

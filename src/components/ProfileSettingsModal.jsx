@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { notifyProfilePasswordChange } from '../utils/emailNotifications';
 import {
     faTimes,
     faUser,
@@ -12,7 +13,10 @@ import {
     faEye,
     faEyeSlash,
     faCheckCircle,
-    faExclamationCircle
+    faExclamationCircle,
+    faGlobe,
+    faClipboardCheck,
+    faHandHoldingHeart
 } from '@fortawesome/free-solid-svg-icons';
 import { auth, db } from '../firebase/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
@@ -42,11 +46,19 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
         bio: currentData.bio || ''
     });
 
-    // Council details form data
+    const [adoptionData, setAdoptionData] = useState({
+        adoptionProcess: currentData.adoptionProcess || '',
+        adoptionRequirements: currentData.adoptionRequirements || ''
+    });
+
+    // Council details form data - Updated to include rescue fields
     const [councilData, setCouncilData] = useState({
-        breederType: currentData.breederType || 'hobbyist',
+        breederType: currentData.breederType || 'hobby',
         licenceNumber: currentData.licenceNumber || '',
-        localAuthority: currentData.localAuthority || ''
+        localAuthority: currentData.localAuthority || '',
+        organizationName: currentData.organizationName || '',
+        charityNumber: currentData.charityNumber || '',
+        websiteUrl: currentData.websiteUrl || ''
     });
 
     // Password form data
@@ -62,11 +74,13 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
         confirm: false
     });
 
-    // Tab configuration
+    // Tab configuration - Updated label
     const tabs = [
         { id: 'profile', label: 'Profile Details', icon: faUser },
         { id: 'bio', label: 'Bio', icon: faPencilAlt },
-        { id: 'council', label: 'Council Licence', icon: faIdCard },
+        { id: 'council', label: 'Account Type', icon: faIdCard },
+        // Only show adoption tab for rescue organizations
+        ...(currentData.breederType === 'rescue' ? [{ id: 'adoption', label: 'Adoption Process', icon: faClipboardCheck }] : []),
         { id: 'password', label: 'Change Password', icon: faLock }
     ];
 
@@ -134,36 +148,102 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
         }
     };
 
-    // Save council details
-    const handleSaveCouncil = async () => {
+    // Add handler for adoption form changes
+    const handleAdoptionChange = (e) => {
+        const { name, value } = e.target;
+        setAdoptionData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Add save adoption handler
+    const handleSaveAdoption = async () => {
         setLoading(true);
         setMessage({ type: '', text: '' });
 
         try {
             const userRef = doc(db, 'users', auth.currentUser.uid);
             await updateDoc(userRef, {
-                breederType: councilData.breederType,
-                licenceNumber: councilData.licenceNumber,
-                localAuthority: councilData.localAuthority
+                adoptionProcess: adoptionData.adoptionProcess,
+                adoptionRequirements: adoptionData.adoptionRequirements
             });
 
-            setMessage({ type: 'success', text: 'Council details updated successfully!' });
+            setMessage({ type: 'success', text: 'Adoption process updated successfully!' });
 
             // Update the parent component's data
             if (onSave) {
-                onSave({ ...currentData, ...councilData });
+                onSave({ ...currentData, ...adoptionData });
             }
 
             setTimeout(() => {
                 onClose();
             }, 1000);
         } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to update council details. Please try again.' });
+            setMessage({ type: 'error', text: 'Failed to update adoption process. Please try again.' });
             setLoading(false);
         }
     };
 
-    // Change password
+    // Save council details - Updated to handle all account types
+    const handleSaveCouncil = async () => {
+        // Validation for rescue organizations
+        if (councilData.breederType === 'rescue' && !councilData.organizationName.trim()) {
+            setMessage({ type: 'error', text: 'Organization name is required for rescue organizations.' });
+            return;
+        }
+
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const userRef = doc(db, 'users', auth.currentUser.uid);
+
+            // Prepare update data based on breeder type
+            let updateData = {
+                breederType: councilData.breederType
+            };
+
+            // Add fields based on breeder type
+            if (councilData.breederType === 'licensed') {
+                updateData.licenceNumber = councilData.licenceNumber;
+                updateData.localAuthority = councilData.localAuthority;
+                // Clear rescue fields
+                updateData.organizationName = '';
+                updateData.charityNumber = '';
+                updateData.websiteUrl = '';
+            } else if (councilData.breederType === 'rescue') {
+                updateData.organizationName = councilData.organizationName;
+                updateData.charityNumber = councilData.charityNumber;
+                updateData.websiteUrl = councilData.websiteUrl;
+                // Clear licensed breeder fields
+                updateData.licenceNumber = '';
+                updateData.localAuthority = '';
+            } else {
+                // Hobby breeder - clear all special fields
+                updateData.licenceNumber = '';
+                updateData.localAuthority = '';
+                updateData.organizationName = '';
+                updateData.charityNumber = '';
+                updateData.websiteUrl = '';
+            }
+
+            await updateDoc(userRef, updateData);
+
+            setMessage({ type: 'success', text: 'Account type updated successfully!' });
+
+            // Update the parent component's data
+            if (onSave) {
+                onSave({ ...currentData, ...updateData });
+            }
+
+            setTimeout(() => {
+                onClose();
+            }, 1000);
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Failed to update account type. Please try again.' });
+            setLoading(false);
+        }
+    };
+
+    // Change password - UPDATED WITH PROPER EMAIL NOTIFICATION
     const handleChangePassword = async () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             setMessage({ type: 'error', text: 'New passwords do not match!' });
@@ -189,7 +269,48 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
             // Update password
             await updatePassword(auth.currentUser, passwordData.newPassword);
 
-            setMessage({ type: 'success', text: 'Password changed successfully!' });
+            // 🆕 FIXED: Send password change notification email with proper data
+            try {
+                console.log('📧 Sending password change notification...');
+
+                // Get user agent and timestamp
+                const userAgent = navigator.userAgent || 'Unknown device';
+                const timestamp = new Date().toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const emailPayload = {
+                    userEmail: currentData.email || auth.currentUser.email,
+                    userName: `${currentData.firstName || ''} ${currentData.lastName || ''}`.trim() || 'User',
+                    changeMethod: 'profile', // This indicates it was changed from profile settings
+                    userAgent: userAgent,
+                    ipAddress: 'Not available', // We can't easily get IP from frontend
+                    timestamp: timestamp,
+                    userId: auth.currentUser.uid
+                };
+
+                console.log('📧 Email payload:', emailPayload);
+
+                const emailResult = await notifyProfilePasswordChange(emailPayload);
+
+                if (emailResult.success) {
+                    console.log('✅ Password change notification sent successfully');
+                    setMessage({ type: 'success', text: 'Password changed successfully! A confirmation email has been sent.' });
+                } else {
+                    console.error('❌ Failed to send notification:', emailResult.error);
+                    setMessage({ type: 'success', text: 'Password changed successfully!' });
+                }
+            } catch (emailError) {
+                console.error('❌ Password change notification error:', emailError);
+                // Don't block the password change if email fails
+                setMessage({ type: 'success', text: 'Password changed successfully!' });
+            }
+
+            // Reset form
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
@@ -198,7 +319,8 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
 
             setTimeout(() => {
                 onClose();
-            }, 1000);
+            }, 2000); // Give user time to read the success message
+
         } catch (error) {
             if (error.code === 'auth/wrong-password') {
                 setMessage({ type: 'error', text: 'Current password is incorrect!' });
@@ -209,7 +331,7 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
         }
     };
 
-    // Get the appropriate save handler for the current tab
+    // Update getCurrentSaveHandler to include adoption
     const getCurrentSaveHandler = () => {
         switch (activeTab) {
             case 'profile':
@@ -218,11 +340,29 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
                 return handleSaveBio;
             case 'council':
                 return handleSaveCouncil;
+            case 'adoption':
+                return handleSaveAdoption;
             case 'password':
                 return handleChangePassword;
             default:
                 return null;
         }
+    };
+
+    // Determine bio placeholder text based on user type
+    const getBioPlaceholder = () => {
+        if (councilData.breederType === 'rescue') {
+            return "Share your rescue organization's mission, history, and the types of animals you help. What makes your rescue special?";
+        }
+        return "Share your story, experience, and what makes your service special...";
+    };
+
+    // Determine bio label based on user type
+    const getBioLabel = () => {
+        if (councilData.breederType === 'rescue' && councilData.organizationName) {
+            return `About ${councilData.organizationName}`;
+        }
+        return 'Your Bio';
     };
 
     return (
@@ -403,17 +543,19 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
                             <div className="psm-form-group">
                                 <label>
                                     <FontAwesomeIcon icon={faPencilAlt} />
-                                    Your Bio
+                                    {getBioLabel()}
                                 </label>
                                 <p className="psm-field-help">
-                                    Tell others about yourself, your experience with dogs, and what you offer.
+                                    {councilData.breederType === 'rescue'
+                                        ? 'Tell others about your rescue organization and mission.'
+                                        : 'Tell others about yourself, your experience with dogs, and what you offer.'}
                                 </p>
                                 <textarea
                                     value={bioData.bio}
                                     onChange={handleBioChange}
                                     maxLength={500}
                                     rows={8}
-                                    placeholder="Share your story, experience, and what makes your service special..."
+                                    placeholder={getBioPlaceholder()}
                                 />
                                 <div className="psm-char-count">
                                     {bioData.bio.length}/500 characters
@@ -422,24 +564,26 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
                         </div>
                     )}
 
-                    {/* Council Tab */}
+                    {/* Account Type Tab (formerly Council Tab) */}
                     {activeTab === 'council' && (
                         <div className="psm-form">
                             <div className="psm-form-group">
                                 <label>
                                     <FontAwesomeIcon icon={faIdCard} />
-                                    Breeder Type
+                                    Account Type
                                 </label>
                                 <select
                                     name="breederType"
                                     value={councilData.breederType}
                                     onChange={handleCouncilChange}
                                 >
-                                    <option value="hobbyist">Hobbyist Breeder</option>
+                                    <option value="hobby">Hobby Breeder</option>
                                     <option value="licensed">Licensed Breeder</option>
+                                    <option value="rescue">Rescue Organization</option>
                                 </select>
                             </div>
 
+                            {/* Licensed Breeder Fields */}
                             {councilData.breederType === 'licensed' && (
                                 <>
                                     <div className="psm-form-group">
@@ -486,6 +630,138 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
                                     </div>
                                 </>
                             )}
+
+                            {/* Rescue Organization Fields */}
+                            {councilData.breederType === 'rescue' && (
+                                <>
+                                    <div className="psm-form-group">
+                                        <label>
+                                            <FontAwesomeIcon icon={faHandHoldingHeart} />
+                                            Organization Name <span style={{ color: '#e74c3c' }}>*</span>
+                                        </label>
+                                        <p className="psm-field-help">
+                                            The official name of your rescue organization.
+                                        </p>
+                                        <input
+                                            type="text"
+                                            name="organizationName"
+                                            value={councilData.organizationName}
+                                            onChange={handleCouncilChange}
+                                            placeholder="e.g., Happy Paws Rescue"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="psm-form-group">
+                                        <label>
+                                            <FontAwesomeIcon icon={faIdCard} />
+                                            Charity Registration Number
+                                        </label>
+                                        <p className="psm-field-help">
+                                            If you're a registered charity, enter your registration number.
+                                        </p>
+                                        <input
+                                            type="text"
+                                            name="charityNumber"
+                                            value={councilData.charityNumber}
+                                            onChange={handleCouncilChange}
+                                            placeholder="e.g., 1234567"
+                                        />
+                                    </div>
+
+                                    <div className="psm-form-group">
+                                        <label>
+                                            <FontAwesomeIcon icon={faGlobe} />
+                                            Website or Social Media
+                                        </label>
+                                        <p className="psm-field-help">
+                                            Your organization's website or main social media page.
+                                        </p>
+                                        <input
+                                            type="url"
+                                            name="websiteUrl"
+                                            value={councilData.websiteUrl}
+                                            onChange={handleCouncilChange}
+                                            placeholder="https://www.happypawsrescue.org"
+                                        />
+                                    </div>
+
+                                    <div className="psm-info-box">
+                                        <FontAwesomeIcon icon={faCheckCircle} />
+                                        <p>
+                                            Rescue organizations are dedicated to rescuing, rehabilitating, and
+                                            rehoming animals in need. This information helps potential adopters
+                                            identify and trust your organization.
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Hobby Breeder Info */}
+                            {councilData.breederType === 'hobby' && (
+                                <div className="psm-info-box">
+                                    <FontAwesomeIcon icon={faCheckCircle} />
+                                    <p>
+                                        Hobby breeders typically breed infrequently (1-2 litters per year)
+                                        and focus on improving the breed. They may not be licensed if under
+                                        the threshold but still operate ethically.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Adoption Tab */}
+                    {activeTab === 'adoption' && currentData.breederType === 'rescue' && (
+                        <div className="psm-form">
+                            <div className="psm-form-group">
+                                <label>
+                                    <FontAwesomeIcon icon={faClipboardCheck} />
+                                    Adoption Process
+                                </label>
+                                <p className="psm-field-help">
+                                    Describe your adoption process step by step. This helps potential adopters understand what to expect.
+                                </p>
+                                <textarea
+                                    name="adoptionProcess"
+                                    value={adoptionData.adoptionProcess}
+                                    onChange={handleAdoptionChange}
+                                    maxLength={1000}
+                                    rows={6}
+                                    placeholder="Example: We follow a thorough adoption process to ensure the best match. First, complete our online application form. We'll review your application within 48 hours and arrange a home check if suitable..."
+                                />
+                                <div className="psm-char-count">
+                                    {adoptionData.adoptionProcess.length}/1000 characters
+                                </div>
+                            </div>
+
+                            <div className="psm-form-group">
+                                <label>
+                                    <FontAwesomeIcon icon={faClipboardCheck} />
+                                    Adoption Requirements
+                                </label>
+                                <p className="psm-field-help">
+                                    List your adoption requirements, one per line. These will be displayed as a bulleted list.
+                                </p>
+                                <textarea
+                                    name="adoptionRequirements"
+                                    value={adoptionData.adoptionRequirements}
+                                    onChange={handleAdoptionChange}
+                                    rows={8}
+                                    placeholder="Secure home and garden&#10;Adults over 21 years&#10;Proof of homeowner permission if renting&#10;Previous pet experience preferred&#10;Ability to cover veterinary costs"
+                                />
+                                <p className="psm-field-note">
+                                    Press Enter after each requirement to create a new line
+                                </p>
+                            </div>
+
+                            <div className="psm-info-box">
+                                <FontAwesomeIcon icon={faCheckCircle} />
+                                <p>
+                                    A clear adoption process builds trust with potential adopters and helps ensure
+                                    successful placements. Be transparent about your requirements and procedures.
+                                </p>
+                            </div>
                         </div>
                     )}
 

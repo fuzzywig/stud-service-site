@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Cookie, Mail, Info } from 'lucide-react';
 import './CookiePolicyPage.css'
+import { Helmet } from "react-helmet-async";
+
 const CookiePolicyPage = () => {
     const [expandedSections, setExpandedSections] = useState({});
     const lastUpdated = new Date().toLocaleDateString("en-GB", {
@@ -211,6 +213,15 @@ const CookiePolicyPage = () => {
 
     return (
         <>
+
+            <Helmet>
+                <title>Cookie Policy | My Pet Connect</title>
+                <meta
+                    name="description"
+                    content="Learn how My Pet Connect uses cookies to enhance your experience, manage preferences, and analyze site traffic. Read our full Cookie Policy."
+                />
+                <meta name="robots" content="index,follow" />
+            </Helmet>
 
 
             <div className="cookie-policy-container">

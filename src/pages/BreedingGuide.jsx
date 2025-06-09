@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './BreedingGuide.css';
+import { Helmet } from "react-helmet-async";
 
 export default function BreedingGuide() {
     const [activeSection, setActiveSection] = useState(0);
@@ -297,6 +298,17 @@ export default function BreedingGuide() {
     ];
 
     return (
+<>
+        <Helmet>
+            <title>Breeding Guide & Best Practices | My Pet Connect</title>
+            <meta
+                name="description"
+                content="Learn responsible breeding techniques, health testing protocols, and tips for raising healthy litters in our comprehensive Breeding Guide."
+            />
+            <meta name="robots" content="noindex,follow" />
+        </Helmet>
+
+
         <div className="breeding-guide">
             <div className="breeding-guide__hero">
                 <h1 className="breeding-guide__title">Responsible Breeding Guide</h1>
@@ -427,5 +439,8 @@ export default function BreedingGuide() {
                 </div>
             </footer>
         </div>
+
+</>
+
     );
 }
