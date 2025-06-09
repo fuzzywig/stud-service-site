@@ -213,8 +213,7 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
 
             console.log('📧 Email data prepared:', emailData);
 
-            const response = await fetch('http://localhost:6500/api/send-message-notification', {
-                method: 'POST',
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-message-notification', {                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ emailData }),
             });

@@ -155,7 +155,7 @@ exports.sendExpiringAdvertEmails = onSchedule("0 9 * * *", async () => {
 
                 // Use your production URL or localhost for development
                 const emailApiUrl = process.env.NODE_ENV === 'production'
-                    ? 'https://mypetconnect.co.uk/api/send-advert-expiring-email'  // ← Your production domain
+                    ? 'https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-expiring-email'  // ✅ CORRECT
                     : 'http://localhost:6500/api/send-advert-expiring-email';
 
                 const emailResponse = await fetch(emailApiUrl, {
