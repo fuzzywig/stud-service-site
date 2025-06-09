@@ -3,7 +3,7 @@ import ReactGA from 'react-ga4';
 
 console.log('Analytics file loaded');
 
-// Replace 'G-XXXXXXXXXX' with your actual GA4 Measurement ID
+// Your actual GA4 Measurement ID
 const GA_MEASUREMENT_ID = 'G-N966Z6R5QJ';
 
 // Check if user has consented to analytics
@@ -37,22 +37,32 @@ const hasAnalyticsConsent = () => {
 // Initialize GA4 - safe version
 export const initGA = () => {
     console.log('initGA called');
-
-    // Always initialize the script for detection
-    ReactGA.initialize(GA_MEASUREMENT_ID, {
-        gtagOptions: {
-            send_page_view: false, // Disable automatic tracking
-            anonymize_ip: true
+    try {
+        if (!hasAnalyticsConsent()) {
+            console.log('GA4 not initialized - no consent');
+            return false;
         }
-    });
 
-    // Only enable tracking if consent given
-    if (hasAnalyticsConsent()) {
-        console.log('GA4 tracking enabled with consent');
-        ReactGA.send({ hitType: "pageview", page: window.location.pathname });
+        // Use gtag if available, otherwise ReactGA
+        if (window.gtag) {
+            console.log('Using gtag for GA4 initialization');
+            window.gtag('config', GA_MEASUREMENT_ID, {
+                send_page_view: true,
+                anonymize_ip: true
+            });
+        } else {
+            console.log('Using ReactGA for GA4 initialization');
+            ReactGA.initialize(GA_MEASUREMENT_ID, {
+                gtagOptions: {
+                    anonymize_ip: true
+                }
+            });
+        }
+
+        console.log('GA4 initialized successfully');
         return true;
-    } else {
-        console.log('GA4 loaded but tracking disabled - no consent');
+    } catch (error) {
+        console.error('GA4 initialization failed:', error);
         return false;
     }
 };
@@ -66,11 +76,21 @@ export const trackPageView = (path, title) => {
             return;
         }
 
-        ReactGA.send({
-            hitType: "pageview",
-            page: path,
-            title: title || document.title
-        });
+        // Use gtag if available, otherwise ReactGA
+        if (window.gtag) {
+            window.gtag('event', 'page_view', {
+                page_title: title || document.title,
+                page_location: window.location.href,
+                page_path: path
+            });
+        } else {
+            ReactGA.send({
+                hitType: "pageview",
+                page: path,
+                title: title || document.title
+            });
+        }
+
         console.log('Page view tracked');
     } catch (error) {
         console.error('GA4 page tracking failed:', error);

@@ -1,12 +1,5 @@
 // server.cjs
 const express = require('express');
-app.use((req, res, next) => {
-    const host = req.headers.host;
-    if (host === 'mypetconnect.co.uk' || host === 'mypetconnect.co.uk:443') {
-        return res.redirect(301, `https://www.mypetconnect.co.uk${req.originalUrl}`);
-    }
-    next();
-});
 
 const path    = require('path');
 const https   = require('https');
