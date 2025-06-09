@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 // Load .env from the server directory
 dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
-const PORT = 6500;
+const PORT = 8080;
 
 app.use(cors());
 app.use(express.json());
