@@ -76,7 +76,7 @@ export const sendReviewResponseNotification = async ({
 
         console.log('📧 FINAL EMAIL PAYLOAD:', JSON.stringify(emailPayload, null, 2));
 
-        const response = await fetch('http://localhost:6500/api/send-review-response-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-review-response-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ export const sendMessageNotification = async (messageData) => {
         console.log('📧 Recipient ID:', messageData.recipientId);
         console.log('📧 Advert ID:', messageData.advertId);
 
-        const response = await fetch('http://localhost:6500/api/send-message-notification', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-message-notification', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -344,7 +344,7 @@ export const sendPasswordChangeNotification = async (userData, changeMethod = 'p
 
         console.log('📧 Password change email payload:', payload);
 
-        const response = await fetch('http://localhost:6500/api/send-password-changed-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-password-changed-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -404,7 +404,7 @@ export const sendTicketSubmittedNotification = async (ticketData, userData) => {
 
         console.log('📧 Final email payload to server:', emailPayload);
 
-        const response = await fetch('http://localhost:6500/api/send-ticket-submitted-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-ticket-submitted-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -451,7 +451,7 @@ export const sendTicketUpdateNotification = async (ticketData, updateType, admin
 
         console.log('📧 Final email payload for admin reply:', emailPayload);
 
-        const response = await fetch('http://localhost:6500/api/send-ticket-updated-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-ticket-updated-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -521,7 +521,7 @@ export const sendTicketClosedNotification = async (ticketData, resolutionSummary
 
         console.log('📧 Final email payload for ticket closure:', emailPayload);
 
-        const response = await fetch('http://localhost:6500/api/send-ticket-closed-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-ticket-closed-email', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
