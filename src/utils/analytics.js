@@ -4,7 +4,7 @@ import ReactGA from 'react-ga4';
 console.log('Analytics file loaded');
 
 // Replace 'G-XXXXXXXXXX' with your actual GA4 Measurement ID
-const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+const GA_MEASUREMENT_ID = 'G-N966Z6R5QJ';
 
 // Check if user has consented to analytics
 const hasAnalyticsConsent = () => {
