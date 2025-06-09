@@ -35,6 +35,9 @@ export default function AdWizardRescue({ mode }) {
     const [formFields, setFormFields] = useState([]);
     const [mainImageIndex, setMainImageIndex] = useState(null);
 
+    // Add state for field validation
+    const [fieldErrors, setFieldErrors] = useState({});
+
     const navigate = useNavigate();
 
     // Rescue-specific field configurations
@@ -139,6 +142,11 @@ export default function AdWizardRescue({ mode }) {
             url: URL.createObjectURL(file)
         }));
         setImages((prev) => [...prev, ...previews]);
+
+        // Clear image error if images are added
+        if (fieldErrors.images) {
+            setFieldErrors(prev => ({ ...prev, images: null }));
+        }
     };
 
     const handleImageRemove = (idx) => {
@@ -149,6 +157,11 @@ export default function AdWizardRescue({ mode }) {
         } else if (mainImageIndex > idx) {
             // Adjust index if we removed an image before the main one
             setMainImageIndex(mainImageIndex - 1);
+        }
+
+        // Add image error if no images left
+        if (images.length === 1) { // Will be 0 after removal
+            setFieldErrors(prev => ({ ...prev, images: 'At least one image is required' }));
         }
     };
 
@@ -163,6 +176,7 @@ export default function AdWizardRescue({ mode }) {
             setImages([]);
             setFormFields([]);
             setMainImageIndex(null);
+            setFieldErrors({});
         }
     };
 
@@ -288,28 +302,141 @@ export default function AdWizardRescue({ mode }) {
         }
     }, [mode, adId]);
 
-    // Render form fields based on configuration
+    // Scroll to top when step changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step]);
+
+    // Validation function
+    const validateFormFields = () => {
+        const errors = {};
+
+        // Get all fields that should be validated for current category
+        const fieldsToValidate = formFields.filter(f => f !== "breed");
+
+        fieldsToValidate.forEach(fieldName => {
+            const config = allFieldConfigurations[fieldName];
+            if (!config) return;
+
+            const isRequired = config.required === true;
+            const value = formData[fieldName];
+
+            if (isRequired) {
+                // Check for empty required fields
+                if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    errors[fieldName] = `${config.label} is required`;
+                }
+                // Special validation for checkboxes that are required
+                else if (config.type === 'checkbox' && !value) {
+                    errors[fieldName] = `${config.label} must be selected`;
+                }
+            }
+
+            // Additional validations for specific field types
+            if (value) {
+                if (config.type === 'number' && isNaN(parseFloat(value))) {
+                    errors[fieldName] = `${config.label} must be a valid number`;
+                }
+
+                if (fieldName === 'description' && value.length < 10) {
+                    errors[fieldName] = 'Description must be at least 10 characters long';
+                }
+
+                if (fieldName === 'title' && value.length < 5) {
+                    errors[fieldName] = 'Title must be at least 5 characters long';
+                }
+            }
+        });
+
+        // Always validate images
+        if (images.length === 0) {
+            errors.images = 'At least one image is required';
+        }
+
+        return errors;
+    };
+
+    // Handle continue to step 4 with validation
+    const handleContinueToStep4 = () => {
+        const validationErrors = validateFormFields();
+
+        if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+
+            // Show summary alert
+            const errorMessages = Object.values(validationErrors);
+            alert("Please fix the following issues:\n\n• " + errorMessages.join('\n• '));
+
+            // Scroll to first error field
+            const firstErrorField = Object.keys(validationErrors)[0];
+            if (firstErrorField !== 'images') {
+                const element = document.getElementById(firstErrorField);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.focus();
+                }
+            }
+
+            return;
+        }
+
+        // Clear any existing errors and proceed
+        setFieldErrors({});
+        setStep(4);
+    };
+
+    // Render form fields based on configuration with validation
     const renderField = (fieldName) => {
         const config = allFieldConfigurations[fieldName];
         if (!config) return null;
 
+        const isRequired = config.required === true;
+        const hasError = fieldErrors?.[fieldName];
+        const hasValue = formData[fieldName] && formData[fieldName].toString().trim() !== '';
+
+        // Add required class and error state
+        const fieldClasses = [
+            'adwizard-form-control',
+            hasError ? 'error' : '',
+            hasValue && isRequired ? 'valid' : ''
+        ].filter(Boolean).join(' ');
+
+        const groupClasses = [
+            'adwizard-form-group',
+            isRequired ? 'required' : '',
+            hasValue && isRequired ? 'completed' : ''
+        ].filter(Boolean).join(' ');
+
         if (fieldName === "availableDate" || fieldName === "dob") {
             return (
-                <div className="adwizard-form-group" key={fieldName}>
-                    <label htmlFor={fieldName}>{config.label}</label>
+                <div className={groupClasses} key={fieldName}>
+                    <label htmlFor={fieldName}>
+                        {config.label}
+                        {isRequired && <span className="required-asterisk"> *</span>}
+                    </label>
                     <div className="adwizard-date-input-container">
                         <input
                             type="date"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
-                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
-                            }
-                            className="adwizard-form-control"
+                            onChange={(e) => {
+                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
+                                // Clear error when user inputs data
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
+                            className={fieldClasses}
                             placeholder={`Select ${config.label.toLowerCase()}`}
+                            required={isRequired}
                         />
                     </div>
+                    {hasError && (
+                        <div className="adwizard-error-message">
+                            {fieldErrors[fieldName]}
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -317,63 +444,94 @@ export default function AdWizardRescue({ mode }) {
         switch (config.type) {
             case "text":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <input
                             type="text"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || config.label}
-                            className="adwizard-form-control"
+                            className={fieldClasses}
+                            required={isRequired}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "number":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <input
                             type="number"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || `Enter ${config.label.toLowerCase()}`}
-                            className="adwizard-form-control"
+                            className={fieldClasses}
                             min="0"
                             step={fieldName.toLowerCase().includes("price") || fieldName === "adoptionFee" ? "0.01" : "1"}
+                            required={isRequired}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "select":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <select
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
-                            className="adwizard-form-control"
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
+                            className={fieldClasses}
+                            required={isRequired}
                         >
                             <option value="">{`Select ${config.label.toLowerCase()}`}</option>
                             {config.options.map((opt) => (
@@ -382,74 +540,114 @@ export default function AdWizardRescue({ mode }) {
                                 </option>
                             ))}
                         </select>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "checkbox":
                 return (
-                    <div className="adwizard-form-checkbox" key={fieldName}>
+                    <div className={groupClasses} key={fieldName}>
                         <label>
                             <input
                                 type="checkbox"
                                 name={fieldName}
                                 checked={formData[fieldName] || false}
-                                onChange={(e) =>
+                                onChange={(e) => {
                                     setFormData((prev) => ({
                                         ...prev,
                                         [fieldName]: e.target.checked
-                                    }))
-                                }
+                                    }));
+                                    if (fieldErrors?.[fieldName]) {
+                                        setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                    }
+                                }}
+                                required={isRequired}
                             />{" "}
                             {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
                         </label>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
+
             case "textarea":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <textarea
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={e =>
+                            onChange={e => {
                                 setFormData(prev => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || `Enter ${config.label.toLowerCase()}`}
-                            required={config.required}
-                            className="adwizard-form-control"
+                            required={isRequired}
+                            className={fieldClasses}
                             rows={4}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
+
             case "date": {
                 const raw = formData[fieldName] || "";
                 const parsedDate = raw ? new Date(raw) : null;
 
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <div className="react-datepicker-wrapper">
                             <div className="react-datepicker__input-container">
                                 <DatePicker
                                     id={fieldName}
                                     selected={parsedDate}
-                                    onChange={date =>
+                                    onChange={date => {
                                         setFormData(prev => ({
                                             ...prev,
                                             [fieldName]: date ? date.toISOString().split("T")[0] : ""
-                                        }))
-                                    }
+                                        }));
+                                        if (fieldErrors?.[fieldName]) {
+                                            setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                        }
+                                    }}
                                     dateFormat="yyyy-MM-dd"
                                     placeholderText={`Select ${config.label.toLowerCase()}`}
-                                    className="adwizard-form-control"
+                                    className={fieldClasses}
                                     showMonthYearDropdown
+                                    required={isRequired}
                                 />
                             </div>
                         </div>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
             }
@@ -476,6 +674,15 @@ export default function AdWizardRescue({ mode }) {
         const user = auth.currentUser;
         if (!user) {
             return alert("You must be logged in to post a rescue listing.");
+        }
+
+        // Final validation before submission
+        const validationErrors = validateFormFields();
+        if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+            alert("Please fix all required fields before submitting.");
+            setStep(3); // Go back to form
+            return;
         }
 
         setIsSubmitting(true);
@@ -742,6 +949,42 @@ export default function AdWizardRescue({ mode }) {
                 <div className="adwizard-step">
                     <h2 className="adwizard-subtitle">Step 3: Rescue Details</h2>
 
+                    {/* Validation Summary */}
+                    {Object.keys(fieldErrors).length > 0 && (
+                        <div className="adwizard-validation-summary">
+                            <h4>⚠️ Please fix the following issues:</h4>
+                            <ul>
+                                {Object.entries(fieldErrors).map(([field, error]) => (
+                                    <li key={field}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (field !== 'images') {
+                                                    const element = document.getElementById(field);
+                                                    if (element) {
+                                                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                        element.focus();
+                                                    }
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#b83c56',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                font: 'inherit'
+                                            }}
+                                        >
+                                            {error}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     {/* Standard pet fields first (non-rescue specific) */}
                     {formFields
                         .filter(f => !["adoptionFee", "availableDate", "vaccinated",
@@ -853,6 +1096,11 @@ export default function AdWizardRescue({ mode }) {
                                 ))}
                             </div>
                         )}
+                        {fieldErrors.images && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors.images}
+                            </div>
+                        )}
                     </div>
 
                     <div className="adwizard-summary-actions">
@@ -861,8 +1109,7 @@ export default function AdWizardRescue({ mode }) {
                         </button>
                         <button
                             className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => setStep(4)}
-                            disabled={Object.keys(formData).length === 0 || images.length === 0}
+                            onClick={handleContinueToStep4}
                         >
                             Continue to Review
                         </button>

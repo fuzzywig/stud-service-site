@@ -63,8 +63,6 @@ const Tooltip = ({ text, children }) => {
     const [isVisible, setIsVisible] = useState(false);
 
     return (
-
-
         <div
             style={{
                 position: 'relative',
@@ -100,17 +98,12 @@ const Tooltip = ({ text, children }) => {
     );
 };
 
-
-
 // Bio Section Component
-// Updated Bio Section Component with mobile-friendly layout
 function BioSection({ bio, isOwnProfile, onEditClick, userData }) {
-    // Don't show the section if there's no bio and it's not the owner's profile
     if (!bio && !isOwnProfile) {
         return null;
     }
 
-    // Determine the section title based on user type
     const getSectionTitle = () => {
         if (userData?.breederType === 'rescue' && userData?.organizationName) {
             return `About ${userData.organizationName}`;
@@ -119,16 +112,12 @@ function BioSection({ bio, isOwnProfile, onEditClick, userData }) {
     };
 
     return (
-
-
-
         <div className="up-bio-section">
             <div className="up-section-header">
                 <h2 className="up-section-title">
                     <FontAwesomeIcon icon={faUser} style={{ marginRight: '8px' }} />
                     {getSectionTitle()}
                 </h2>
-                {/* Desktop button - hidden on mobile */}
                 {isOwnProfile && (
                     <button
                         className="up-edit-bio-btn up-desktop-only"
@@ -152,7 +141,6 @@ function BioSection({ bio, isOwnProfile, onEditClick, userData }) {
                     </p>
                 )}
             </div>
-            {/* Mobile button - shows below content */}
             {isOwnProfile && (
                 <button
                     className="up-edit-bio-btn up-mobile-only"
@@ -176,7 +164,6 @@ function UserAdvertsSection({ userId, userName }) {
     useEffect(() => {
         const fetchUserAdverts = async () => {
             try {
-                // Query for approved adverts only
                 const advertsQuery = query(
                     collection(db, "allListings"),
                     where("ownerId", "==", userId),
@@ -185,7 +172,6 @@ function UserAdvertsSection({ userId, userName }) {
 
                 const advertsSnap = await getDocs(advertsQuery);
 
-                // Filter remaining conditions in JavaScript
                 const adverts = advertsSnap.docs
                     .map(doc => ({
                         id: doc.id,
@@ -196,16 +182,10 @@ function UserAdvertsSection({ userId, userName }) {
                         ad.sold !== true
                     )
                     .sort((a, b) => {
-                        // Sort by createdAt descending
                         const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
                         const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
                         return dateB - dateA;
                     });
-
-                console.log('Fetched adverts for user:', userId);
-                console.log('Total approved adverts:', advertsSnap.docs.length);
-                console.log('Active adverts after filtering:', adverts.length);
-                console.log('Adverts data:', adverts);
 
                 setUserAdverts(adverts);
             } catch (error) {
@@ -230,12 +210,11 @@ function UserAdvertsSection({ userId, userName }) {
     }
 
     if (userAdverts.length === 0) {
-        return null; // Don't show the section if no adverts
+        return null;
     }
 
     const displayedAdverts = showAll ? userAdverts : userAdverts.slice(0, 6);
 
-    // Format age helper function
     function formatAge(dob) {
         if (!dob) return "";
         const birth = new Date(dob);
@@ -262,7 +241,6 @@ function UserAdvertsSection({ userId, userName }) {
     return (
         <div className="up-adverts-section">
             <div className="up-section-header">
-
                 <h2 className="up-section-title">{userName}'s Active Adverts</h2>
                 {userAdverts.length > 6 && (
                     <button
@@ -281,14 +259,12 @@ function UserAdvertsSection({ userId, userName }) {
                         className="up-advert-card"
                         onClick={() => navigate(`/advert-details/${ad.id}`)}
                     >
-                        {/* Intent Badge */}
                         <div className={`up-advert-intent ${ad.intent}`}>
                             {ad.intent === 'stud' ? 'Stud Service' :
                                 ad.intent === 'rescue' ? 'For Adoption' :
                                     'For Sale'}
                         </div>
 
-                        {/* Image Section */}
                         <div className="up-advert-image-container">
                             <img
                                 src={ad.images?.[ad.mainImageIndex || 0] || ad.images?.[0] || "https://placehold.co/600x400?text=No+Image"}
@@ -297,7 +273,6 @@ function UserAdvertsSection({ userId, userName }) {
                             />
                         </div>
 
-                        {/* Content Section */}
                         <div className="up-advert-content">
                             <h3 className="up-advert-title">
                                 {(ad.title || ad.name || "").length > 33
@@ -346,8 +321,6 @@ function UserAdvertsSection({ userId, userName }) {
     );
 }
 
-
-
 // Feature Request Section Component
 function FeatureRequestSection({ isOwnProfile, userId }) {
     const [showModal, setShowModal] = useState(false);
@@ -359,7 +332,6 @@ function FeatureRequestSection({ isOwnProfile, userId }) {
     const [loadingRequests, setLoadingRequests] = useState(true);
     const [showAllRequests, setShowAllRequests] = useState(false);
 
-    // Fetch user's feature requests
     useEffect(() => {
         const fetchUserRequests = async () => {
             if (!isOwnProfile) return;
@@ -412,14 +384,12 @@ function FeatureRequestSection({ isOwnProfile, userId }) {
 
             const docRef = await addDoc(collection(db, "featureRequests"), newRequest);
 
-            // Add to local state
             setUserRequests(prev => [{
                 id: docRef.id,
                 ...newRequest,
                 createdAt: new Date()
             }, ...prev]);
 
-            // Reset form
             setRequestTitle('');
             setRequestDescription('');
             setRequestCategory('');
@@ -464,9 +434,7 @@ function FeatureRequestSection({ isOwnProfile, userId }) {
     return (
         <div className="up-feature-request-section">
             <div className="up-section-header">
-
                 <div className="up-feature-intro">
-
                     <p><span className="up-feature-intro-icon">💡</span>Have an idea to improve our platform? We'd love
                         to hear from you!</p>
                     <p>Submit feature requests to help us make the community better. You can suggest:</p>
@@ -547,7 +515,6 @@ function FeatureRequestSection({ isOwnProfile, userId }) {
                 </>
             )}
 
-            {/* Feature Request Modal */}
             {showModal && (
                 <div className="up-modal-backdrop" onClick={() => setShowModal(false)}>
                     <div className="up-feature-modal" onClick={e => e.stopPropagation()}>
@@ -631,6 +598,7 @@ function FeatureRequestSection({ isOwnProfile, userId }) {
         </div>
     );
 }
+
 function ReviewCard({ review, isOwnProfile, onSubmitResponse }) {
     const [showModal, setShowModal] = useState(false);
     const [responseText, setResponseText] = useState(review.response || "");
@@ -639,10 +607,51 @@ function ReviewCard({ review, isOwnProfile, onSubmitResponse }) {
     const isLong = review.text.length >= TRUNCATE_LENGTH;
     const truncated = isLong ? review.text.slice(0, TRUNCATE_LENGTH) + "…" : review.text;
 
-    const currentUser = auth.currentUser;
+    // Helper function to format dates
+    const formatDate = (timestamp) => {
+        if (!timestamp) return '';
+
+        let date;
+        if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+            date = timestamp.toDate();
+        } else if (typeof timestamp === 'string') {
+            date = new Date(timestamp);
+        } else if (timestamp instanceof Date) {
+            date = timestamp;
+        } else {
+            return '';
+        }
+
+        if (isNaN(date.getTime())) return '';
+
+        const now = new Date();
+        const diffInMs = now - date;
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+        if (diffInDays === 0) {
+            return 'Today';
+        } else if (diffInDays === 1) {
+            return 'Yesterday';
+        } else if (diffInDays < 7) {
+            return `${diffInDays} days ago`;
+        } else if (diffInDays < 30) {
+            const weeks = Math.floor(diffInDays / 7);
+            return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+        } else if (diffInDays < 365) {
+            const months = Math.floor(diffInDays / 30);
+            return `${months} month${months !== 1 ? 's' : ''} ago`;
+        } else {
+            return date.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+    };
+
     const handleResponseSubmit = () => {
         if (responseText.trim()) {
-            onSubmitResponse(review.id, responseText.trim(), review.dogName); // ← Pass the dog name
+            onSubmitResponse(review.id, responseText.trim(), review.dogName);
             setShowRespondModal(false);
         }
     };
@@ -662,18 +671,36 @@ function ReviewCard({ review, isOwnProfile, onSubmitResponse }) {
                         ))}
                     </div>
                 </div>
+
                 <p className="up-review-text">"{truncated}"</p>
                 {isLong && (
                     <button className="up-read-more-btn" onClick={() => setShowModal(true)}>
                         Read full review
                     </button>
                 )}
+
                 <p className="up-review-author">— {review.reviewerName}</p>
 
-                {/* Show existing response */}
+                {/* Date moved under the author */}
+                {review.createdAt && (
+                    <div className="up-review-date">
+                        <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '12px', opacity: 0.6 }} />
+                        <span>{formatDate(review.createdAt)}</span>
+                    </div>
+                )}
+
+                {/* Show existing response with timestamp */}
                 {review.response && (
                     <div className="up-review-response">
-                        <strong>Stud Owner Response</strong>
+                        <div className="up-response-header">
+                            <strong>Stud Owner Response</strong>
+                            {review.responseTimestamp && (
+                                <span className="up-response-date">
+                                    <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '11px', opacity: 0.6 }} />
+                                    {formatDate(review.responseTimestamp)}
+                                </span>
+                            )}
+                        </div>
                         <p>{review.response}</p>
                     </div>
                 )}
@@ -694,18 +721,44 @@ function ReviewCard({ review, isOwnProfile, onSubmitResponse }) {
                 <div className="up-modal-backdrop" onClick={() => setShowModal(false)}>
                     <div className="up-modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="up-modal-close-btn" onClick={() => setShowModal(false)}>×</button>
-                        <h4 className="up-modal-dog-name">{review.dogName}</h4>
-                        <div className="up-modal-stars">
-                            {[1,2,3,4,5].map(i => (
-                                <FontAwesomeIcon
-                                    key={i}
-                                    icon={solidStar}
-                                    className={i <= review.rating ? "up-star up-active" : "up-star"}
-                                />
-                            ))}
+                        <div className="up-modal-header-section">
+                            <h4 className="up-modal-dog-name">{review.dogName}</h4>
+                            <div className="up-modal-stars">
+                                {[1,2,3,4,5].map(i => (
+                                    <FontAwesomeIcon
+                                        key={i}
+                                        icon={solidStar}
+                                        className={i <= review.rating ? "up-star up-active" : "up-star"}
+                                    />
+                                ))}
+                            </div>
                         </div>
                         <p className="up-modal-text">"{review.text}"</p>
                         <p className="up-modal-author">— {review.reviewerName}</p>
+
+                        {/* Date in modal also under author */}
+                        {review.createdAt && (
+                            <div className="up-modal-review-date">
+                                <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '12px', opacity: 0.6 }} />
+                                <span>{formatDate(review.createdAt)}</span>
+                            </div>
+                        )}
+
+                        {/* Show response in modal if it exists */}
+                        {review.response && (
+                            <div className="up-modal-response">
+                                <div className="up-response-header">
+                                    <strong>Stud Owner Response</strong>
+                                    {review.responseTimestamp && (
+                                        <span className="up-response-date">
+                                            <FontAwesomeIcon icon={faClock} style={{ marginRight: '4px', fontSize: '11px', opacity: 0.6 }} />
+                                            {formatDate(review.responseTimestamp)}
+                                        </span>
+                                    )}
+                                </div>
+                                <p>{review.response}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -797,7 +850,6 @@ export default function UserProfile() {
         }
     };
 
-    // Authentication listener
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -817,11 +869,9 @@ export default function UserProfile() {
         return unsub;
     }, []);
 
-    // Fetch user data, reviews
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1) Load basic user info
                 const userSnap = await getDoc(doc(db, "users", uid));
                 if (userSnap.exists()) setUserData(userSnap.data());
                 else {
@@ -829,7 +879,6 @@ export default function UserProfile() {
                     return;
                 }
 
-                // 2) Load & enrich reviews
                 const reviewsSnap = await getDocs(
                     query(
                         collection(db, "reviews"),
@@ -844,16 +893,13 @@ export default function UserProfile() {
                         let dogName = "Unknown Dog";
 
                         try {
-                            // 1) Grab the advert document by ID
                             const advertRef = doc(db, "allListings", d.advertId);
                             const advertSnap = await getDoc(advertRef);
 
-                            // 2) If it exists *and* is approved, pull its name
                             if (advertSnap.exists() && advertSnap.data().approved) {
                                 dogName = advertSnap.data().name;
                             }
                         } catch (e) {
-                            // permission denied? just leave dogName as "Unknown Dog"
                             console.warn("Could not load advert for review:", d.advertId, e);
                         }
 
@@ -862,7 +908,6 @@ export default function UserProfile() {
                 );
                 setReviews(enrichedReviews);
 
-                // 3) Fetch follower/following counts
                 const followersQuery = query(
                     collection(db, "follows"),
                     where("followingId", "==", uid)
@@ -894,7 +939,6 @@ export default function UserProfile() {
         if (tab && ['overview', 'reviews', 'contact', 'features'].includes(tab)) {
             setActiveSection(tab);
 
-            // Clean up the URL to remove the tab parameter
             urlParams.delete('tab');
             const cleanUrl = urlParams.toString()
                 ? `/profile/${uid}?${urlParams.toString()}`
@@ -903,8 +947,6 @@ export default function UserProfile() {
         }
     }, [uid]);
 
-
-    // Avatar handling
     const openFileInput = () => fileInputRef.current.click();
 
     const handleAvatarChange = async (e) => {
@@ -922,31 +964,25 @@ export default function UserProfile() {
         }
     };
 
-    // Handle toggles for opening the settings modal
     const openProfileSettings = (tab = 'profile') => {
         setSettingsInitialTab(tab);
         setShowSettingsModal(true);
     };
 
-    // Update contact info and other profile data
     const handleSaveContact = async (updatedData) => {
         try {
             const userRef = doc(db, "users", currentUserId);
 
-            // Check if we're updating from the modal (all profile data)
             if (updatedData.bio !== undefined || updatedData.breederType !== undefined) {
-                // Update all the data that was changed
                 setUserData(prev => ({ ...prev, ...updatedData }));
                 return;
             }
 
-            // Original contact update logic
             const newUserData = {
                 ...userData,
                 ...updatedData,
             };
 
-            // Save to Firestore
             await updateDoc(userRef, {
                 phone: newUserData.phone,
                 postcode: newUserData.postcode,
@@ -958,7 +994,6 @@ export default function UserProfile() {
                 lastName: newUserData.lastName,
             });
 
-            // Update Auth email if changed
             if (
                 updatedData.email &&
                 updatedData.email !== auth.currentUser.email
@@ -977,7 +1012,6 @@ export default function UserProfile() {
         }
     };
 
-    // Loading state
     if (!userData)
         return (
             <div className="up-loading-container">
@@ -986,14 +1020,12 @@ export default function UserProfile() {
             </div>
         );
 
-    // Calculate stats
     const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 4);
     const averageRating =
         reviews.length > 0
             ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
             : 0;
 
-    // Get aspect badges
     const aspectCounts = reviews.reduce((acc, r) => {
         if (Array.isArray(r.aspects)) {
             r.aspects.forEach(a => {
@@ -1003,7 +1035,6 @@ export default function UserProfile() {
         return acc;
     }, {});
 
-    // Icon mapping for aspects
     const aspectIconMap = {
         "Handler Professionalism": faHandshake,
         "Communication & Responsiveness": faComments,
@@ -1031,286 +1062,298 @@ export default function UserProfile() {
         navigate(`/messages?recipient=${uid}`);
     };
 
-    const getMessageButtonName = () => {
-        if (userData?.breederType === 'rescue' && userData?.organizationName) {
-            return userData.organizationName;
-        }
-        return userData?.firstName || "User";
-    };
-
     return (
-
-
         <>
-
             <Helmet>
                 <title>User Profile | My Pet Connect</title>
                 <meta name="robots" content="noindex,follow" />
             </Helmet>
 
-
-
-        <div className="up-profile-container">
-            {/* Profile Header */}
-            <div className="up-profile-hero">
-                <div className="up-profile-hero-content">
-                    <div className="up-avatar-container">
-                        <img
-                            src={userData.avatar || "https://placehold.co/150"}
-                            alt="Profile avatar"
-                            className="up-profile-avatar"
-                        />
-                        {isOwnProfile && (
-                            <button
-                                className="up-avatar-change-btn"
-                                onClick={openFileInput}
-                                title="Change Avatar"
-                            >
-                                <FontAwesomeIcon icon={faCamera} />
-                            </button>
-                        )}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            onChange={handleAvatarChange}
-                        />
-                    </div>
-
-                    <div className="up-profile-info">
-                        <h1 className="up-profile-name">
-                            {/* For rescue organizations viewed by non-owners, show organization name */}
-                            {userData.breederType === 'rescue' && userData.organizationName && !isOwnProfile ? (
-                                userData.organizationName
-                            ) : (
-                                // For all other cases, show personal name as before
-                                isOwnProfile ? (
-                                    `${userData.firstName} ${userData.lastName}`
-                                ) : (
-                                    `${userData.firstName} ${userData.lastName ? userData.lastName.charAt(0).toUpperCase() + '.' : ''}`
-                                )
+            <div className="up-profile-container">
+                <div className="up-profile-hero">
+                    <div className="up-profile-hero-content">
+                        <div className="up-avatar-container">
+                            <img
+                                src={userData.avatar || "https://placehold.co/150"}
+                                alt="Profile avatar"
+                                className="up-profile-avatar"
+                            />
+                            {isOwnProfile && (
+                                <button
+                                    className="up-avatar-change-btn"
+                                    onClick={openFileInput}
+                                    title="Change Avatar"
+                                >
+                                    <FontAwesomeIcon icon={faCamera} />
+                                </button>
                             )}
-                        </h1>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                onChange={handleAvatarChange}
+                            />
+                        </div>
 
-                        {reviews.length > 0 && (
-                            <div className="up-profile-rating">
-                                <span className="up-rating-score">{averageRating}</span>
-                                <div className="up-rating-stars">
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <FontAwesomeIcon
-                                            key={i}
-                                            icon={solidStar}
-                                            className={i <= Math.round(averageRating) ? "up-star up-active" : "up-star"}
-                                        />
-                                    ))}
+                        <div className="up-profile-info">
+                            <h1 className="up-profile-name">
+                                {userData.breederType === 'rescue' && userData.organizationName && !isOwnProfile ? (
+                                    userData.organizationName
+                                ) : (
+                                    isOwnProfile ? (
+                                        `${userData.firstName} ${userData.lastName}`
+                                    ) : (
+                                        `${userData.firstName} ${userData.lastName ? userData.lastName.charAt(0).toUpperCase() + '.' : ''}`
+                                    )
+                                )}
+                            </h1>
+
+                            {reviews.length > 0 && (
+                                <div className="up-profile-rating">
+                                    <span className="up-rating-score">{averageRating}</span>
+                                    <div className="up-rating-stars">
+                                        {[1, 2, 3, 4, 5].map(i => (
+                                            <FontAwesomeIcon
+                                                key={i}
+                                                icon={solidStar}
+                                                className={i <= Math.round(averageRating) ? "up-star up-active" : "up-star"}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span className="up-rating-count">({reviews.length} reviews)</span>
                                 </div>
-                                <span className="up-rating-count">({reviews.length} reviews)</span>
-                            </div>
-                        )}
-
-                        <div className="up-profile-location">
-                            {userData.city && userData.county && (
-                                <span>{userData.city}, {userData.county}</span>
                             )}
-                            {userData.postcode && (
-                                <span className="up-profile-postcode">{userData.postcode}</span>
-                            )}
-                        </div>
 
-                        <div className="up-profile-stats">
-                            <div className="up-stat-item">
-                                <span className="up-stat-value">{followerCount}</span>
-                                <span className="up-stat-label">{followerCount === 1 ? 'Follower' : 'Followers'}</span>
-                            </div>
-                            <div className="up-stat-divider">•</div>
-                            <div className="up-stat-item">
-                                <span className="up-stat-value">{followingCount}</span>
-                                <span className="up-stat-label">Following</span>
-                            </div>
-                        </div>
-
-                        {/* User ID Display - Only visible to profile owner */}
-                        {isOwnProfile && (
-                            <div className="up-profile-uid">
-                                <FontAwesomeIcon icon={faFingerprint} className="up-uid-icon" />
-                                <span className="up-uid-label">User ID:</span>
-                                {uid.length > 10 ? (
-                                    <>
-                                        <span className="up-uid-value">{uid.slice(0, -10)}</span>
-                                        <span className="up-uid-value up-uid-highlight">{uid.slice(-10)}</span>
-                                    </>
-                                ) : (
-                                    <span className="up-uid-value up-uid-highlight">{uid}</span>
+                            <div className="up-profile-location">
+                                {userData.city && userData.county && (
+                                    <span>{userData.city}, {userData.county}</span>
+                                )}
+                                {userData.postcode && (
+                                    <span className="up-profile-postcode">{userData.postcode}</span>
                                 )}
                             </div>
+
+                            <div className="up-profile-stats">
+                                <div className="up-stat-item">
+                                    <span className="up-stat-value">{followerCount}</span>
+                                    <span className="up-stat-label">{followerCount === 1 ? 'Follower' : 'Followers'}</span>
+                                </div>
+                                <div className="up-stat-divider">•</div>
+                                <div className="up-stat-item">
+                                    <span className="up-stat-value">{followingCount}</span>
+                                    <span className="up-stat-label">Following</span>
+                                </div>
+                            </div>
+
+                            {isOwnProfile && (
+                                <div className="up-profile-uid">
+                                    <FontAwesomeIcon icon={faFingerprint} className="up-uid-icon" />
+                                    <span className="up-uid-label">User ID:</span>
+                                    {uid.length > 10 ? (
+                                        <>
+                                            <span className="up-uid-value">{uid.slice(0, -10)}</span>
+                                            <span className="up-uid-value up-uid-highlight">{uid.slice(-10)}</span>
+                                        </>
+                                    ) : (
+                                        <span className="up-uid-value up-uid-highlight">{uid}</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="up-profile-actions">
+                        {isOwnProfile ? (
+                            <>
+                                <button
+                                    className="up-edit-profile-btn"
+                                    onClick={() => openProfileSettings('profile')}
+                                >
+                                    <FontAwesomeIcon icon={faPencilAlt} />
+                                    Edit Profile
+                                </button>
+
+                                <button
+                                    className="up-change-password-btn"
+                                    onClick={() => openProfileSettings('password')}
+                                >
+                                    <FontAwesomeIcon icon={faLock} />
+                                    Change Password
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                {currentUserId && currentUserData && currentUserId !== uid && (
+                                    <>
+                                        <FollowButton
+                                            targetUserId={uid}
+                                            currentUserId={currentUserId}
+                                            targetUserName={userData.firstName}
+                                            currentUserName={currentUserData.firstName}
+                                        />
+
+                                        <button
+                                            className="up-message-btn primary-green"
+                                            onClick={handleMessageUser}
+                                        >
+                                            <FontAwesomeIcon icon={faEnvelopeOpenText} />
+                                            <span className="up-message-text">
+                                                Message {userData?.breederType === 'rescue' && userData?.organizationName
+                                                ? userData.organizationName
+                                                : (userData?.firstName || "User")}
+                                            </span>
+                                        </button>
+                                    </>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
 
-                <div className="up-profile-actions">
-                    {isOwnProfile ? (
-                        <>
-                            <button
-                                className="up-edit-profile-btn"
-                                onClick={() => openProfileSettings('profile')}
-                            >
-                                <FontAwesomeIcon icon={faPencilAlt} />
-                                Edit Profile
-                            </button>
-
-                            <button
-                                className="up-change-password-btn"
-                                onClick={() => openProfileSettings('password')}
-                            >
-                                <FontAwesomeIcon icon={faLock} />
-                                Change Password
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            {currentUserId && currentUserData && currentUserId !== uid && (
-                                <>
-                                    <FollowButton
-                                        targetUserId={uid}
-                                        currentUserId={currentUserId}
-                                        targetUserName={userData.firstName}
-                                        currentUserName={currentUserData.firstName}
-                                    />
-
-                                    <button
-                                        className="up-message-btn primary-green"
-                                        onClick={handleMessageUser}
-                                    >
-                                        <FontAwesomeIcon icon={faEnvelopeOpenText} />
-                                        <span className="up-message-text">
-        Message {userData?.breederType === 'rescue' && userData?.organizationName
-                                            ? userData.organizationName
-                                            : (userData?.firstName || "User")}
-    </span>
-                                    </button>
-                                </>
-                            )}
-                        </>
-                    )}
-                </div>
-
-
-            </div>
-
-            {/* Profile Navigation */}
-            <div className="up-profile-nav">
-                <div className="up-nav-tabs">
-                    <button
-                        className={`up-nav-button ${activeSection === 'overview' ? 'up-active' : ''}`}
-                        onClick={() => setActiveSection('overview')}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={`up-nav-button ${activeSection === 'reviews' ? 'up-active' : ''}`}
-                        onClick={() => setActiveSection('reviews')}
-                    >
-                        Reviews {reviews.length > 0 && `(${reviews.length})`}
-                    </button>
-                    <button
-                        className={`up-nav-button ${activeSection === 'contact' ? 'up-active' : ''}`}
-                        onClick={() => setActiveSection('contact')}
-                    >
-                        Contact Info
-                    </button>
-                    {isOwnProfile && (
+                <div className="up-profile-nav">
+                    <div className="up-nav-tabs">
                         <button
-                            className={`up-nav-button ${activeSection === 'features' ? 'up-active' : ''}`}
-                            onClick={() => setActiveSection('features')}
+                            className={`up-nav-button ${activeSection === 'overview' ? 'up-active' : ''}`}
+                            onClick={() => setActiveSection('overview')}
                         >
-                            Feature Requests
+                            Overview
+                        </button>
+                        <button
+                            className={`up-nav-button ${activeSection === 'reviews' ? 'up-active' : ''}`}
+                            onClick={() => setActiveSection('reviews')}
+                        >
+                            Reviews {reviews.length > 0 && `(${reviews.length})`}
+                        </button>
+                        <button
+                            className={`up-nav-button ${activeSection === 'contact' ? 'up-active' : ''}`}
+                            onClick={() => setActiveSection('contact')}
+                        >
+                            Contact Info
+                        </button>
+                        {isOwnProfile && (
+                            <button
+                                className={`up-nav-button ${activeSection === 'features' ? 'up-active' : ''}`}
+                                onClick={() => setActiveSection('features')}
+                            >
+                                Feature Requests
+                            </button>
+                        )}
+                    </div>
+                    {!isOwnProfile && (
+                        <button
+                            className="up-nav-button up-report-button"
+                            onClick={() => {
+                                if (auth.currentUser) {
+                                    setShowReportUserModal(true);
+                                } else {
+                                    alert("Please log in to report this user.");
+                                }
+                            }}
+                        >
+                            <FontAwesomeIcon icon={faFlag} /> Report
                         </button>
                     )}
                 </div>
-                {!isOwnProfile && (
-                    <button
-                        className="up-nav-button up-report-button"
-                        onClick={() => {
-                            if (auth.currentUser) {
-                                setShowReportUserModal(true);
-                            } else {
-                                alert("Please log in to report this user.");
-                            }
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faFlag} /> Report
-                    </button>
-                )}
-            </div>
 
-            {/* Profile Content */}
-            <div className="up-profile-content">
-                {/* Overview Section */}
-                {activeSection === 'overview' && (
-                    <div className="up-overview-section">
-                        {/* Bio Section */}
-                        <BioSection
-                            bio={userData.bio}
-                            isOwnProfile={isOwnProfile}
-                            onEditClick={openProfileSettings}
-                            userData={userData}
-                        />
+                <div className="up-profile-content">
+                    {activeSection === 'overview' && (
+                        <div className="up-overview-section">
+                            <BioSection
+                                bio={userData.bio}
+                                isOwnProfile={isOwnProfile}
+                                onEditClick={openProfileSettings}
+                                userData={userData}
+                            />
 
-                        {/* Council Licence Section */}
-                        {userData.breederType === 'rescue' && (userData.organizationName || userData.charityNumber || userData.websiteUrl) && (
-                            <div className="up-licence-section">
-                                <div className="up-section-header">
-                                    <h2 className="up-section-title">
-                                        <FontAwesomeIcon icon={faHandshake} style={{ marginRight: '8px' }} />
-                                        Rescue Organization
-                                    </h2>
-                                </div>
-                                <div className="up-licence-content">
-                                    <div className="up-licence-badge">
-                                        <FontAwesomeIcon icon={faHandshake} className="up-licence-icon" />
-                                        <div className="up-licence-details">
-                                            <div className="up-licence-status">{userData.organizationName}</div>
-                                            {userData.charityNumber && (
-                                                <div className="up-licence-authority">
-                                                    <strong>Charity Registration:</strong> {userData.charityNumber}
-                                                </div>
-                                            )}
-                                            {userData.websiteUrl && (
-                                                <div className="up-licence-number">
-                                                    <strong>Website:</strong>{' '}
-                                                    <a
-                                                        href={userData.websiteUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{ color: '#007bff', textDecoration: 'none' }}
-                                                        onMouseEnter={e => e.target.style.textDecoration = 'underline'}
-                                                        onMouseLeave={e => e.target.style.textDecoration = 'none'}
-                                                    >
-                                                        {userData.websiteUrl.replace(/^https?:\/\//, '')}
-                                                    </a>
-                                                </div>
-                                            )}
+                            {userData.breederType === 'rescue' && (userData.organizationName || userData.charityNumber || userData.websiteUrl) && (
+                                <div className="up-licence-section">
+                                    <div className="up-section-header">
+                                        <h2 className="up-section-title">
+                                            <FontAwesomeIcon icon={faHandshake} style={{ marginRight: '8px' }} />
+                                            Rescue Organization
+                                        </h2>
+                                    </div>
+                                    <div className="up-licence-content">
+                                        <div className="up-licence-badge">
+                                            <FontAwesomeIcon icon={faHandshake} className="up-licence-icon" />
+                                            <div className="up-licence-details">
+                                                <div className="up-licence-status">{userData.organizationName}</div>
+                                                {userData.charityNumber && (
+                                                    <div className="up-licence-authority">
+                                                        <strong>Charity Registration:</strong> {userData.charityNumber}
+                                                    </div>
+                                                )}
+                                                {userData.websiteUrl && (
+                                                    <div className="up-licence-number">
+                                                        <strong>Website:</strong>{' '}
+                                                        <a
+                                                            href={userData.websiteUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{ color: '#007bff', textDecoration: 'none' }}
+                                                            onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+                                                            onMouseLeave={e => e.target.style.textDecoration = 'none'}
+                                                        >
+                                                            {userData.websiteUrl.replace(/^https?:\/\//, '')}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="up-licence-note">
+                                            <FontAwesomeIcon icon={faHandshake} style={{ marginRight: '6px' }} />
+                                            This is a rescue organization dedicated to rescuing, rehabilitating, and rehoming animals in need.
                                         </div>
                                     </div>
-                                    <div className="up-licence-note">
-                                        <FontAwesomeIcon icon={faHandshake} style={{ marginRight: '6px' }} />
-                                        This is a rescue organization dedicated to rescuing, rehabilitating, and rehoming animals in need.
-                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        {userData.breederType === 'rescue' && (
-                            <div className="up-adoption-process-section">
-                                <div className="up-section-header">
-                                    <h2 className="up-section-title">
-                                        <FontAwesomeIcon icon={faClipboardCheck} style={{ marginRight: '8px' }} />
-                                        Our Adoption Process
-                                    </h2>
-                                    {/* Desktop button - hidden on mobile */}
+                            )}
+
+                            {userData.breederType === 'rescue' && (
+                                <div className="up-adoption-process-section">
+                                    <div className="up-section-header">
+                                        <h2 className="up-section-title">
+                                            <FontAwesomeIcon icon={faClipboardCheck} style={{ marginRight: '8px' }} />
+                                            Our Adoption Process
+                                        </h2>
+                                        {isOwnProfile && (
+                                            <button
+                                                className="up-edit-bio-btn up-desktop-only"
+                                                onClick={() => openProfileSettings('adoption')}
+                                            >
+                                                <FontAwesomeIcon icon={faEdit} />
+                                                {userData.adoptionProcess ? 'Edit' : 'Add Process'}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="up-process-content">
+                                        {userData.adoptionProcess ? (
+                                            <>
+                                                <p>{userData.adoptionProcess}</p>
+                                                {userData.adoptionRequirements && (
+                                                    <div className="up-requirements-box">
+                                                        <h4>Adoption Requirements:</h4>
+                                                        <ul>
+                                                            {userData.adoptionRequirements.split('\n').map((req, index) => (
+                                                                <li key={index}>{req}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p className="up-bio-placeholder">
+                                                <FontAwesomeIcon icon={faEdit} style={{ marginRight: '8px' }} />
+                                                {isOwnProfile
+                                                    ? 'Add your adoption process and requirements to help potential adopters understand your procedures'
+                                                    : 'No adoption process information available yet'
+                                                }
+                                            </p>
+                                        )}
+                                    </div>
                                     {isOwnProfile && (
                                         <button
-                                            className="up-edit-bio-btn up-desktop-only"
+                                            className="up-edit-bio-btn up-mobile-only"
                                             onClick={() => openProfileSettings('adoption')}
                                         >
                                             <FontAwesomeIcon icon={faEdit} />
@@ -1318,551 +1361,497 @@ export default function UserProfile() {
                                         </button>
                                     )}
                                 </div>
-                                <div className="up-process-content">
-                                    {userData.adoptionProcess ? (
-                                        <>
-                                            <p>{userData.adoptionProcess}</p>
-                                            {userData.adoptionRequirements && (
-                                                <div className="up-requirements-box">
-                                                    <h4>Adoption Requirements:</h4>
-                                                    <ul>
-                                                        {userData.adoptionRequirements.split('\n').map((req, index) => (
-                                                            <li key={index}>{req}</li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <p className="up-bio-placeholder">
-                                            <FontAwesomeIcon icon={faEdit} style={{ marginRight: '8px' }} />
-                                            {isOwnProfile
-                                                ? 'Add your adoption process and requirements to help potential adopters understand your procedures'
-                                                : 'No adoption process information available yet'
-                                            }
-                                        </p>
-                                    )}
-                                </div>
-                                {/* Mobile button - shows below content */}
-                                {isOwnProfile && (
-                                    <button
-                                        className="up-edit-bio-btn up-mobile-only"
-                                        onClick={() => openProfileSettings('adoption')}
-                                    >
-                                        <FontAwesomeIcon icon={faEdit} />
-                                        {userData.adoptionProcess ? 'Edit' : 'Add Process'}
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                        {/* Aspect Badges */}
-                        {Object.keys(aspectCounts).length > 0 && (
-                            <div className="up-aspect-section">
-                                <h2 className="up-section-title up-aspect-title">What People Appreciate About {userData.firstName}</h2>
-                                <div className="up-aspect-badges-container">
-                                    {Object.entries(aspectCounts)
-                                        .sort((a, b) => b[1] - a[1])
-                                        .map(([aspect, count]) => (
-                                            <div key={aspect} className="up-aspect-badge">
-                                                <div className="up-aspect-badge-icon">
-                                                    <FontAwesomeIcon icon={aspectIconMap[aspect] || faHandshake} />
-                                                </div>
-                                                <div className="up-aspect-badge-content">
-                                                    <span className="up-aspect-badge-name">{aspect}</span>
-                                                    <div className="up-aspect-badge-count">
-                                                        <span>{count}</span>
-                                                        <span> {count === 1 ? 'review' : 'reviews'}</span>
+                            )}
+
+                            {Object.keys(aspectCounts).length > 0 && (
+                                <div className="up-aspect-section">
+                                    <h2 className="up-section-title up-aspect-title">What People Appreciate About {userData.firstName}</h2>
+                                    <div className="up-aspect-badges-container">
+                                        {Object.entries(aspectCounts)
+                                            .sort((a, b) => b[1] - a[1])
+                                            .map(([aspect, count]) => (
+                                                <div key={aspect} className="up-aspect-badge">
+                                                    <div className="up-aspect-badge-icon">
+                                                        <FontAwesomeIcon icon={aspectIconMap[aspect] || faHandshake} />
+                                                    </div>
+                                                    <div className="up-aspect-badge-content">
+                                                        <span className="up-aspect-badge-name">{aspect}</span>
+                                                        <div className="up-aspect-badge-count">
+                                                            <span>{count}</span>
+                                                            <span> {count === 1 ? 'review' : 'reviews'}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* User's Active Adverts */}
-                        {!isOwnProfile && (
-                            <UserAdvertsSection
-                                userId={uid}
-                                userName={
-                                    userData.breederType === 'rescue' && userData.organizationName
-                                        ? userData.organizationName
-                                        : userData.firstName
-                                }
-                            />
-                        )}
+                            {!isOwnProfile && (
+                                <UserAdvertsSection
+                                    userId={uid}
+                                    userName={
+                                        userData.breederType === 'rescue' && userData.organizationName
+                                            ? userData.organizationName
+                                            : userData.firstName
+                                    }
+                                />
+                            )}
 
-                        {/* Recent Reviews */}
-                        {reviews.length > 0 && (
-                            <div className="up-recent-reviews-section">
+                            {reviews.length > 0 && (
+                                <div className="up-recent-reviews-section">
+                                    <div className="up-section-header">
+                                        <h2 className="up-section-title">Recent Reviews</h2>
+                                        {reviews.length > 4 && (
+                                            <button
+                                                className="up-view-all-btn"
+                                                onClick={() => setActiveSection('reviews')}
+                                            >
+                                                View All
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="up-reviews-grid up-reviews-grid-compact">
+                                        {reviews.slice(0, 2).map((review) => (
+                                            <ReviewCard key={review.id} review={review} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="up-contact-summary-section">
                                 <div className="up-section-header">
-                                    <h2 className="up-section-title">Recent Reviews</h2>
-                                    {reviews.length > 4 && (
+                                    <h2 className="up-section-title">Contact Information</h2>
+                                    {isOwnProfile && (
                                         <button
                                             className="up-view-all-btn"
-                                            onClick={() => setActiveSection('reviews')}
+                                            onClick={() => openProfileSettings('profile')}
                                         >
-                                            View All
+                                            Edit Details
+                                        </button>
+                                    )}
+                                    {!isOwnProfile && (
+                                        <button
+                                            className="up-view-all-btn"
+                                            onClick={() => setActiveSection('contact')}
+                                        >
+                                            View Details
                                         </button>
                                     )}
                                 </div>
 
-                                <div className="up-reviews-grid up-reviews-grid-compact">
-                                    {reviews.slice(0, 2).map((review) => (
-                                        <ReviewCard key={review.id} review={review} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Contact Summary */}
-                        <div className="up-contact-summary-section">
-                            <div className="up-section-header">
-                                <h2 className="up-section-title">Contact Information</h2>
-                                {isOwnProfile && (
-                                    <button
-                                        className="up-view-all-btn"
-                                        onClick={() => openProfileSettings('profile')}
-                                    >
-                                        Edit Details
-                                    </button>
-                                )}
-                                {!isOwnProfile && (
-                                    <button
-                                        className="up-view-all-btn"
-                                        onClick={() => setActiveSection('contact')}
-                                    >
-                                        View Details
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="up-contact-summary">
-                                <div className="up-contact-item">
-                                    <FontAwesomeIcon icon={faEnvelope} className="up-contact-icon" />
-                                    {isOwnProfile || userData.showEmailOnProfile ? (
-                                        <span>{userData.email}</span>
-                                    ) : (
-                                        <span className="up-contact-private">
-                                            <FontAwesomeIcon icon={faEyeSlash} /> Email address is private
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="up-contact-item">
-                                    <FontAwesomeIcon icon={faPhone} className="up-contact-icon" />
-                                    {userData.phone && (isOwnProfile || userData.showPhoneOnAdverts) ? (
-                                        <span>{userData.phone}</span>
-                                    ) : (
-                                        <span className="up-contact-private">
-                                            <FontAwesomeIcon icon={faEyeSlash} /> Phone number is private
-                                        </span>
-                                    )}
-                                </div>
-
-                                {userData.postcode && (
+                                <div className="up-contact-summary">
                                     <div className="up-contact-item">
-                                        <FontAwesomeIcon icon={faMapMarkerAlt} className="up-contact-icon" />
-                                        <span>{userData.postcode}</span>
+                                        <FontAwesomeIcon icon={faEnvelope} className="up-contact-icon" />
+                                        {isOwnProfile || userData.showEmailOnProfile ? (
+                                            <span>{userData.email}</span>
+                                        ) : (
+                                            <span className="up-contact-private">
+                                                <FontAwesomeIcon icon={faEyeSlash} /> Email address is private
+                                            </span>
+                                        )}
                                     </div>
-                                )}
+
+                                    <div className="up-contact-item">
+                                        <FontAwesomeIcon icon={faPhone} className="up-contact-icon" />
+                                        {userData.phone && (isOwnProfile || userData.showPhoneOnAdverts) ? (
+                                            <span>{userData.phone}</span>
+                                        ) : (
+                                            <span className="up-contact-private">
+                                                <FontAwesomeIcon icon={faEyeSlash} /> Phone number is private
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {userData.postcode && (
+                                        <div className="up-contact-item">
+                                            <FontAwesomeIcon icon={faMapMarkerAlt} className="up-contact-icon" />
+                                            <span>{userData.postcode}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Reviews Section */}
-                {activeSection === 'reviews' && (
-                    <div className="up-reviews-section">
-                        <h2 className="up-section-title">All Reviews</h2>
+                    {activeSection === 'reviews' && (
+                        <div className="up-reviews-section">
+                            <h2 className="up-section-title">All Reviews</h2>
 
-                        {reviews.length === 0 ? (
-                            <div className="up-no-content">
-                                <p>No reviews yet.</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="up-reviews-stats">
-                                    <div className="up-rating-summary">
-                                        <div className="up-rating-big">{averageRating}</div>
-                                        <div className="up-rating-stars-big">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <FontAwesomeIcon
-                                                    key={i}
-                                                    icon={solidStar}
-                                                    className={i <= Math.round(averageRating) ? "up-star up-active" : "up-star"}
-                                                />
-                                            ))}
+                            {reviews.length === 0 ? (
+                                <div className="up-no-content">
+                                    <p>No reviews yet.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="up-reviews-stats">
+                                        <div className="up-rating-summary">
+                                            <div className="up-rating-big">{averageRating}</div>
+                                            <div className="up-rating-stars-big">
+                                                {[1, 2, 3, 4, 5].map(i => (
+                                                    <FontAwesomeIcon
+                                                        key={i}
+                                                        icon={solidStar}
+                                                        className={i <= Math.round(averageRating) ? "up-star up-active" : "up-star"}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div className="up-rating-count-big">{reviews.length} reviews</div>
                                         </div>
-                                        <div className="up-rating-count-big">{reviews.length} reviews</div>
+
+                                        {Object.keys(aspectCounts).length > 0 && (
+                                            <div className="up-aspects-summary">
+                                                <h3 className="up-aspects-title">Top Qualities</h3>
+                                                <div className="up-aspects-list">
+                                                    {Object.entries(aspectCounts)
+                                                        .sort((a, b) => b[1] - a[1])
+                                                        .slice(0, 3)
+                                                        .map(([aspect, count]) => (
+                                                            <div key={aspect} className="up-aspect-item">
+                                                                <FontAwesomeIcon icon={aspectIconMap[aspect] || faStar} />
+                                                                <span>{aspect}</span>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {Object.keys(aspectCounts).length > 0 && (
-                                        <div className="up-aspects-summary">
-                                            <h3 className="up-aspects-title">Top Qualities</h3>
-                                            <div className="up-aspects-list">
-                                                {Object.entries(aspectCounts)
-                                                    .sort((a, b) => b[1] - a[1])
-                                                    .slice(0, 3)
-                                                    .map(([aspect, count]) => (
-                                                        <div key={aspect} className="up-aspect-item">
-                                                            <FontAwesomeIcon icon={aspectIconMap[aspect] || faStar} />
-                                                            <span>{aspect}</span>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                    <div className="up-reviews-grid">
+                                        {displayedReviews.map(review => (
+                                            <ReviewCard
+                                                key={review.id}
+                                                review={review}
+                                                isOwnProfile={isOwnProfile}
+                                                onSubmitResponse={async (reviewId, response, dogName) => {
+                                                    try {
+                                                        const reviewRef = doc(db, "reviews", reviewId);
+                                                        await updateDoc(reviewRef, {
+                                                            response,
+                                                            responseTimestamp: new Date().toISOString()
+                                                        });
 
-                                <div className="up-reviews-grid">
-                                    {displayedReviews.map(review => (
-                                        <ReviewCard
-                                            key={review.id}
-                                            review={review}
-                                            isOwnProfile={isOwnProfile}
-                                            onSubmitResponse={async (reviewId, response, dogName) => {
-                                                try {
-                                                    const reviewRef = doc(db, "reviews", reviewId);
-                                                    await updateDoc(reviewRef, {
-                                                        response,
-                                                        responseTimestamp: new Date().toISOString()
-                                                    });
+                                                        const reviewDoc = await getDoc(reviewRef);
+                                                        if (reviewDoc.exists()) {
+                                                            const reviewData = reviewDoc.data();
+                                                            const reviewerRef = doc(db, "users", reviewData.reviewerId);
+                                                            const reviewerDoc = await getDoc(reviewerRef);
 
-                                                    // Get the review data to find the reviewer
-                                                    const reviewDoc = await getDoc(reviewRef);
-                                                    if (reviewDoc.exists()) {
-                                                        const reviewData = reviewDoc.data();
-
-                                                        // Get reviewer's user data to check notification preferences
-                                                        const reviewerRef = doc(db, "users", reviewData.reviewerId);
-                                                        const reviewerDoc = await getDoc(reviewerRef);
-
-                                                        if (reviewerDoc.exists()) {
-                                                            const reviewerData = reviewerDoc.data();
-
-                                                            // Only send email if reviewer allows notifications
-                                                            if (reviewerData.allowNotifications !== false) {
-                                                                try {
-                                                                    // Send email notification to the reviewer
-                                                                    await sendReviewResponseNotification({
-                                                                        reviewerEmail: reviewerData.email,
-                                                                        reviewerName: reviewerData.firstName,
-                                                                        ownerName: userData.firstName,
-                                                                        ownerOrganization: userData.breederType === 'rescue' ? userData.organizationName : null,
-                                                                        reviewText: reviewData.text,
-                                                                        responseText: response,
-                                                                        dogName: dogName, // ← Use the passed dog name
-                                                                        profileUrl: `${window.location.origin}/profile/${uid}`
-                                                                    });
-                                                                    console.log('Review response notification sent successfully');
-                                                                } catch (emailError) {
-                                                                    console.error('Failed to send review response notification:', emailError);
-                                                                    // Don't show error to user since the response was still saved
+                                                            if (reviewerDoc.exists()) {
+                                                                const reviewerData = reviewerDoc.data();
+                                                                if (reviewerData.allowNotifications !== false) {
+                                                                    try {
+                                                                        await sendReviewResponseNotification({
+                                                                            reviewerEmail: reviewerData.email,
+                                                                            reviewerName: reviewerData.firstName,
+                                                                            ownerName: userData.firstName,
+                                                                            ownerOrganization: userData.breederType === 'rescue' ? userData.organizationName : null,
+                                                                            reviewText: reviewData.text,
+                                                                            responseText: response,
+                                                                            dogName: dogName,
+                                                                            profileUrl: `${window.location.origin}/profile/${uid}`
+                                                                        });
+                                                                        console.log('Review response notification sent successfully');
+                                                                    } catch (emailError) {
+                                                                        console.error('Failed to send review response notification:', emailError);
+                                                                    }
                                                                 }
                                                             }
                                                         }
+
+                                                        setReviews(prev =>
+                                                            prev.map(r => (r.id === reviewId ? { ...r, response } : r))
+                                                        );
+
+                                                        alert('Response submitted successfully!');
+                                                    } catch (err) {
+                                                        console.error("Failed to submit response:", err);
+                                                        alert("Failed to save response. Try again.");
                                                     }
-
-                                                    // Update local state for instant UI update
-                                                    setReviews(prev =>
-                                                        prev.map(r => (r.id === reviewId ? { ...r, response } : r))
-                                                    );
-
-                                                    alert('Response submitted successfully!');
-                                                } catch (err) {
-                                                    console.error("Failed to submit response:", err);
-                                                    alert("Failed to save response. Try again.");
-                                                }
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-
-                                {reviews.length > 4 && (
-                                    <button
-                                        className="up-show-more-btn"
-                                        onClick={() => setShowAllReviews(prev => !prev)}
-                                    >
-                                        {showAllReviews ? (
-                                            <>
-                                                <span>Show fewer reviews</span>
-                                                <FontAwesomeIcon icon={faChevronUp} />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>Show more reviews ({reviews.length - 4} more)</span>
-                                                <FontAwesomeIcon icon={faChevronDown} />
-                                            </>
-                                        )}
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {/* Contact Section */}
-                {activeSection === 'contact' && (
-                    <div className="up-contact-section">
-                        <h2 className="up-section-title">Contact Information</h2>
-
-                        <div className="up-contact-card">
-                            <div className="up-contact-group">
-                                <h3 className="up-contact-group-title">
-                                    <FontAwesomeIcon icon={faEnvelope} />
-                                    Email Address
-                                </h3>
-                                <div className="up-contact-value">
-                                    {isOwnProfile || userData.showEmailOnProfile ? (
-                                        userData.email
-                                    ) : (
-                                        <p className="up-contact-privacy-note">
-                                            <FontAwesomeIcon icon={faEyeSlash} /> Email address is private
-                                        </p>
-                                    )}
-                                </div>
-
-                                {isOwnProfile && (
-                                    <div className="up-toggle-visibility">
-                                        <label className="up-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={userData.showEmailOnProfile || false}
-                                                onChange={handleToggleEmailVisibility}
-                                                style={{ marginRight: '8px' }}
+                                                }}
                                             />
-                                            <span className="up-checkbox-text">Show my email address on my profile</span>
-                                        </label>
-                                        <p className="up-checkbox-note">
-                                            If enabled, your email address will be visible to other registered users visiting your profile.
-                                        </p>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
 
-                            <div className="up-contact-group">
-                                <h3 className="up-contact-group-title">
-                                    <FontAwesomeIcon icon={faPhone} />
-                                    Phone Number
-                                </h3>
-                                <div className="up-contact-value">
-                                    {userData.phone && (isOwnProfile || userData.showPhoneOnAdverts) ? (
-                                        userData.phone
-                                    ) : (
-                                        <p className="up-contact-privacy-note">
-                                            <FontAwesomeIcon icon={faEyeSlash} /> {userData.phone ? "Phone number is private" : "Phone number not provided"}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {isOwnProfile && (
-                                    <div className="up-toggle-visibility">
-                                        <label className="up-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={userData.showPhoneOnAdverts || false}
-                                                onChange={handleTogglePhoneVisibility}
-                                                style={{ marginRight: '8px' }}
-                                            />
-                                            <span className="up-checkbox-text">Show my phone number on my adverts and profile</span>
-                                        </label>
-                                        <p className="up-checkbox-note">
-                                            If enabled, your phone number will appear on your adverts and profile, allowing other registered users to contact you directly.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="up-contact-group">
-                                <h3 className="up-contact-group-title">
-                                    <FontAwesomeIcon icon={faEnvelopeOpenText} />
-                                    Notification Preferences
-                                </h3>
-                                <div className="up-contact-value">
-                                    <p className="up-notification-status">
-                                        {userData.allowNotifications !== false ? (
-                                            <span className="up-notifications-enabled">
-                                                <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981', marginRight: '8px' }} />
-                                                Email and SMS notifications are enabled
-                                            </span>
-                                        ) : (
-                                            <span className="up-notifications-disabled">
-                                                <FontAwesomeIcon icon={faEyeSlash} style={{ color: '#6b7280', marginRight: '8px' }} />
-                                                All notifications are disabled
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-
-                                {isOwnProfile && (
-                                    <div className="up-toggle-visibility">
-                                        <label className="up-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={userData.allowNotifications !== false}
-                                                onChange={handleToggleNotifications}
-                                                style={{ marginRight: '8px' }}
-                                            />
-                                            <span className="up-checkbox-text">Allow email and SMS notifications</span>
-                                        </label>
-                                        <p className="up-checkbox-note">
-                                            When disabled, you will not receive any email or SMS notifications from our platform, including messages, updates, and alerts.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="up-contact-group">
-                                <h3 className="up-contact-group-title">
-                                    <FontAwesomeIcon icon={faMapMarkerAlt} />
-                                    Address
-                                </h3>
-                                <div className="up-contact-address">
-                                    {isOwnProfile ? (
-                                        <>
-                                            {userData.address1 && <div>{userData.address1}</div>}
-                                            {userData.address2 && <div>{userData.address2}</div>}
-                                            {userData.city && <div>{userData.city}</div>}
-                                            {userData.county && <div>{userData.county}</div>}
-                                            {userData.postcode && <div className="up-contact-postcode">{userData.postcode}</div>}
-                                            {!userData.address1 && !userData.address2 && !userData.city &&
-                                                !userData.county && !userData.postcode && <div>No address provided</div>}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {userData.postcode ? (
-                                                <div className="up-contact-postcode-only">
-                                                    <span>Postcode: {userData.postcode}</span>
-                                                    <p className="up-address-privacy-note">
-                                                        <FontAwesomeIcon icon={faEyeSlash} /> Full address is only visible to the profile owner
-                                                    </p>
-                                                </div>
+                                    {reviews.length > 4 && (
+                                        <button
+                                            className="up-show-more-btn"
+                                            onClick={() => setShowAllReviews(prev => !prev)}
+                                        >
+                                            {showAllReviews ? (
+                                                <>
+                                                    <span>Show fewer reviews</span>
+                                                    <FontAwesomeIcon icon={faChevronUp} />
+                                                </>
                                             ) : (
-                                                <p className="up-contact-privacy-note">
-                                                    <FontAwesomeIcon icon={faEyeSlash} /> No location information available
-                                                </p>
+                                                <>
+                                                    <span>Show more reviews ({reviews.length - 4} more)</span>
+                                                    <FontAwesomeIcon icon={faChevronDown} />
+                                                </>
                                             )}
-                                        </>
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {activeSection === 'contact' && (
+                        <div className="up-contact-section">
+                            <h2 className="up-section-title">Contact Information</h2>
+
+                            <div className="up-contact-card">
+                                <div className="up-contact-group">
+                                    <h3 className="up-contact-group-title">
+                                        <FontAwesomeIcon icon={faEnvelope} />
+                                        Email Address
+                                    </h3>
+                                    <div className="up-contact-value">
+                                        {isOwnProfile || userData.showEmailOnProfile ? (
+                                            userData.email
+                                        ) : (
+                                            <p className="up-contact-privacy-note">
+                                                <FontAwesomeIcon icon={faEyeSlash} /> Email address is private
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {isOwnProfile && (
+                                        <div className="up-toggle-visibility">
+                                            <label className="up-checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={userData.showEmailOnProfile || false}
+                                                    onChange={handleToggleEmailVisibility}
+                                                    style={{ marginRight: '8px' }}
+                                                />
+                                                <span className="up-checkbox-text">Show my email address on my profile</span>
+                                            </label>
+                                            <p className="up-checkbox-note">
+                                                If enabled, your email address will be visible to other registered users visiting your profile.
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
+
+                                <div className="up-contact-group">
+                                    <h3 className="up-contact-group-title">
+                                        <FontAwesomeIcon icon={faPhone} />
+                                        Phone Number
+                                    </h3>
+                                    <div className="up-contact-value">
+                                        {userData.phone && (isOwnProfile || userData.showPhoneOnAdverts) ? (
+                                            userData.phone
+                                        ) : (
+                                            <p className="up-contact-privacy-note">
+                                                <FontAwesomeIcon icon={faEyeSlash} /> {userData.phone ? "Phone number is private" : "Phone number not provided"}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {isOwnProfile && (
+                                        <div className="up-toggle-visibility">
+                                            <label className="up-checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={userData.showPhoneOnAdverts || false}
+                                                    onChange={handleTogglePhoneVisibility}
+                                                    style={{ marginRight: '8px' }}
+                                                />
+                                                <span className="up-checkbox-text">Show my phone number on my adverts and profile</span>
+                                            </label>
+                                            <p className="up-checkbox-note">
+                                                If enabled, your phone number will appear on your adverts and profile, allowing other registered users to contact you directly.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="up-contact-group">
+                                    <h3 className="up-contact-group-title">
+                                        <FontAwesomeIcon icon={faEnvelopeOpenText} />
+                                        Notification Preferences
+                                    </h3>
+                                    <div className="up-contact-value">
+                                        <p className="up-notification-status">
+                                            {userData.allowNotifications !== false ? (
+                                                <span className="up-notifications-enabled">
+                                                    <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981', marginRight: '8px' }} />
+                                                    Email and SMS notifications are enabled
+                                                </span>
+                                            ) : (
+                                                <span className="up-notifications-disabled">
+                                                    <FontAwesomeIcon icon={faEyeSlash} style={{ color: '#6b7280', marginRight: '8px' }} />
+                                                    All notifications are disabled
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    {isOwnProfile && (
+                                        <div className="up-toggle-visibility">
+                                            <label className="up-checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={userData.allowNotifications !== false}
+                                                    onChange={handleToggleNotifications}
+                                                    style={{ marginRight: '8px' }}
+                                                />
+                                                <span className="up-checkbox-text">Allow email and SMS notifications</span>
+                                            </label>
+                                            <p className="up-checkbox-note">
+                                                When disabled, you will not receive any email or SMS notifications from our platform, including messages, updates, and alerts.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="up-contact-group">
+                                    <h3 className="up-contact-group-title">
+                                        <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                        Address
+                                    </h3>
+                                    <div className="up-contact-address">
+                                        {isOwnProfile ? (
+                                            <>
+                                                {userData.address1 && <div>{userData.address1}</div>}
+                                                {userData.address2 && <div>{userData.address2}</div>}
+                                                {userData.city && <div>{userData.city}</div>}
+                                                {userData.county && <div>{userData.county}</div>}
+                                                {userData.postcode && <div className="up-contact-postcode">{userData.postcode}</div>}
+                                                {!userData.address1 && !userData.address2 && !userData.city &&
+                                                    !userData.county && !userData.postcode && <div>No address provided</div>}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {userData.postcode ? (
+                                                    <div className="up-contact-postcode-only">
+                                                        <span>Postcode: {userData.postcode}</span>
+                                                        <p className="up-address-privacy-note">
+                                                            <FontAwesomeIcon icon={faEyeSlash} /> Full address is only visible to the profile owner
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="up-contact-privacy-note">
+                                                        <FontAwesomeIcon icon={faEyeSlash} /> No location information available
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {isOwnProfile && (
+                                    <div className="up-contact-actions">
+                                        <button
+                                            className="up-edit-contact-btn"
+                                            onClick={() => openProfileSettings('profile')}
+                                        >
+                                            <FontAwesomeIcon icon={faPencilAlt} />
+                                            Edit Contact Details
+                                        </button>
+
+                                        <button
+                                            className="up-change-password-btn"
+                                            onClick={() => openProfileSettings('password')}
+                                        >
+                                            <FontAwesomeIcon icon={faLock} />
+                                            Change Password
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             {isOwnProfile && (
-                                <div className="up-contact-actions">
-                                    <button
-                                        className="up-edit-contact-btn"
-                                        onClick={() => openProfileSettings('profile')}
-                                    >
-                                        <FontAwesomeIcon icon={faPencilAlt} />
-                                        Edit Contact Details
-                                    </button>
-
-                                    <button
-                                        className="up-change-password-btn"
-                                        onClick={() => openProfileSettings('password')}
-                                    >
-                                        <FontAwesomeIcon icon={faLock} />
-                                        Change Password
-                                    </button>
-                                </div>
+                                <DeleteAccountSection
+                                    currentUserId={currentUserId}
+                                    userEmail={userData.email}
+                                />
                             )}
                         </div>
+                    )}
 
-                        {/* Add Delete Account Section here - only visible to profile owner */}
-                        {isOwnProfile && (
-                            <DeleteAccountSection
-                                currentUserId={currentUserId}
-                                userEmail={userData.email}
+                    {activeSection === 'features' && isOwnProfile && (
+                        <FeatureRequestSection isOwnProfile={isOwnProfile} userId={uid} />
+                    )}
+                </div>
+
+                {showReportUserModal && (
+                    <div className="modal-overlay" onClick={() => setShowReportUserModal(false)}>
+                        <div className="report-user-modal" onClick={e => e.stopPropagation()}>
+                            <button className="close-modal" onClick={() => setShowReportUserModal(false)}>×</button>
+                            <h2>Report User</h2>
+
+                            <label htmlFor="user-report-reason">Reason for Reporting</label>
+                            <select
+                                id="user-report-reason"
+                                value={userReportReason}
+                                onChange={e => setUserReportReason(e.target.value)}
+                                required
+                            >
+                                <option value="">Select a reason</option>
+                                <option value="Inappropriate Behaviour">Inappropriate Behaviour</option>
+                                <option value="Spam or Scam">Spam or Scam</option>
+                                <option value="Fraudulent Information">Fraudulent Information</option>
+                                <option value="Other">Other</option>
+                            </select>
+
+                            <label htmlFor="user-report-comments">Additional Comments (optional)</label>
+                            <textarea
+                                id="user-report-comments"
+                                value={userReportComments}
+                                onChange={e => setUserReportComments(e.target.value)}
+                                placeholder="Provide any additional details here..."
                             />
-                        )}
+
+                            <button
+                                className="submit-report-btn"
+                                disabled={!userReportReason || userReportSubmitting}
+                                onClick={async () => {
+                                    if (!userReportReason) {
+                                        alert("Please select a reason.");
+                                        return;
+                                    }
+                                    setUserReportSubmitting(true);
+                                    try {
+                                        await addDoc(collection(db, "userReports"), {
+                                            reportedUserId: uid,
+                                            reporterId: currentUserId,
+                                            reporterEmail: auth.currentUser.email,
+                                            reporterName: userData.firstName ? `${userData.firstName} ${userData.lastName || ""}`.trim() : "",
+                                            reason: userReportReason,
+                                            comments: userReportComments,
+                                            createdAt: serverTimestamp(),
+                                            status: "pending"
+                                        });
+                                        alert("Report submitted successfully.");
+                                        setShowReportUserModal(false);
+                                        setUserReportReason('');
+                                        setUserReportComments('');
+                                    } catch (error) {
+                                        console.error("Failed to submit user report:", error);
+                                        alert("Failed to submit report. Please try again later.");
+                                    } finally {
+                                        setUserReportSubmitting(false);
+                                    }
+                                }}
+                            >
+                                Submit Report
+                            </button>
+                        </div>
                     </div>
                 )}
 
-                {/* Feature Requests Section */}
-                {activeSection === 'features' && isOwnProfile && (
-                    <FeatureRequestSection isOwnProfile={isOwnProfile} userId={uid} />
+                {isOwnProfile && showSettingsModal && (
+                    <ProfileSettingsModal
+                        currentData={userData}
+                        onSave={handleSaveContact}
+                        onClose={() => setShowSettingsModal(false)}
+                        initialTab={settingsInitialTab}
+                    />
                 )}
             </div>
-
-            {showReportUserModal && (
-                <div className="modal-overlay" onClick={() => setShowReportUserModal(false)}>
-                    <div className="report-user-modal" onClick={e => e.stopPropagation()}>
-                        <button className="close-modal" onClick={() => setShowReportUserModal(false)}>×</button>
-                        <h2>Report User</h2>
-
-                        <label htmlFor="user-report-reason">Reason for Reporting</label>
-                        <select
-                            id="user-report-reason"
-                            value={userReportReason}
-                            onChange={e => setUserReportReason(e.target.value)}
-                            required
-                        >
-                            <option value="">Select a reason</option>
-                            <option value="Inappropriate Behaviour">Inappropriate Behaviour</option>
-                            <option value="Spam or Scam">Spam or Scam</option>
-                            <option value="Fraudulent Information">Fraudulent Information</option>
-                            <option value="Other">Other</option>
-                        </select>
-
-                        <label htmlFor="user-report-comments">Additional Comments (optional)</label>
-                        <textarea
-                            id="user-report-comments"
-                            value={userReportComments}
-                            onChange={e => setUserReportComments(e.target.value)}
-                            placeholder="Provide any additional details here..."
-                        />
-
-                        <button
-                            className="submit-report-btn"
-                            disabled={!userReportReason || userReportSubmitting}
-                            onClick={async () => {
-                                if (!userReportReason) {
-                                    alert("Please select a reason.");
-                                    return;
-                                }
-                                setUserReportSubmitting(true);
-                                try {
-                                    await addDoc(collection(db, "userReports"), {
-                                        reportedUserId: uid,
-                                        reporterId: currentUserId,
-                                        reporterEmail: auth.currentUser.email,
-                                        reporterName: userData.firstName ? `${userData.firstName} ${userData.lastName || ""}`.trim() : "",
-                                        reason: userReportReason,
-                                        comments: userReportComments,
-                                        createdAt: serverTimestamp(),
-                                        status: "pending"
-                                    });
-                                    alert("Report submitted successfully.");
-                                    setShowReportUserModal(false);
-                                    setUserReportReason('');
-                                    setUserReportComments('');
-                                } catch (error) {
-                                    console.error("Failed to submit user report:", error);
-                                    alert("Failed to submit report. Please try again later.");
-                                } finally {
-                                    setUserReportSubmitting(false);
-                                }
-                            }}
-                        >
-                            Submit Report
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Settings Modal */}
-            {isOwnProfile && showSettingsModal && (
-                <ProfileSettingsModal
-                    currentData={userData}
-                    onSave={handleSaveContact}
-                    onClose={() => setShowSettingsModal(false)}
-                    initialTab={settingsInitialTab}
-                />
-            )}
-        </div>
-
-            </>
-
+        </>
     );
 }
