@@ -1,13 +1,14 @@
 import React, {useEffect} from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import {onAuthStateChanged} from "firebase/auth";
 import {doc, updateDoc, setDoc, serverTimestamp, getDoc} from "firebase/firestore";
 import {auth, db} from "./firebase/firebase";
 import useIdleLogout from "./hooks/useIdleLogout";
 import './index.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { initGA, trackPageView, trackEvent } from "./utils/analytics";
 
-import { NotificationProvider } from "./context/NotificationContext"; // Add this import
+import { NotificationProvider } from "./context/NotificationContext";
 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -46,16 +47,77 @@ import FollowingFeed from "./pages/FollowingFeed";
 import DogRescueDashboard from './pages/DogRescueDashboard';
 import AdWizardRescue from './pages/AdWizardRescue';
 
+// Page Tracker Component for automatic tracking
+function PageTracker() {
+    const location = useLocation();
+
+    React.useEffect(() => {
+        // Get custom page titles based on route
+        const getPageTitle = (pathname) => {
+            const routes = {
+                '/': 'Home - My Pet Connect',
+                '/browse': 'Browse Studs - My Pet Connect',
+                '/new-advert': 'Create Advert - My Pet Connect',
+                '/my-adverts': 'My Adverts - My Pet Connect',
+                '/favourites': 'Favourites - My Pet Connect',
+                '/top-studs': 'Top Studs - My Pet Connect',
+                '/help': 'Help & Support - My Pet Connect',
+                '/breeding-guide': 'Breeding Guide - My Pet Connect',
+                '/about': 'About Us - My Pet Connect',
+                '/dog-rescue': 'Dog Rescue - My Pet Connect',
+                '/messages': 'Messages - My Pet Connect',
+                '/register': 'Register - My Pet Connect',
+                '/cookie-policy': 'Cookie Policy - My Pet Connect',
+                '/privacy-policy': 'Privacy Policy - My Pet Connect',
+                '/terms-of-service': 'Terms of Service - My Pet Connect',
+                '/following-feed': 'Following Feed - My Pet Connect'
+            };
+
+            // Handle dynamic routes
+            if (pathname.includes('/advert-details/')) return 'Advert Details - My Pet Connect';
+            if (pathname.includes('/profile/')) return 'User Profile - My Pet Connect';
+            if (pathname.includes('/edit/')) return 'Edit Advert - My Pet Connect';
+            if (pathname.includes('/edit-stud/')) return 'Edit Stud - My Pet Connect';
+            if (pathname.includes('/admin/')) return 'Admin Dashboard - My Pet Connect';
+            if (pathname.includes('/adwizard-rescue')) return 'Rescue Advert - My Pet Connect';
+
+            return routes[pathname] || `${pathname} - My Pet Connect`;
+        };
+
+        const pageTitle = getPageTitle(location.pathname);
+        trackPageView(location.pathname, pageTitle);
+
+        // Track section navigation for analytics
+        const section = location.pathname.split('/')[1] || 'home';
+        trackEvent('page_view', 'navigation', section);
+
+    }, [location]);
+
+    return null;
+}
+
 function App() {
     const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
 
-    useIdleLogout(); // 👈 Call useIdleLogout at the top level of the component
+    useIdleLogout();
 
+    // State for cookie banner
+    const [showCookieBanner, setShowCookieBanner] = React.useState(false);
+
+    const resetCookieConsent = () => {
+        localStorage.removeItem('cookieConsent');
+        setShowCookieBanner(true);
+    };
+
+    // Firebase auth effect with login/logout tracking
     useEffect(() => {
         let interval;
 
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // Track user login
+                trackEvent('login', 'auth', 'firebase_auth');
+
                 const userRef = doc(db, "users", user.uid);
 
                 // Helper function to safely update lastSeen
@@ -90,6 +152,8 @@ function App() {
                 // Set up interval for periodic updates
                 interval = setInterval(updateLastSeen, 60000); // Every minute
             } else {
+                // Track user logout
+                trackEvent('logout', 'auth', 'firebase_auth');
                 if (interval) clearInterval(interval);
             }
         });
@@ -100,20 +164,22 @@ function App() {
         };
     }, []);
 
-    const [showCookieBanner, setShowCookieBanner] = React.useState(false);
-
+    // Cookie consent effect with GA4 initialization
     React.useEffect(() => {
         const consent = localStorage.getItem('cookieConsent');
         setShowCookieBanner(!consent);
-    }, []);
 
-    const resetCookieConsent = () => {
-        localStorage.removeItem('cookieConsent');
-        setShowCookieBanner(true);
-    };
+        // Add GA4 initialization if consent already exists
+        if (consent === 'accepted') {
+            initGA();
+            trackPageView(window.location.pathname, document.title);
+            trackEvent('app_loaded', 'navigation', 'initial_load');
+        }
+    }, []);
 
     return (
         <NotificationProvider>
+            <PageTracker />
             <LoginModal isOpen={isLoginOpen} onClose={closeLogin} />
             <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner} />
 

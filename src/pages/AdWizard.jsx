@@ -39,6 +39,9 @@ export default function AdWizard({ mode }) {
     const studCategories = ["dogs", "cats"];
     const [mainImageIndex, setMainImageIndex] = useState(null);
 
+    // Add state for field validation
+    const [fieldErrors, setFieldErrors] = useState({});
+
     const navigate = useNavigate();
 
     // Helper function for image management
@@ -76,6 +79,7 @@ export default function AdWizard({ mode }) {
             setHealthTests(Array(10).fill(""));
             setFormFields([]);
             setMainImageIndex(null);
+            setFieldErrors({});
         }
     };
 
@@ -236,28 +240,144 @@ export default function AdWizard({ mode }) {
         }
     }, [mode, adId]);
 
-    // Render form fields based on configuration
+    // Scroll to top when step changes
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }, [step]);
+
+    // Validation function
+    const validateFormFields = () => {
+        const errors = {};
+
+        // Get all fields that should be validated for current category/intent
+        const fieldsToValidate = formFields.filter(f => f !== "breed");
+
+        fieldsToValidate.forEach(fieldName => {
+            const config = fieldConfigurations[fieldName];
+            if (!config) return;
+
+            const isRequired = config.required === true;
+            const value = formData[fieldName];
+
+            if (isRequired) {
+                // Check for empty required fields
+                if (!value || (typeof value === 'string' && value.trim() === '')) {
+                    errors[fieldName] = `${config.label} is required`;
+                }
+                // Special validation for checkboxes that are required
+                else if (config.type === 'checkbox' && !value) {
+                    errors[fieldName] = `${config.label} must be selected`;
+                }
+            }
+
+            // Additional validations for specific field types
+            if (value) {
+                if (config.type === 'number' && isNaN(parseFloat(value))) {
+                    errors[fieldName] = `${config.label} must be a valid number`;
+                }
+
+                if (fieldName === 'description' && value.length < 10) {
+                    errors[fieldName] = 'Description must be at least 10 characters long';
+                }
+
+                if (fieldName === 'title' && value.length < 5) {
+                    errors[fieldName] = 'Title must be at least 5 characters long';
+                }
+            }
+        });
+
+        // Always validate images
+        if (images.length === 0) {
+            errors.images = 'At least one image is required';
+        }
+
+        return errors;
+    };
+
+    // Handle continue to step 5 with validation
+    const handleContinueToStep5 = () => {
+        const validationErrors = validateFormFields();
+
+        if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+
+            // Show summary alert
+            const errorMessages = Object.values(validationErrors);
+            alert("Please fix the following issues:\n\n• " + errorMessages.join('\n• '));
+
+            // Scroll to first error field
+            const firstErrorField = Object.keys(validationErrors)[0];
+            if (firstErrorField !== 'images') {
+                const element = document.getElementById(firstErrorField);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.focus();
+                }
+            }
+
+            return;
+        }
+
+        // Clear any existing errors and proceed
+        setFieldErrors({});
+        setStep(5);
+    };
+
+    // Render form fields based on configuration with validation
     const renderField = (fieldName) => {
         const config = fieldConfigurations[fieldName];
         if (!config) return null;
 
+        const isRequired = config.required === true;
+        const hasError = fieldErrors?.[fieldName];
+        const hasValue = formData[fieldName] && formData[fieldName].toString().trim() !== '';
+
+        // Add required class and error state
+        const fieldClasses = [
+            'adwizard-form-control',
+            hasError ? 'error' : '',
+            hasValue && isRequired ? 'valid' : ''
+        ].filter(Boolean).join(' ');
+
+        const groupClasses = [
+            'adwizard-form-group',
+            isRequired ? 'required' : '',
+            hasValue && isRequired ? 'completed' : ''
+        ].filter(Boolean).join(' ');
+
         if (fieldName === "availableDate" || fieldName === "dob") {
             return (
-                <div className="adwizard-form-group" key={fieldName}>
-                    <label htmlFor={fieldName}>{config.label}</label>
+                <div className={groupClasses} key={fieldName}>
+                    <label htmlFor={fieldName}>
+                        {config.label}
+                        {isRequired && <span className="required-asterisk"> *</span>}
+                    </label>
                     <div className="adwizard-date-input-container">
                         <input
                             type="date"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
-                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
-                            }
-                            className="adwizard-form-control"
+                            onChange={(e) => {
+                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
+                                // Clear error when user inputs data
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
+                            className={fieldClasses}
                             placeholder={`Select ${config.label.toLowerCase()}`}
+                            required={isRequired}
                         />
                     </div>
+                    {hasError && (
+                        <div className="adwizard-error-message">
+                            {fieldErrors[fieldName]}
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -265,63 +385,94 @@ export default function AdWizard({ mode }) {
         switch (config.type) {
             case "text":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <input
                             type="text"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || config.label}
-                            className="adwizard-form-control"
+                            className={fieldClasses}
+                            required={isRequired}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "number":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <input
                             type="number"
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || `Enter ${config.label.toLowerCase()}`}
-                            className="adwizard-form-control"
+                            className={fieldClasses}
                             min="0"
                             step={fieldName.toLowerCase().includes("price") ? "0.01" : "1"}
+                            required={isRequired}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "select":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <select
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
                                 setFormData((prev) => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
-                            className="adwizard-form-control"
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
+                            className={fieldClasses}
+                            required={isRequired}
                         >
                             <option value="">{`Select ${config.label.toLowerCase()}`}</option>
                             {config.options.map((opt) => (
@@ -330,76 +481,114 @@ export default function AdWizard({ mode }) {
                                 </option>
                             ))}
                         </select>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
 
             case "checkbox":
                 return (
-                    <div className="adwizard-form-checkbox" key={fieldName}>
+                    <div className={groupClasses} key={fieldName}>
                         <label>
                             <input
                                 type="checkbox"
                                 name={fieldName}
                                 checked={formData[fieldName] || false}
-                                onChange={(e) =>
+                                onChange={(e) => {
                                     setFormData((prev) => ({
                                         ...prev,
                                         [fieldName]: e.target.checked
-                                    }))
-                                }
+                                    }));
+                                    if (fieldErrors?.[fieldName]) {
+                                        setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                    }
+                                }}
+                                required={isRequired}
                             />{" "}
                             {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
                         </label>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
+
             case "textarea":
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <textarea
                             id={fieldName}
                             name={fieldName}
                             value={formData[fieldName] || ""}
-                            onChange={e =>
+                            onChange={e => {
                                 setFormData(prev => ({
                                     ...prev,
                                     [fieldName]: e.target.value
-                                }))
-                            }
+                                }));
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
                             placeholder={config.placeholder || `Enter ${config.label.toLowerCase()}`}
-                            required={config.required}
-                            className="adwizard-form-control"
+                            required={isRequired}
+                            className={fieldClasses}
                             rows={4}
                         />
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
+
             case "date": {
-                // pull the existing value (string like "2023-05-21")
                 const raw = formData[fieldName] || "";
-                // parse into a JS Date or null
                 const parsedDate = raw ? new Date(raw) : null;
 
                 return (
-                    <div className="adwizard-form-group" key={fieldName}>
-                        <label htmlFor={fieldName}>{config.label}</label>
+                    <div className={groupClasses} key={fieldName}>
+                        <label htmlFor={fieldName}>
+                            {config.label}
+                            {isRequired && <span className="required-asterisk"> *</span>}
+                        </label>
                         <div className="react-datepicker-wrapper">
                             <div className="react-datepicker__input-container">
                                 <DatePicker
                                     id={fieldName}
                                     selected={parsedDate}
-                                    onChange={date =>
+                                    onChange={date => {
                                         setFormData(prev => ({
                                             ...prev,
-                                            // store as "YYYY-MM-DD"
                                             [fieldName]: date ? date.toISOString().split("T")[0] : ""
-                                        }))
-                                    }
+                                        }));
+                                        if (fieldErrors?.[fieldName]) {
+                                            setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                        }
+                                    }}
                                     dateFormat="yyyy-MM-dd"
                                     placeholderText={`Select ${config.label.toLowerCase()}`}
-                                    className="adwizard-form-control"
-                                    showMonthYearDropdown/>
+                                    className={fieldClasses}
+                                    showMonthYearDropdown
+                                    required={isRequired}
+                                />
                             </div>
                         </div>
+                        {hasError && (
+                            <div className="adwizard-error-message">
+                                {fieldErrors[fieldName]}
+                            </div>
+                        )}
                     </div>
                 );
             }
@@ -426,6 +615,15 @@ export default function AdWizard({ mode }) {
         const user = auth.currentUser;
         if (!user) {
             return alert("You must be logged in to post an advert.");
+        }
+
+        // Final validation before submission
+        const validationErrors = validateFormFields();
+        if (Object.keys(validationErrors).length > 0) {
+            setFieldErrors(validationErrors);
+            alert("Please fix all required fields before submitting.");
+            setStep(4); // Go back to form
+            return;
         }
 
         setIsSubmitting(true);
@@ -569,470 +767,510 @@ export default function AdWizard({ mode }) {
     };
 
     return (
-<>
-        <SEO
-            title="Create Your Pet Advert – Ad Wizard | My Pet Connect"
-            description="Effortlessly craft and publish new pet listings with our Ad Wizard. Add photos, set pricing, and reach local buyers for stud services, puppies, kittens, and more in minutes."
-        />
+        <>
+            <SEO
+                title="Create Your Pet Advert – Ad Wizard | My Pet Connect"
+                description="Effortlessly craft and publish new pet listings with our Ad Wizard. Add photos, set pricing, and reach local buyers for stud services, puppies, kittens, and more in minutes."
+            />
 
 
-    <div className="adwizard-container">
-            <h1 className="adwizard-title">{getHeading()}</h1>
+            <div className="adwizard-container">
+                <h1 className="adwizard-title">{getHeading()}</h1>
 
-            {renderProgressSteps()}
+                {renderProgressSteps()}
 
-            {/* Start Over button (only shown after step 1) */}
-            {step > 1 && (
-                <div className="adwizard-startover">
-                    <button
-                        className="adwizard-btn adwizard-btn-danger"
-                        onClick={handleStartOver}
-                    >
-                        Start Over
-                    </button>
-                </div>
-            )}
-
-            {/* Step 1: Category Selection */}
-            {step === 1 && (
-                <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 1: Select a Category</h2>
-                    <div className="adwizard-options">
-                        {["dogs", "cats", "livestock", "horses", "birds", "rabbits", "reptiles", "rodents", "fish", "invertebrates", "poultry"].map((cat) => (
-                            <button
-                                key={cat}
-                                className={`adwizard-option-button ${category === cat ? "selected" : ""}`}
-                                onClick={() => {
-                                    setCategory(cat);
-                                    if (studCategories.includes(cat)) {
-                                        // this category supports both Sale and Stud → go to step 2
-                                        setStep(2);
-                                    } else {
-                                        // sale-only → auto-set intent and jump straight to step 3
-                                        setIntent("sale");
-                                        setStep(3);
-                                    }
-                                }}
-                            >
-                                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                            </button>
-                        ))}
+                {/* Start Over button (only shown after step 1) */}
+                {step > 1 && (
+                    <div className="adwizard-startover">
+                        <button
+                            className="adwizard-btn adwizard-btn-danger"
+                            onClick={handleStartOver}
+                        >
+                            Start Over
+                        </button>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Step 2: Intent Selection (Sale or Stud) */}
-            {step === 2 && category && (
-                <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 2: Is your listing for Sale or Stud?</h2>
-                    <div className="adwizard-options">
-                        {["dogs", "cats", "horses"].includes(category) && (
-                            <>
+                {/* Step 1: Category Selection */}
+                {step === 1 && (
+                    <div className="adwizard-step">
+                        <h2 className="adwizard-subtitle">Step 1: Select a Category</h2>
+                        <div className="adwizard-options">
+                            {["dogs", "cats", "livestock", "horses", "birds", "rabbits", "reptiles", "rodents", "fish", "invertebrates", "poultry"].map((cat) => (
                                 <button
-                                    className={`adwizard-option-button ${intent === 'sale' ? 'selected' : ''}`}
+                                    key={cat}
+                                    className={`adwizard-option-button ${category === cat ? "selected" : ""}`}
+                                    onClick={() => {
+                                        setCategory(cat);
+                                        if (studCategories.includes(cat)) {
+                                            // this category supports both Sale and Stud → go to step 2
+                                            setStep(2);
+                                        } else {
+                                            // sale-only → auto-set intent and jump straight to step 3
+                                            setIntent("sale");
+                                            setStep(3);
+                                        }
+                                    }}
+                                >
+                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 2: Intent Selection (Sale or Stud) */}
+                {step === 2 && category && (
+                    <div className="adwizard-step">
+                        <h2 className="adwizard-subtitle">Step 2: Is your listing for Sale or Stud?</h2>
+                        <div className="adwizard-options">
+                            {["dogs", "cats", "horses"].includes(category) && (
+                                <>
+                                    <button
+                                        className={`adwizard-option-button ${intent === 'sale' ? 'selected' : ''}`}
+                                        onClick={() => {
+                                            setIntent("sale");
+                                            setStep(3);
+                                        }}
+                                    >
+                                        For Sale
+                                    </button>
+                                    {category !== "horses" && (
+                                        <button
+                                            className={`adwizard-option-button ${intent === 'stud' ? 'selected' : ''}`}
+                                            onClick={() => {
+                                                setIntent("stud");
+                                                setStep(3);
+                                            }}
+                                        >
+                                            For Stud
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                            {!["dogs", "cats", "horses"].includes(category) && (
+                                <button
+                                    className="adwizard-option-button"
                                     onClick={() => {
                                         setIntent("sale");
                                         setStep(3);
                                     }}
                                 >
-                                    For Sale
+                                    Continue
                                 </button>
-                                {category !== "horses" && (
-                                    <button
-                                        className={`adwizard-option-button ${intent === 'stud' ? 'selected' : ''}`}
-                                        onClick={() => {
-                                            setIntent("stud");
-                                            setStep(3);
-                                        }}
-                                    >
-                                        For Stud
-                                    </button>
-                                )}
-                            </>
+                            )}
+                        </div>
+                        <button className="adwizard-back-button" onClick={() => setStep(1)}>
+                            Go Back
+                        </button>
+                    </div>
+                )}
+
+                {/* Step 3: Breed or Type Selection */}
+                {step === 3 && intent && (
+                    <div className="adwizard-step">
+                        <h2 className="adwizard-subtitle">
+                            Step 3: Select a {category === "livestock" ? "Subtype" : "Breed"}
+                        </h2>
+
+                        {petBreedOptions[category] ? (
+                            <div className="adwizard-select-container">
+                                <Select
+                                    value={breedOrType ? { value: breedOrType, label: breedOrType } : null}
+                                    options={petBreedOptions[category].map(breed => ({
+                                        value: breed,
+                                        label: breed
+                                    }))}
+                                    placeholder={`Select a ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                    onChange={(selectedOption) => setBreedOrType(selectedOption.value)}
+                                    className="adwizard-select"
+                                    classNamePrefix="adwizard-select"
+                                    styles={{
+                                        control: (baseStyles) => ({
+                                            ...baseStyles,
+                                            padding: '10px',
+                                            borderColor: '#e7ecf3',
+                                            borderWidth: '2px',
+                                            borderRadius: '10px',
+                                            boxShadow: 'none'
+                                        }),
+                                        menu: (baseStyles) => ({
+                                            ...baseStyles,
+                                            zIndex: 999,
+                                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                                            borderRadius: '10px',
+                                            overflow: 'hidden'
+                                        }),
+                                        menuList: (baseStyles) => ({
+                                            ...baseStyles,
+                                            padding: '10px 0',
+                                            "&::-webkit-scrollbar": {
+                                                width: "8px"
+                                            },
+                                            "&::-webkit-scrollbar-track": {
+                                                background: "#f1f1f1",
+                                                borderRadius: "4px"
+                                            },
+                                            "&::-webkit-scrollbar-thumb": {
+                                                background: "#cbd5e0",
+                                                borderRadius: "4px"
+                                            },
+                                            "&::-webkit-scrollbar-thumb:hover": {
+                                                background: "#a0aec0"
+                                            }
+                                        }),
+                                        option: (baseStyles, state) => ({
+                                            ...baseStyles,
+                                            backgroundColor: state.isSelected
+                                                ? '#1c5235'
+                                                : state.isFocused
+                                                    ? '#f0f9f4'
+                                                    : undefined,
+                                            color: state.isSelected ? 'white' : '#334155',
+                                            padding: '12px 16px',
+                                            cursor: 'pointer'
+                                        })
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <div className="adwizard-form-group">
+                                <label htmlFor="breedOrType">{`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}</label>
+                                <input
+                                    type="text"
+                                    id="breedOrType"
+                                    placeholder={`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}
+                                    value={breedOrType}
+                                    onChange={(e) => setBreedOrType(e.target.value)}
+                                    className="adwizard-form-control"
+                                />
+                            </div>
                         )}
-                        {!["dogs", "cats", "horses"].includes(category) && (
+
+                        <div className="adwizard-summary-actions">
+                            <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(2)}>
+                                Back
+                            </button>
                             <button
-                                className="adwizard-option-button"
-                                onClick={() => {
-                                    setIntent("sale");
-                                    setStep(3);
-                                }}
+                                className="adwizard-btn adwizard-btn-primary"
+                                onClick={() => setStep(4)}
+                                disabled={!breedOrType}
                             >
                                 Continue
                             </button>
-                        )}
+                        </div>
                     </div>
-                    <button className="adwizard-back-button" onClick={() => setStep(1)}>
-                        Go Back
-                    </button>
-                </div>
-            )}
+                )}
 
-            {/* Step 3: Breed or Type Selection */}
-            {step === 3 && intent && (
-                <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">
-                        Step 3: Select a {category === "livestock" ? "Subtype" : "Breed"}
-                    </h2>
+                {/* Step 4: Advert Details */}
+                {step === 4 && (
+                    <div className="adwizard-step">
+                        <h2 className="adwizard-subtitle">Step 4: Advert Details</h2>
 
-                    {petBreedOptions[category] ? (
-                        <div className="adwizard-select-container">
-                            <Select
-                                value={breedOrType ? { value: breedOrType, label: breedOrType } : null}
-                                options={petBreedOptions[category].map(breed => ({
-                                    value: breed,
-                                    label: breed
-                                }))}
-                                placeholder={`Select a ${category === "livestock" ? "Subtype" : "Breed"}`}
-                                onChange={(selectedOption) => setBreedOrType(selectedOption.value)}
-                                className="adwizard-select"
-                                classNamePrefix="adwizard-select"
-                                styles={{
-                                    control: (baseStyles) => ({
-                                        ...baseStyles,
-                                        padding: '10px',
-                                        borderColor: '#e7ecf3',
-                                        borderWidth: '2px',
-                                        borderRadius: '10px',
-                                        boxShadow: 'none'
-                                    }),
-                                    menu: (baseStyles) => ({
-                                        ...baseStyles,
-                                        zIndex: 999,
-                                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                                        borderRadius: '10px',
-                                        overflow: 'hidden'
-                                    }),
-                                    menuList: (baseStyles) => ({
-                                        ...baseStyles,
-                                        padding: '10px 0',
-                                        "&::-webkit-scrollbar": {
-                                            width: "8px"
-                                        },
-                                        "&::-webkit-scrollbar-track": {
-                                            background: "#f1f1f1",
-                                            borderRadius: "4px"
-                                        },
-                                        "&::-webkit-scrollbar-thumb": {
-                                            background: "#cbd5e0",
-                                            borderRadius: "4px"
-                                        },
-                                        "&::-webkit-scrollbar-thumb:hover": {
-                                            background: "#a0aec0"
-                                        }
-                                    }),
-                                    option: (baseStyles, state) => ({
-                                        ...baseStyles,
-                                        backgroundColor: state.isSelected
-                                            ? '#1c5235'
-                                            : state.isFocused
-                                                ? '#f0f9f4'
-                                                : undefined,
-                                        color: state.isSelected ? 'white' : '#334155',
-                                        padding: '12px 16px',
-                                        cursor: 'pointer'
-                                    })
-                                }}
-                            />
-                        </div>
-                    ) : (
-                        <div className="adwizard-form-group">
-                            <label htmlFor="breedOrType">{`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}</label>
-                            <input
-                                type="text"
-                                id="breedOrType"
-                                placeholder={`Enter ${category === "livestock" ? "Subtype" : "Breed"}`}
-                                value={breedOrType}
-                                onChange={(e) => setBreedOrType(e.target.value)}
-                                className="adwizard-form-control"
-                            />
-                        </div>
-                    )}
-
-                    <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(2)}>
-                            Back
-                        </button>
-                        <button
-                            className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => setStep(4)}
-                            disabled={!breedOrType}
-                        >
-                            Continue
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Step 4: Advert Details */}
-            {step === 4 && (
-                <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 4: Advert Details</h2>
-
-                    {/* Render form fields from configuration */}
-                    {formFields
-                        .filter(f => f !== "breed")
-                        .map(renderField)
-                    }
-
-                    {/* Show CITES field if endangered is checked */}
-                    {formData.endangered && (
-                        <>
-                            <div className="adwizard-callout">
-                                <strong>Why we ask:</strong>
-                                UK law requires a valid CITES Article 10 certificate for trading endangered species.
-                            </div>
-                            {renderField("citesCertificateNumber")}
-                        </>
-                    )}
-
-                    {/* Show KC name field if KC registered is checked */}
-                    {formData.kcRegistered && (
-                        <div className="adwizard-form-group">
-                            <label htmlFor="kcName">KC Registration Name</label>
-                            <input
-                                type="text"
-                                id="kcName"
-                                name="kcName"
-                                value={formData.kcName || ""}
-                                onChange={e =>
-                                    setFormData(prev => ({ ...prev, kcName: e.target.value }))
-                                }
-                                placeholder="Enter kennel club registration name"
-                                className="adwizard-form-control"
-                            />
-                        </div>
-                    )}
-
-                    {/* Health Tests Toggle & Inputs */}
-                    {((category === "dogs" || category === "cats") && intent === "stud") && (
-                        <>
-                            <div className="adwizard-form-checkbox">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={healthTestsEnabled}
-                                        onChange={e => setHealthTestsEnabled(e.target.checked)}
-                                    />{" "}
-                                    Add health test details
-                                </label>
-                            </div>
-
-                            {healthTestsEnabled && (
-                                <div className="adwizard-health-tests-container">
-                                    <div className="adwizard-callout" style={{ marginBottom: '16px' }}>
-                                        <strong>Important:</strong> Only list health tests that your pet has passed or is clear for.
-                                        This helps potential customers make informed decisions about breeding.
-                                    </div>
-                                    {healthTests.map((value, idx) => (
-                                        <div className="adwizard-form-group" key={idx}>
-                                            <input
-                                                type="text"
-                                                value={value}
-                                                onChange={e => {
-                                                    const arr = [...healthTests];
-                                                    arr[idx] = e.target.value;
-                                                    setHealthTests(arr);
+                        {/* Validation Summary */}
+                        {Object.keys(fieldErrors).length > 0 && (
+                            <div className="adwizard-validation-summary">
+                                <h4>⚠️ Please fix the following issues:</h4>
+                                <ul>
+                                    {Object.entries(fieldErrors).map(([field, error]) => (
+                                        <li key={field}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (field !== 'images') {
+                                                        const element = document.getElementById(field);
+                                                        if (element) {
+                                                            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                            element.focus();
+                                                        }
+                                                    }
                                                 }}
-                                                placeholder={`Health Test #${idx + 1} (e.g. Hip Score, DNA…)`}
-                                                className="adwizard-form-control"
-                                            />
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#b83c56',
+                                                    textDecoration: 'underline',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    font: 'inherit'
+                                                }}
+                                            >
+                                                {error}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Render form fields from configuration */}
+                        {formFields
+                            .filter(f => f !== "breed")
+                            .map(renderField)
+                        }
+
+                        {/* Show CITES field if endangered is checked */}
+                        {formData.endangered && (
+                            <>
+                                <div className="adwizard-callout">
+                                    <strong>Why we ask:</strong>
+                                    UK law requires a valid CITES Article 10 certificate for trading endangered species.
+                                </div>
+                                {renderField("citesCertificateNumber")}
+                            </>
+                        )}
+
+                        {/* Show KC name field if KC registered is checked */}
+                        {formData.kcRegistered && (
+                            <div className="adwizard-form-group">
+                                <label htmlFor="kcName">KC Registration Name</label>
+                                <input
+                                    type="text"
+                                    id="kcName"
+                                    name="kcName"
+                                    value={formData.kcName || ""}
+                                    onChange={e =>
+                                        setFormData(prev => ({ ...prev, kcName: e.target.value }))
+                                    }
+                                    placeholder="Enter kennel club registration name"
+                                    className="adwizard-form-control"
+                                />
+                            </div>
+                        )}
+
+                        {/* Health Tests Toggle & Inputs */}
+                        {((category === "dogs" || category === "cats") && intent === "stud") && (
+                            <>
+                                <div className="adwizard-form-checkbox">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={healthTestsEnabled}
+                                            onChange={e => setHealthTestsEnabled(e.target.checked)}
+                                        />{" "}
+                                        Add health test details
+                                    </label>
+                                </div>
+
+                                {healthTestsEnabled && (
+                                    <div className="adwizard-health-tests-container">
+                                        <div className="adwizard-callout" style={{ marginBottom: '16px' }}>
+                                            <strong>Important:</strong> Only list health tests that your pet has passed or is clear for.
+                                            This helps potential customers make informed decisions about breeding.
+                                        </div>
+                                        {healthTests.map((value, idx) => (
+                                            <div className="adwizard-form-group" key={idx}>
+                                                <input
+                                                    type="text"
+                                                    value={value}
+                                                    onChange={e => {
+                                                        const arr = [...healthTests];
+                                                        arr[idx] = e.target.value;
+                                                        setHealthTests(arr);
+                                                    }}
+                                                    placeholder={`Health Test #${idx + 1} (e.g. Hip Score, DNA…)`}
+                                                    className="adwizard-form-control"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* Image Upload Section */}
+                        <div className="adwizard-image-upload">
+                            <h3>Upload Photos (Max 10)</h3>
+                            <p style={{
+                                fontSize: '14px',
+                                color: '#64748b',
+                                marginBottom: '12px',
+                                fontStyle: 'italic'
+                            }}>
+                                Click on any uploaded image to set it as the main image for your advert.
+                                The main image will be displayed first and used as the thumbnail.
+                            </p>
+                            <div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleImageChange}
+                                    disabled={images.length >= 10}
+                                />
+                            </div>
+                            {images.length > 0 && (
+                                <div className="adwizard-preview-grid">
+                                    {images.map((img, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`adwizard-preview-item ${mainImageIndex === idx ? 'main-image' : ''}`}
+                                            onClick={() => setMainImageIndex(idx)}
+                                        >
+                                            {/* Remove button */}
+                                            <button
+                                                type="button"
+                                                className="remove-btn"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handleImageRemove(idx);
+                                                }}
+                                            >✕</button>
+
+                                            {/* Image preview */}
+                                            <img src={img.url} alt={`preview-${idx}`} />
+
+                                            {/* Hover overlay */}
+                                            <div className="hover-overlay">
+                                                {mainImageIndex === idx ? '★ Main Image' : 'Set as main'}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                        </>
-                    )}
-
-                    {/* Image Upload Section */}
-                    <div className="adwizard-image-upload">
-                        <h3>Upload Photos (Max 10)</h3>
-                        <p style={{
-                            fontSize: '14px',
-                            color: '#64748b',
-                            marginBottom: '12px',
-                            fontStyle: 'italic'
-                        }}>
-                            Click on any uploaded image to set it as the main image for your advert.
-                            The main image will be displayed first and used as the thumbnail.
-                        </p>
-                        <div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageChange}
-                                disabled={images.length >= 10}
-                            />
+                            {fieldErrors.images && (
+                                <div className="adwizard-error-message">
+                                    {fieldErrors.images}
+                                </div>
+                            )}
                         </div>
-                        {images.length > 0 && (
-                            <div className="adwizard-preview-grid">
-                                {images.map((img, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`adwizard-preview-item ${mainImageIndex === idx ? 'main-image' : ''}`}
-                                        onClick={() => setMainImageIndex(idx)}
-                                    >
-                                        {/* Remove button */}
-                                        <button
-                                            type="button"
-                                            className="remove-btn"
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                handleImageRemove(idx);
-                                            }}
-                                        >✕</button>
 
-                                        {/* Image preview */}
-                                        <img src={img.url} alt={`preview-${idx}`} />
+                        <div className="adwizard-summary-actions">
+                            <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(3)}>
+                                Back
+                            </button>
+                            <button
+                                className="adwizard-btn adwizard-btn-primary"
+                                onClick={handleContinueToStep5}
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                )}
 
-                                        {/* Hover overlay */}
-                                        <div className="hover-overlay">
-                                            {mainImageIndex === idx ? '★ Main Image' : 'Set as main'}
-                                        </div>
-                                    </div>
+                {/* Step 5: Review Advert */}
+                {step === 5 && (
+                    <div className="adwizard-step">
+                        <h2 className="adwizard-subtitle">Step 5: Review Your Advert</h2>
+
+                        <ul className="adwizard-summary-list">
+                            <li><strong>Category:</strong> {category.charAt(0).toUpperCase() + category.slice(1)}</li>
+                            <li><strong>Intent:</strong> {intent === "sale" ? "For Sale" : "For Stud"}</li>
+                            <li><strong>{category === "livestock" ? "Subtype" : "Breed"}:</strong> {breedOrType}</li>
+                            {formFields
+                                .filter(field => formData[field] !== undefined && formData[field] !== "")
+                                .map((field) => (
+                                    <li key={field}>
+                                        <strong>{fieldConfigurations[field]?.label || field}:</strong>{" "}
+                                        {formData[field] ?
+                                            typeof formData[field] === 'boolean' ?
+                                                formData[field] ? 'Yes' : 'No'
+                                                : String(formData[field])
+                                            : "N/A"}
+                                    </li>
                                 ))}
-                            </div>
-                        )}
-                    </div>
 
-                    <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(3)}>
-                            Back
-                        </button>
-                        <button
-                            className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => setStep(5)}
-                            disabled={Object.keys(formData).length === 0 || images.length === 0}
-                        >
-                            Continue
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Step 5: Review Advert */}
-            {step === 5 && (
-                <div className="adwizard-step">
-                    <h2 className="adwizard-subtitle">Step 5: Review Your Advert</h2>
-
-                    <ul className="adwizard-summary-list">
-                        <li><strong>Category:</strong> {category.charAt(0).toUpperCase() + category.slice(1)}</li>
-                        <li><strong>Intent:</strong> {intent === "sale" ? "For Sale" : "For Stud"}</li>
-                        <li><strong>{category === "livestock" ? "Subtype" : "Breed"}:</strong> {breedOrType}</li>
-                        {formFields
-                            .filter(field => formData[field] !== undefined && formData[field] !== "")
-                            .map((field) => (
-                                <li key={field}>
-                                    <strong>{fieldConfigurations[field]?.label || field}:</strong>{" "}
-                                    {formData[field] ?
-                                        typeof formData[field] === 'boolean' ?
-                                            formData[field] ? 'Yes' : 'No'
-                                            : String(formData[field])
-                                        : "N/A"}
+                            {healthTestsEnabled && healthTests.some(test => test.trim() !== "") && (
+                                <li>
+                                    <strong>Health Tests:</strong>
+                                    <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
+                                        {healthTests
+                                            .filter(test => test.trim() !== "")
+                                            .map((test, idx) => (
+                                                <li key={idx} style={{ marginBottom: '6px' }}>{test}</li>
+                                            ))}
+                                    </ul>
                                 </li>
-                            ))}
+                            )}
 
-                        {healthTestsEnabled && healthTests.some(test => test.trim() !== "") && (
                             <li>
-                                <strong>Health Tests:</strong>
-                                <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
-                                    {healthTests
-                                        .filter(test => test.trim() !== "")
-                                        .map((test, idx) => (
-                                            <li key={idx} style={{ marginBottom: '6px' }}>{test}</li>
-                                        ))}
-                                </ul>
+                                <strong>Images:</strong>
+                                <div className="adwizard-summary-images">
+                                    {images.map((img, idx) => (
+                                        <div key={idx} style={{ position: 'relative' }}>
+                                            <img
+                                                src={img.url}
+                                                alt={`preview-${idx}`}
+                                                className="adwizard-summary-thumb"
+                                                style={{
+                                                    border: idx === mainImageIndex ? '3px solid #b83c56' : '1px solid #edf2f7'
+                                                }}
+                                            />
+                                            {idx === mainImageIndex && (
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    left: '8px',
+                                                    background: '#b83c56',
+                                                    color: 'white',
+                                                    borderRadius: '50%',
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '14px',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                }}>★</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </li>
-                        )}
+                        </ul>
 
-                        <li>
-                            <strong>Images:</strong>
-                            <div className="adwizard-summary-images">
-                                {images.map((img, idx) => (
-                                    <div key={idx} style={{ position: 'relative' }}>
-                                        <img
-                                            src={img.url}
-                                            alt={`preview-${idx}`}
-                                            className="adwizard-summary-thumb"
-                                            style={{
-                                                border: idx === mainImageIndex ? '3px solid #b83c56' : '1px solid #edf2f7'
-                                            }}
-                                        />
-                                        {idx === mainImageIndex && (
-                                            <span style={{
-                                                position: 'absolute',
-                                                top: '8px',
-                                                left: '8px',
-                                                background: '#b83c56',
-                                                color: 'white',
-                                                borderRadius: '50%',
-                                                width: '24px',
-                                                height: '24px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontWeight: 'bold',
-                                                fontSize: '14px',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                            }}>★</span>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </li>
-                    </ul>
-
-                    <div className="adwizard-summary-actions">
-                        <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(4)}>
-                            Back to Edit
-                        </button>
-                        <button
-                            className="adwizard-btn adwizard-btn-primary"
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? (
-                                <span className="submitting-label">
+                        <div className="adwizard-summary-actions">
+                            <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(4)}>
+                                Back to Edit
+                            </button>
+                            <button
+                                className="adwizard-btn adwizard-btn-primary"
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <span className="submitting-label">
                                     <span className="spinner" /> Submitting…
                                 </span>
-                            ) : "Submit Advert"}
-                        </button>
+                                ) : "Submit Advert"}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Step 6: Submission Complete */}
-            {step === 6 && (
-                <div className="adwizard-step adwizard-submitted">
-                    <h2 className="adwizard-subtitle">Advert Submitted</h2>
-                    <p>
-                        Your advert has been sent for approval. We'll review it as soon as possible
-                        and let you know once it's live.
-                    </p>
-                    <div className="adwizard-summary-actions">
-                        <button
-                            className="adwizard-btn adwizard-btn-outline"
-                            onClick={handleStartOver}
-                        >
-                            Create Another Advert
-                        </button>
-                        <button
-                            className="adwizard-btn adwizard-btn-primary"
-                            onClick={() => {
-                                const uid = auth.currentUser?.uid;
-                                if (uid) navigate(`/profile/${uid}`);
-                                else alert("User not logged in");
-                            }}
-                        >
-                            View My Profile
-                        </button>
+                {/* Step 6: Submission Complete */}
+                {step === 6 && (
+                    <div className="adwizard-step adwizard-submitted">
+                        <h2 className="adwizard-subtitle">Advert Submitted</h2>
+                        <p>
+                            Your advert has been sent for approval. We'll review it as soon as possible
+                            and let you know once it's live.
+                        </p>
+                        <div className="adwizard-summary-actions">
+                            <button
+                                className="adwizard-btn adwizard-btn-outline"
+                                onClick={handleStartOver}
+                            >
+                                Create Another Advert
+                            </button>
+                            <button
+                                className="adwizard-btn adwizard-btn-primary"
+                                onClick={() => {
+                                    const uid = auth.currentUser?.uid;
+                                    if (uid) navigate(`/profile/${uid}`);
+                                    else alert("User not logged in");
+                                }}
+                            >
+                                View My Profile
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
             </div>
-</>
+        </>
 
     );
 }
