@@ -26,9 +26,7 @@ const PORT = 8080;
 
 app.use(cors());
 app.use(express.json());
-
-app.use(cors());
-app.use(express.json());
+app.use(express.static(__dirname));
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -1686,6 +1684,8 @@ app.post('/api/test-review-response-data', (req, res) => {
         allFields: Object.keys(req.body)
     });
 });
+
+
 
 // 3. FRONTEND DEBUGGING - Add this to your frontend code that calls the email API
 /*
