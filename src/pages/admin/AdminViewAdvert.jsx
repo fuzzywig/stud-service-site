@@ -20,11 +20,10 @@ import { db, auth } from "../../firebase/firebase";
 import AdminSidebar from "../../components/AdminSidebar";
 import {
     FaCheck,
-    FaAd,
-    FaTimes,
     FaArrowLeft,
     FaImages,
     FaPaw,
+    FaTimes,
     FaRegCalendarAlt,
     FaPalette,
     FaPoundSign,
@@ -40,31 +39,24 @@ import {
     FaRuler,
     FaWeight,
     FaHistory,
-    FaPrescriptionBottleAlt,
     FaCheckCircle,
     FaTimesCircle,
     FaFacebook,
     FaInstagram,
     FaVial,
-    FaBug,
     FaShieldAlt,
-    FaMedal,
-    FaSearch,
     FaInfoCircle,
     FaTags,
     FaSave,
     FaExclamationTriangle,
     FaComment,
-    FaKeyboard,
     FaEdit,
     FaClipboard,
     FaEnvelopeOpen,
     FaList,
-    FaThumbsUp,
-    FaThumbsDown,
-    FaFlag,
     FaShare,
     FaHeart,
+    FaTrash,
     FaDog,
     FaCat,
     FaChild,
@@ -139,7 +131,9 @@ export default function AdminViewAdvert() {
     const [showNotesModal, setShowNotesModal] = useState(false);
     const [noteCount, setNoteCount] = useState(0);
     const [activeSection, setActiveSection] = useState("overview");
-
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
     // New states for edit mode
     const [isEditMode, setIsEditMode] = useState(false);
     const [editedAdvert, setEditedAdvert] = useState(null);
@@ -290,6 +284,68 @@ export default function AdminViewAdvert() {
             console.error("Error fetching advert or owner info:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleDeleteAdvert = async () => {
+        if (deleteConfirmText !== "DELETE PERMANENTLY") {
+            alert("Please type 'DELETE PERMANENTLY' to confirm deletion");
+            return;
+        }
+
+        if (!window.confirm("⚠️ FINAL WARNING: This will permanently delete the advert and cannot be undone. Are you absolutely sure?")) {
+            return;
+        }
+
+        try {
+            setIsDeleting(true);
+
+            // Delete from main collection
+            await deleteDoc(doc(db, "allListings", advertId));
+
+            // Try to delete from other collections if they exist
+            try {
+                await deleteDoc(doc(db, "rejectedAdverts", advertId));
+            } catch (e) {
+                // Ignore if doesn't exist in rejected adverts
+            }
+
+            // Delete associated admin messages
+            try {
+                const messagesQuery = query(
+                    collection(db, "adminMessages"),
+                    where("advertId", "==", advertId)
+                );
+                const messagesSnap = await getDocs(messagesQuery);
+                const deletePromises = messagesSnap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+            } catch (e) {
+                console.warn("Could not delete admin messages:", e);
+            }
+
+            // Delete associated updates
+            try {
+                const updatesQuery = query(
+                    collection(db, "updates"),
+                    where("advertId", "==", advertId)
+                );
+                const updatesSnap = await getDocs(updatesQuery);
+                const deletePromises = updatesSnap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+            } catch (e) {
+                console.warn("Could not delete updates:", e);
+            }
+
+            alert("✅ Advert has been permanently deleted");
+            navigate("/admin");
+
+        } catch (error) {
+            console.error("Error deleting advert:", error);
+            alert("❌ Failed to delete advert: " + error.message);
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteModal(false);
+            setDeleteConfirmText("");
         }
     };
 
@@ -754,6 +810,14 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                             </button>
                                             <button onClick={() => setShowRejectBox(true)} className="advert-view-reject-btn" disabled={isProcessing}>
                                                 <FaTimes /> Reject
+                                            </button>
+                                            <button
+                                                onClick={() => setShowDeleteModal(true)}
+                                                className="advert-view-delete-btn"
+                                                disabled={isProcessing}
+                                                title="Permanently delete this advert"
+                                            >
+                                                <FaTrash /> Delete
                                             </button>
                                         </>
                                     )}
@@ -1520,13 +1584,7 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                         <button
                                             onClick={() => setShowRejectBox(false)}
                                             className="advert-view-cancel-btn"
-                                            style={{
-                                                padding: '8px 16px',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '4px',
-                                                backgroundColor: '#f8f9fa',
-                                                cursor: 'pointer'
-                                            }}
+
                                         >
                                             Cancel
                                         </button>
@@ -1558,6 +1616,135 @@ Address: ${ownerInfo.address1}, ${ownerInfo.city}, ${ownerInfo.postcode}
                                 onClose={() => setShowNotesModal(false)}
                             />
                         )}
+                        {/* Delete Confirmation Modal */}
+                        {showDeleteModal && (
+                            <div className="advert-view-modal" style={{
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 1000
+                            }}>
+                                <div className="advert-view-modal-content advert-view-delete-modal" style={{
+                                    backgroundColor: 'white',
+                                    padding: '2rem',
+                                    borderRadius: '8px',
+                                    maxWidth: '500px',
+                                    width: '90%',
+                                    border: '3px solid #dc2626'
+                                }}>
+                                    <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                                        <FaTrash style={{ fontSize: '3rem', color: '#dc2626', marginBottom: '1rem' }} />
+                                        <h3 style={{ color: '#dc2626', fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
+                                            ⚠️ DANGER ZONE ⚠️
+                                        </h3>
+                                    </div>
+
+                                    <div style={{
+                                        background: '#fee2e2',
+                                        border: '1px solid #fecaca',
+                                        borderRadius: '6px',
+                                        padding: '1rem',
+                                        marginBottom: '1.5rem'
+                                    }}>
+                                        <p style={{ margin: 0, color: '#991b1b', fontWeight: 'bold' }}>
+                                            ⚠️ This action will PERMANENTLY DELETE the advert and ALL associated data including:
+                                        </p>
+                                        <ul style={{ margin: '0.5rem 0 0 1rem', color: '#991b1b' }}>
+                                            <li>The advert listing</li>
+                                            <li>All admin messages</li>
+                                            <li>All owner updates</li>
+                                            <li>All associated data</li>
+                                        </ul>
+                                        <p style={{ margin: '0.5rem 0 0 0', color: '#991b1b', fontWeight: 'bold' }}>
+                                            THIS CANNOT BE UNDONE!
+                                        </p>
+                                    </div>
+
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '0.5rem',
+                                            color: '#374151',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            Type "DELETE PERMANENTLY" to confirm:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={deleteConfirmText}
+                                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                            placeholder="DELETE PERMANENTLY"
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem',
+                                                border: '2px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                fontSize: '1rem',
+                                                textAlign: 'center',
+                                                fontWeight: 'bold'
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                                        <p style={{
+                                            margin: 0,
+                                            color: '#6b7280',
+                                            fontSize: '0.875rem'
+                                        }}>
+                                            Advert ID: <strong>{advertId}</strong><br />
+                                            Title: <strong>{advert?.title || 'Untitled'}</strong>
+                                        </p>
+                                    </div>
+
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '1rem',
+                                        justifyContent: 'flex-end'
+                                    }}>
+                                        <button
+                                            onClick={() => {
+                                                setShowDeleteModal(false);
+                                                setDeleteConfirmText("");
+                                            }}
+                                            style={{
+                                                padding: '0.75rem 1.5rem',
+                                                border: '1px solid #d1d5db',
+                                                borderRadius: '6px',
+                                                backgroundColor: '#f9fafb',
+                                                cursor: 'pointer',
+                                                fontWeight: '500'
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleDeleteAdvert}
+                                            disabled={deleteConfirmText !== "DELETE PERMANENTLY" || isDeleting}
+                                            style={{
+                                                padding: '0.75rem 1.5rem',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                backgroundColor: deleteConfirmText === "DELETE PERMANENTLY" && !isDeleting ? '#dc2626' : '#9ca3af',
+                                                color: 'white',
+                                                cursor: deleteConfirmText === "DELETE PERMANENTLY" && !isDeleting ? 'pointer' : 'not-allowed',
+                                                fontWeight: 'bold',
+                                                opacity: deleteConfirmText === "DELETE PERMANENTLY" && !isDeleting ? 1 : 0.5
+                                            }}
+                                        >
+                                            {isDeleting ? 'DELETING...' : '🗑️ DELETE PERMANENTLY'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     </>
                 ) : (
                     <div className="advert-view-not-found">

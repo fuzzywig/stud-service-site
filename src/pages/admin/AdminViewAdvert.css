@@ -1388,7 +1388,7 @@
 
 .advert-view-cancel-btn {
     background: #6b7280;
-    color: white;
+    color: #000;
 }
 
 .advert-view-cancel-btn:hover {
@@ -2375,5 +2375,110 @@
 
     .advert-view-thumbnails {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}
+/* Add this to your AdminViewAdvert.css file */
+
+/* Delete Button Styles */
+.advert-view-delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #dc2626;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fee2e2;
+    color: #dc2626;
+    position: relative;
+}
+
+.advert-view-delete-btn:hover:not(:disabled) {
+    background: #dc2626;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.advert-view-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Delete Modal Specific Styles */
+.advert-view-delete-modal {
+    animation: deleteModalAppear 0.3s ease-out;
+}
+
+@keyframes deleteModalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.advert-view-delete-modal h3 {
+    animation: dangerPulse 2s infinite;
+}
+
+@keyframes dangerPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Confirmation input focus state */
+.advert-view-delete-modal input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Valid confirmation state */
+.advert-view-delete-modal input[value="DELETE PERMANENTLY"] {
+    border-color: #dc2626;
+    background-color: #fee2e2;
+    color: #dc2626;
+    font-weight: bold;
+}
+
+/* Add warning icon animation */
+.advert-view-delete-btn::before {
+    content: '⚠️';
+    margin-right: 0.25rem;
+    animation: warningBlink 1.5s infinite;
+}
+
+@keyframes warningBlink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Responsive adjustments for delete modal */
+@media (max-width: 768px) {
+    .advert-view-delete-modal {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .advert-view-delete-btn {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8125rem;
     }
 }

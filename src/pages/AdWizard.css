@@ -71,6 +71,12 @@
     padding-top: 1px; /* Slight adjustment to center content vertically */
 }
 
+.adwizard-progress-step.active {
+    background: #1c5235;
+    border-color: #1c5235;
+    color: white;
+}
+
 .adwizard-progress-step.completed {
     background: #b83c56;
     border-color: #b83c56;
@@ -230,6 +236,102 @@ textarea.adwizard-form-control {
 .adwizard-form-control[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+/* Date input styling - NATIVE HTML5 ONLY */
+.adwizard-date-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.adwizard-date-input-container input[type="date"] {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #e7ecf3;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #334155;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.adwizard-date-input-container input[type="date"]:focus {
+    border-color: #1c5235;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(28, 82, 53, 0.1);
+}
+
+.adwizard-date-input-container input[type="date"]:hover {
+    border-color: #1c5235;
+}
+
+/* Style the calendar icon (webkit browsers) */
+.adwizard-date-input-container input[type="date"]::-webkit-calendar-picker-indicator {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23334155' viewBox='0 0 24 24'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%231c5235' viewBox='0 0 24 24'%3E%3Cpath d='M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z'/%3E%3C/svg%3E");
+}
+
+/* Error state for native date input */
+.adwizard-date-input-container input[type="date"].error {
+    border-color: #b83c56 !important;
+    background-color: #fef7f7 !important;
+    box-shadow: 0 0 0 3px rgba(184, 60, 86, 0.1) !important;
+}
+
+/* Valid state for native date input */
+.adwizard-date-input-container input[type="date"].valid {
+    border-color: #22c55e !important;
+    background-color: #f0fdf4 !important;
+}
+
+/* Firefox specific styling */
+.adwizard-date-input-container input[type="date"]::-moz-focus-inner {
+    border: 0;
+}
+
+/* Ensure consistent appearance across browsers */
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    background: transparent;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit-text {
+    color: #334155;
+    padding: 0 2px;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit-month-field {
+    color: #334155;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit-day-field {
+    color: #334155;
+}
+
+.adwizard-date-input-container input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #334155;
+}
+
+/* Placeholder styling when no date is selected */
+.adwizard-date-input-container input[type="date"]:invalid {
+    color: #a0aec0;
 }
 
 /* Checkbox styling */
@@ -707,144 +809,6 @@ textarea.adwizard-form-control {
     border: 1px solid #edf2f7;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .adwizard-container {
-        padding: 1.5rem;
-        margin: 20px 10px;
-        max-width: 100%;
-    }
-
-    .adwizard-title {
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .adwizard-subtitle {
-        font-size: 1.4rem;
-    }
-
-    .adwizard-options {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 10px;
-    }
-
-    .adwizard-step {
-        padding: 1.5rem;
-    }
-
-    .adwizard-summary-actions {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .adwizard-btn {
-        width: 100%;
-        padding: 12px 16px;
-    }
-
-    .adwizard-progress {
-        margin-bottom: 2rem;
-        overflow-x: auto;
-        justify-content: space-between;
-        padding-bottom: 10px; /* Add padding for scrollbar */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .adwizard-progress-step {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
-        flex: 0 0 36px;
-        font-size: 0.9rem;
-        margin: 0 3px;
-    }
-
-    .adwizard-progress::before {
-        left: 18px;
-        right: 18px;
-    }
-
-    /* Stack form groups vertically */
-    .adwizard-form-row {
-        flex-direction: column;
-    }
-
-    /* Smaller padding for inputs */
-    .adwizard-form-control {
-        padding: 12px;
-    }
-
-    /* Make sure images in preview grid are not too small */
-    .adwizard-preview-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    /* Ensure summary items stack properly */
-    .adwizard-summary-list li {
-        flex-direction: column;
-    }
-
-    .adwizard-summary-list li strong {
-        margin-bottom: 6px;
-        margin-right: 0;
-    }
-
-    /* Smaller thumbnails */
-    .adwizard-summary-thumb {
-        width: 80px;
-        height: 80px;
-    }
-}
-
-@media (max-width: 480px) {
-    .adwizard-container {
-        padding: 1rem;
-        margin: 15px 5px;
-    }
-
-    .adwizard-title {
-        font-size: 1.5rem;
-    }
-
-    .adwizard-subtitle {
-        font-size: 1.2rem;
-    }
-
-    .adwizard-options {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-
-    .adwizard-option-button {
-        height: 50px;
-        font-size: 0.9rem;
-        padding: 10px;
-    }
-
-    .adwizard-step {
-        padding: 1rem;
-    }
-
-    .adwizard-form-group {
-        margin-bottom: 1rem;
-    }
-
-    .adwizard-form-control {
-        padding: 10px;
-    }
-
-    /* Ensure step circles stay perfectly round */
-    .adwizard-progress-step {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
-        flex: 0 0 32px;
-    }
-}
 /* Helper text for image upload section */
 .adwizard-image-upload-helper {
     font-size: 14px;
@@ -854,12 +818,12 @@ textarea.adwizard-form-control {
     line-height: 1.5;
 }
 
-/* Optional: Add an icon before the helper text */
 .adwizard-image-upload-helper::before {
     content: "ℹ️";
     margin-right: 6px;
     font-style: normal;
 }
+
 .adwizard-section {
     margin-bottom: 2rem;
 }
@@ -872,6 +836,7 @@ textarea.adwizard-form-control {
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #e7ecf3;
 }
+
 /* Required field indicator */
 .required-asterisk {
     color: #b83c56;
@@ -959,4 +924,219 @@ textarea.adwizard-form-control {
 
 .adwizard-validation-summary button:hover {
     color: #a0344a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .adwizard-container {
+        padding: 1.5rem;
+        margin: 20px 10px;
+        max-width: 100%;
+    }
+
+    .adwizard-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .adwizard-subtitle {
+        font-size: 1.4rem;
+    }
+
+    .adwizard-options {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .adwizard-step {
+        padding: 1.5rem;
+    }
+
+    .adwizard-summary-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .adwizard-btn {
+        width: 100%;
+        padding: 12px 16px;
+    }
+
+    .adwizard-progress {
+        margin-bottom: 2rem;
+        overflow-x: auto;
+        justify-content: space-between;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .adwizard-progress-step {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        flex: 0 0 36px;
+        font-size: 0.9rem;
+        margin: 0 3px;
+    }
+
+    .adwizard-progress::before {
+        left: 18px;
+        right: 18px;
+    }
+
+    .adwizard-form-row {
+        flex-direction: column;
+    }
+
+    .adwizard-form-control {
+        padding: 12px;
+    }
+
+    .adwizard-date-input-container input[type="date"] {
+        padding: 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .adwizard-date-input-container input[type="date"]::-webkit-calendar-picker-indicator {
+        background-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Single column layout for mobile image grid */
+    .adwizard-preview-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-width: 400px;
+        margin: 1.5rem auto 0;
+    }
+
+    .adwizard-summary-list li {
+        flex-direction: column;
+    }
+
+    .adwizard-summary-list li strong {
+        margin-bottom: 6px;
+        margin-right: 0;
+    }
+
+    .adwizard-summary-thumb {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .adwizard-container {
+        padding: 1rem;
+        margin: 15px 5px;
+    }
+
+    .adwizard-title {
+        font-size: 1.5rem;
+    }
+
+    .adwizard-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .adwizard-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .adwizard-option-button {
+        height: 50px;
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    .adwizard-step {
+        padding: 1rem;
+    }
+
+    .adwizard-form-group {
+        margin-bottom: 1rem;
+    }
+
+    .adwizard-form-control {
+        padding: 10px;
+    }
+
+    .adwizard-progress-step {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        flex: 0 0 32px;
+    }
+
+    /* Single column layout for small mobile too, but even more centered */
+    .adwizard-preview-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: 300px;
+        margin: 1.5rem auto 0;
+    }
+}
+
+.field-note {
+    font-size: 12px;
+    font-weight: normal;
+    color: #64748b;
+    font-style: italic;
+}
+
+.field-explanation {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #059669;
+}
+
+.adwizard-date-input-container input[readonly] {
+    background-color: #f1f5f9;
+    cursor: not-allowed;
+}
+
+/* Add these styles to your AdWizard.css file */
+
+.field-note {
+    font-size: 12px;
+    font-weight: normal;
+    color: #64748b;
+    font-style: italic;
+}
+
+.field-explanation {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #059669;
+}
+
+.auto-calculated-field {
+    background-color: #f0f9f4 !important;
+    border: 2px solid #059669 !important;
+    color: #047857 !important;
+    font-weight: 500;
+    cursor: not-allowed;
+}
+
+.auto-calculated-field:hover {
+    border-color: #059669 !important;
+}
+
+.auto-calculated-field:focus {
+    outline: none !important;
+    border-color: #059669 !important;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+}
+
+.auto-calculated-field::placeholder {
+    color: #6b7280;
+    font-style: italic;
 }

@@ -166,7 +166,8 @@ function AdvertDetails() {
     const [similarUsersMap, setSimilarUsersMap] = useState({});
     const [similarRatingsMap, setSimilarRatingsMap] = useState({});
     const [userData, setUserData] = useState({});
-
+    const [showGalleryModal, setShowGalleryModal] = useState(false);
+    const [modalImageIndex, setModalImageIndex] = useState(0);
     // Calculate title and description only when advert is loaded
     const getSEOData = useCallback(() => {
         if (!advert) {
@@ -299,6 +300,94 @@ function AdvertDetails() {
         "Aftercare Advice",
         "Pet as Described"
     ];
+
+    // Function to open gallery modal
+    const openGalleryModal = (index) => {
+        console.log('Opening gallery modal at index:', index);
+        console.log('Available images:', advert?.images?.length);
+
+        if (!advert?.images || advert.images.length === 0) {
+            console.error('No images available for gallery');
+            return;
+        }
+
+        if (index < 0 || index >= advert.images.length) {
+            console.error('Invalid image index:', index);
+            return;
+        }
+
+        setModalImageIndex(index);
+        setShowGalleryModal(true);
+        document.body.classList.add('gallery-modal-open');
+
+        // Log for debugging
+        console.log('Gallery modal opened:', {
+            index,
+            totalImages: advert.images.length,
+            imageUrl: advert.images[index]
+        });
+    };
+
+// Function to close gallery modal
+    const closeGalleryModal = () => {
+        console.log('Closing gallery modal');
+        setShowGalleryModal(false);
+        document.body.classList.remove('gallery-modal-open');
+    };
+
+// Update your main image click handler
+    const handleMainImageClick = () => {
+        console.log('Main image clicked, opening gallery at index:', currentIndex);
+        openGalleryModal(currentIndex);
+    };
+
+// Update your thumbnail click handlers
+    const handleThumbnailClick = (img, idx) => {
+        console.log('Thumbnail clicked:', idx);
+        setSelectedImage(img);
+        setCurrentIndex(idx);
+        openGalleryModal(idx);
+    };
+
+// Navigation functions for modal
+    const modalPrevImage = (e) => {
+        if (e) e.stopPropagation();
+        if (modalImageIndex > 0) {
+            setModalImageIndex(modalImageIndex - 1);
+        }
+    };
+    const modalNextImage = (e) => {
+        if (e) e.stopPropagation();
+        if (modalImageIndex < advert.images.length - 1) {
+            setModalImageIndex(modalImageIndex + 1);
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!showGalleryModal) return;
+
+            if (e.key === 'Escape') {
+                closeGalleryModal();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (modalImageIndex > 0) {
+                    setModalImageIndex(modalImageIndex - 1);
+                }
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (modalImageIndex < advert.images.length - 1) {
+                    setModalImageIndex(modalImageIndex + 1);
+                }
+            }
+        };
+
+        if (showGalleryModal) {
+            document.addEventListener('keydown', handleKeyDown);
+            return () => document.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [showGalleryModal, modalImageIndex, advert?.images?.length]);
+
 
     // Check if advert is favorited
     useEffect(() => {
@@ -783,27 +872,49 @@ function AdvertDetails() {
                             </nav>
                         </div>
 
+                        {/* Updated Gallery Section with Litter with Mother indicators */}
                         <div className="gallery-section">
                             <div
                                 className="main-image-container"
                                 onTouchStart={(e) => { setTouchStartX(e.touches[0].clientX); handleTouch(); }}
                                 onTouchMove={(e) => { setTouchEndX(e.touches[0].clientX); handleTouch(); }}
                                 onTouchEnd={() => { handleSwipe(); handleTouch(); }}
+                                onClick={() => openGalleryModal(currentIndex)}
+                                style={{ cursor: 'pointer' }}
                             >
                                 <img src={selectedImage} alt={`${advert.name}`} className="main-image" />
+
+                                {/* Click to enlarge overlay */}
+                                <div className="click-to-enlarge-overlay">
+                                    <FontAwesomeIcon icon={faSearch} />
+                                    <span>Click to enlarge</span>
+                                </div>
+
+                                {/* Litter with Mother indicator on main image */}
+                                {advert.litterWithMotherIndex === currentIndex && (
+                                    <div className="litter-with-mother-badge">
+                                        <span className="badge-text">Litter with Mother</span>
+                                    </div>
+                                )}
 
                                 {advert.images && advert.images.length > 1 && (
                                     <>
                                         <button
                                             className={`nav-arrow prev ${currentIndex === 0 ? 'disabled' : ''}`}
-                                            onClick={handlePrevImage}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent opening modal
+                                                handlePrevImage();
+                                            }}
                                             disabled={currentIndex === 0}
                                         >
                                             <FontAwesomeIcon icon={faChevronLeft} />
                                         </button>
                                         <button
                                             className={`nav-arrow next ${currentIndex === advert.images.length - 1 ? 'disabled' : ''}`}
-                                            onClick={handleNextImage}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent opening modal
+                                                handleNextImage();
+                                            }}
                                             disabled={currentIndex === advert.images.length - 1}
                                         >
                                             <FontAwesomeIcon icon={faChevronRight} />
@@ -817,18 +928,26 @@ function AdvertDetails() {
                                     </div>
                                 )}
                             </div>
-
                             <div className="thumbnails-container">
                                 {advert.images?.map((img, idx) => (
                                     <div
                                         key={idx}
-                                        className={`thumbnail ${img === selectedImage ? "active" : ""}`}
+                                        className={`thumbnail ${img === selectedImage ? "active" : ""} ${advert.litterWithMotherIndex === idx ? "litter-with-mother" : ""}`}
                                         onClick={() => {
                                             setSelectedImage(img);
                                             setCurrentIndex(idx);
+                                            openGalleryModal(idx);
                                         }}
+                                        style={{ cursor: 'pointer' }}
                                     >
                                         <img src={img} alt={`${advert.name} - view ${idx + 1}`} />
+
+                                        {/* Litter with Mother indicator on thumbnail */}
+                                        {advert.litterWithMotherIndex === idx && (
+                                            <div className="thumbnail-litter-badge">
+                                                <span>M</span>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -1703,7 +1822,102 @@ function AdvertDetails() {
                     </div>
                 </div>
             )}
+
+            {showGalleryModal && advert?.images && (
+                <div className="gallery-modal-overlay" onClick={closeGalleryModal}>
+                    <div className="gallery-modal-container" onClick={(e) => e.stopPropagation()}>
+                        {/* Close button */}
+                        <button
+                            className="gallery-modal-close"
+                            onClick={closeGalleryModal}
+                            aria-label="Close gallery"
+                        >
+                            ×
+                        </button>
+
+                        {/* Modal image container */}
+                        <div className="gallery-modal-image-container">
+                            {advert.images[modalImageIndex] && (
+                                <img
+                                    src={advert.images[modalImageIndex]}
+                                    alt={`${advert.name || 'Pet'} - Full size view ${modalImageIndex + 1}`}
+                                    className="gallery-modal-image"
+                                    onLoad={() => console.log('Modal image loaded')}
+                                    onError={(e) => {
+                                        console.error('Modal image failed to load:', e);
+                                        e.target.src = 'https://placehold.co/800x600/f0f0f0/999999?text=Image+Not+Available';
+                                    }}
+                                />
+                            )}
+
+                            {/* Litter with Mother indicator in modal */}
+                            {advert.litterWithMotherIndex === modalImageIndex && (
+                                <div className="gallery-modal-litter-badge">
+                                    <span>Litter with Mother</span>
+                                </div>
+                            )}
+
+                            {/* Navigation arrows */}
+                            {advert.images.length > 1 && (
+                                <>
+                                    <button
+                                        className={`gallery-modal-nav-arrow prev ${modalImageIndex === 0 ? 'disabled' : ''}`}
+                                        onClick={modalPrevImage}
+                                        disabled={modalImageIndex === 0}
+                                        aria-label="Previous image"
+                                    >
+                                        <FontAwesomeIcon icon={faChevronLeft} />
+                                    </button>
+                                    <button
+                                        className={`gallery-modal-nav-arrow next ${modalImageIndex === advert.images.length - 1 ? 'disabled' : ''}`}
+                                        onClick={modalNextImage}
+                                        disabled={modalImageIndex === advert.images.length - 1}
+                                        aria-label="Next image"
+                                    >
+                                        <FontAwesomeIcon icon={faChevronRight} />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Image counter */}
+                            <div className="gallery-modal-counter">
+                                {modalImageIndex + 1} / {advert.images.length}
+                            </div>
+                        </div>
+
+                        {/* Thumbnail strip at bottom */}
+                        {advert.images.length > 1 && (
+                            <div className="gallery-modal-thumbnails">
+                                {advert.images.map((img, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`gallery-modal-thumbnail ${idx === modalImageIndex ? "active" : ""} ${advert.litterWithMotherIndex === idx ? "litter-with-mother" : ""}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setModalImageIndex(idx);
+                                        }}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Thumbnail ${idx + 1}`}
+                                            onError={(e) => {
+                                                e.target.src = 'https://placehold.co/100x100/f0f0f0/999999?text=No+Image';
+                                            }}
+                                        />
+                                        {advert.litterWithMotherIndex === idx && (
+                                            <div className="gallery-modal-thumbnail-badge">M</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
         </>
+
+
     );
 }
 

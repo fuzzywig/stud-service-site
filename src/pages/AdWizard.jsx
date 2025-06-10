@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import SEO from "../components/SEO";
 import { db, storage, auth } from "../firebase/firebase";
 import {
@@ -24,6 +22,18 @@ import {
 // Import modernized styles
 import "./AdWizard.css"; // Renamed to match the new style
 
+// Define optional checkboxes at component level to avoid redeclaration
+const OPTIONAL_CHECKBOXES = [
+    // 'withMother' removed - this should be required
+    'vaccinated',
+    'microchipped',
+    'wormed',
+    'fleaTreated',
+    'neutered',
+    'kcRegistered',
+    'healthChecked'
+];
+
 export default function AdWizard({ mode }) {
     const { adId } = useParams();
     const [step, setStep] = useState(1);
@@ -36,13 +46,39 @@ export default function AdWizard({ mode }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [healthTests, setHealthTests] = useState(Array(10).fill(""));
     const [formFields, setFormFields] = useState([]);
-    const studCategories = ["dogs", "cats"];
+    const studCategories = ["dogs", "cats", "horses"];
     const [mainImageIndex, setMainImageIndex] = useState(null);
+    const [litterWithMotherIndex, setLitterWithMotherIndex] = useState(null);
 
     // Add state for field validation
     const [fieldErrors, setFieldErrors] = useState({});
 
     const navigate = useNavigate();
+
+    // Function to calculate ready to leave date (8 weeks from date of birth)
+    const calculateReadyToLeaveDate = (dob) => {
+        console.log('🔧 calculateReadyToLeaveDate called with:', dob);
+        if (!dob) {
+            console.log('🔧 No dob provided, returning empty');
+            return "";
+        }
+
+        try {
+            const dobDate = new Date(dob);
+            console.log('🔧 Parsed DOB:', dobDate);
+            const readyToLeave = new Date(dobDate);
+            readyToLeave.setDate(dobDate.getDate() + 56); // Add 56 days (8 weeks)
+            console.log('🔧 Calculated ready date:', readyToLeave);
+
+            // Format as YYYY-MM-DD for input[type="date"]
+            const result = readyToLeave.toISOString().split('T')[0];
+            console.log('🔧 Formatted result:', result);
+            return result;
+        } catch (error) {
+            console.error('🔧 Error in calculateReadyToLeaveDate:', error);
+            return "";
+        }
+    };
 
     // Helper function for image management
     const handleImageChange = (e) => {
@@ -63,6 +99,14 @@ export default function AdWizard({ mode }) {
             // Adjust index if we removed an image before the main one
             setMainImageIndex(mainImageIndex - 1);
         }
+
+        // Reset litter with mother image if it was removed
+        if (litterWithMotherIndex === idx) {
+            setLitterWithMotherIndex(null);
+        } else if (litterWithMotherIndex > idx) {
+            // Adjust index if we removed an image before the litter with mother one
+            setLitterWithMotherIndex(litterWithMotherIndex - 1);
+        }
     };
 
     const handleStartOver = () => {
@@ -79,6 +123,7 @@ export default function AdWizard({ mode }) {
             setHealthTests(Array(10).fill(""));
             setFormFields([]);
             setMainImageIndex(null);
+            setLitterWithMotherIndex(null);
             setFieldErrors({});
         }
     };
@@ -234,11 +279,33 @@ export default function AdWizard({ mode }) {
                     setMainImageIndex(data.mainImageIndex);
                 }
 
+                // Set litter with mother image if available
+                if (data.litterWithMotherIndex !== undefined) {
+                    setLitterWithMotherIndex(data.litterWithMotherIndex);
+                }
+
                 // 6) Jump to the right step
                 setStep(4);
             })();
         }
     }, [mode, adId]);
+
+    // Auto-calculate availableDate when dob changes (for cats and dogs)
+    useEffect(() => {
+        if ((category === "dogs" || category === "cats") && formData.dob && !formData.availableDate) {
+            console.log('🔄 useEffect: Auto-calculating availableDate from dob:', formData.dob);
+            const calculatedDate = calculateReadyToLeaveDate(formData.dob);
+            console.log('🔄 useEffect: Calculated date:', calculatedDate);
+
+            if (calculatedDate) {
+                console.log('🔄 useEffect: Updating availableDate to:', calculatedDate);
+                setFormData(prev => ({
+                    ...prev,
+                    availableDate: calculatedDate
+                }));
+            }
+        }
+    }, [formData.dob, category]); // Only depend on dob and category
 
     // Scroll to top when step changes
     useEffect(() => {
@@ -259,6 +326,11 @@ export default function AdWizard({ mode }) {
             const config = fieldConfigurations[fieldName];
             if (!config) return;
 
+            // Skip validation for optional checkboxes
+            if (config.type === 'checkbox' && OPTIONAL_CHECKBOXES.includes(fieldName)) {
+                return;
+            }
+
             const isRequired = config.required === true;
             const value = formData[fieldName];
 
@@ -267,7 +339,7 @@ export default function AdWizard({ mode }) {
                 if (!value || (typeof value === 'string' && value.trim() === '')) {
                     errors[fieldName] = `${config.label} is required`;
                 }
-                // Special validation for checkboxes that are required
+                // Special validation for checkboxes that are required (but not the optional ones)
                 else if (config.type === 'checkbox' && !value) {
                     errors[fieldName] = `${config.label} must be selected`;
                 }
@@ -328,10 +400,22 @@ export default function AdWizard({ mode }) {
 
     // Render form fields based on configuration with validation
     const renderField = (fieldName) => {
-        const config = fieldConfigurations[fieldName];
-        if (!config) return null;
+        console.log('🎨 renderField called for:', fieldName);
 
-        const isRequired = config.required === true;
+        const config = fieldConfigurations[fieldName];
+        if (!config) {
+            console.log('🎨 No config found for field:', fieldName);
+            return null;
+        }
+
+        // Override required status for optional checkboxes
+        const isRequired = config.required === true && !(config.type === 'checkbox' && OPTIONAL_CHECKBOXES.includes(fieldName));
+
+        // Debug logging for checkboxes
+        if (config.type === 'checkbox') {
+            console.log(`🔍 Checkbox ${fieldName}: originally required=${config.required}, in optional list=${OPTIONAL_CHECKBOXES.includes(fieldName)}, final isRequired=${isRequired}`);
+        }
+
         const hasError = fieldErrors?.[fieldName];
         const hasValue = formData[fieldName] && formData[fieldName].toString().trim() !== '';
 
@@ -348,42 +432,12 @@ export default function AdWizard({ mode }) {
             hasValue && isRequired ? 'completed' : ''
         ].filter(Boolean).join(' ');
 
-        if (fieldName === "availableDate" || fieldName === "dob") {
-            return (
-                <div className={groupClasses} key={fieldName}>
-                    <label htmlFor={fieldName}>
-                        {config.label}
-                        {isRequired && <span className="required-asterisk"> *</span>}
-                    </label>
-                    <div className="adwizard-date-input-container">
-                        <input
-                            type="date"
-                            id={fieldName}
-                            name={fieldName}
-                            value={formData[fieldName] || ""}
-                            onChange={(e) => {
-                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
-                                // Clear error when user inputs data
-                                if (fieldErrors?.[fieldName]) {
-                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
-                                }
-                            }}
-                            className={fieldClasses}
-                            placeholder={`Select ${config.label.toLowerCase()}`}
-                            required={isRequired}
-                        />
-                    </div>
-                    {hasError && (
-                        <div className="adwizard-error-message">
-                            {fieldErrors[fieldName]}
-                        </div>
-                    )}
-                </div>
-            );
-        }
+        console.log('🎨 Field type for', fieldName, ':', config.type);
+        console.log('🎨 Type check:', `"${config.type}" === "date"`, config.type === "date");
 
         switch (config.type) {
             case "text":
+                console.log('🎨 Rendering text field for:', fieldName);
                 return (
                     <div className={groupClasses} key={fieldName}>
                         <label htmlFor={fieldName}>
@@ -553,37 +607,79 @@ export default function AdWizard({ mode }) {
                 );
 
             case "date": {
-                const raw = formData[fieldName] || "";
-                const parsedDate = raw ? new Date(raw) : null;
+                const isDateOfBirth = fieldName === "dob";
+                const isAvailableDate = fieldName === "availableDate";
+                const isAutoCalculated = isAvailableDate && (category === "dogs" || category === "cats");
 
+                // Format date for display in text field
+                const formatDateForDisplay = (dateString) => {
+                    if (!dateString) return "";
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                };
                 return (
                     <div className={groupClasses} key={fieldName}>
                         <label htmlFor={fieldName}>
                             {config.label}
                             {isRequired && <span className="required-asterisk"> *</span>}
+                            {isAutoCalculated && (
+                                <span className="field-note"> (Auto-calculated from date of birth - UK law requires 8 weeks minimum)</span>
+                            )}
                         </label>
-                        <div className="react-datepicker-wrapper">
-                            <div className="react-datepicker__input-container">
-                                <DatePicker
+                        <div className="adwizard-date-input-container">
+                            {isAutoCalculated ? (
+                                // Read-only text field for auto-calculated available date
+                                <input
+                                    type="text"
                                     id={fieldName}
-                                    selected={parsedDate}
-                                    onChange={date => {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            [fieldName]: date ? date.toISOString().split("T")[0] : ""
-                                        }));
+                                    name={fieldName}
+                                    value={formData.dob && formData.availableDate ? formatDateForDisplay(formData.availableDate) : ""}
+                                    readOnly
+                                    className={`${fieldClasses} auto-calculated-field`}
+                                    placeholder="Will be calculated from date of birth"
+                                />
+                            ) : (
+                                // Regular date picker for other date fields
+                                <input
+                                    type="date"
+                                    id={fieldName}
+                                    name={fieldName}
+                                    value={formData[fieldName] || ""}
+                                    onChange={(e) => {
+                                        const newValue = e.target.value;
+
+                                        setFormData((prev) => {
+                                            const updated = {
+                                                ...prev,
+                                                [fieldName]: newValue
+                                            };
+
+                                            // Auto-calculate available date for cats and dogs
+                                            if (isDateOfBirth && (category === "dogs" || category === "cats")) {
+                                                const readyDate = calculateReadyToLeaveDate(newValue);
+                                                if (readyDate) {
+                                                    updated.availableDate = readyDate;
+                                                }
+                                            }
+
+                                            return updated;
+                                        });
+
                                         if (fieldErrors?.[fieldName]) {
                                             setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
                                         }
                                     }}
-                                    dateFormat="yyyy-MM-dd"
-                                    placeholderText={`Select ${config.label.toLowerCase()}`}
                                     className={fieldClasses}
-                                    showMonthYearDropdown
+                                    placeholder={`Select ${config.label.toLowerCase()}`}
                                     required={isRequired}
                                 />
-                            </div>
+                            )}
                         </div>
+
                         {hasError && (
                             <div className="adwizard-error-message">
                                 {fieldErrors[fieldName]}
@@ -593,6 +689,7 @@ export default function AdWizard({ mode }) {
                 );
             }
             default:
+                console.log('🚨 DEFAULT case hit for field:', fieldName, 'with type:', config.type);
                 return null;
         }
     };
@@ -659,7 +756,8 @@ export default function AdWizard({ mode }) {
                 expired: false,
                 sold: false,
                 kcName: formData.kcName?.trim() || "",
-                mainImageIndex // Store the main image index
+                mainImageIndex, // Store the main image index
+                litterWithMotherIndex // Store the litter with mother image index
             };
 
             // Add all form fields
@@ -772,7 +870,6 @@ export default function AdWizard({ mode }) {
                 title="Create Your Pet Advert – Ad Wizard | My Pet Connect"
                 description="Effortlessly craft and publish new pet listings with our Ad Wizard. Add photos, set pricing, and reach local buyers for stud services, puppies, kittens, and more in minutes."
             />
-
 
             <div className="adwizard-container">
                 <h1 className="adwizard-title">{getHeading()}</h1>
@@ -1081,14 +1178,18 @@ export default function AdWizard({ mode }) {
                         {/* Image Upload Section */}
                         <div className="adwizard-image-upload">
                             <h3>Upload Photos (Max 10)</h3>
+
                             <p style={{
                                 fontSize: '14px',
                                 color: '#64748b',
                                 marginBottom: '12px',
                                 fontStyle: 'italic'
                             }}>
-                                Click on any uploaded image to set it as the main image for your advert.
-                                The main image will be displayed first and used as the thumbnail.
+                                Upload your images, then use the buttons below each image to:
+                                <br />• Click the <strong>⭐ star</strong> to set the main image (thumbnail)
+                                {(category === "dogs" || category === "cats") && (
+                                    <span><br />• Click the <strong>👩‍👧‍👦 family icon</strong> to mark an image showing the litter with mother</span>
+                                )}
                             </p>
                             <div>
                                 <input
@@ -1104,8 +1205,7 @@ export default function AdWizard({ mode }) {
                                     {images.map((img, idx) => (
                                         <div
                                             key={idx}
-                                            className={`adwizard-preview-item ${mainImageIndex === idx ? 'main-image' : ''}`}
-                                            onClick={() => setMainImageIndex(idx)}
+                                            className={`adwizard-preview-item ${mainImageIndex === idx ? 'main-image' : ''} ${litterWithMotherIndex === idx ? 'litter-with-mother' : ''}`}
                                         >
                                             {/* Remove button */}
                                             <button
@@ -1115,19 +1215,131 @@ export default function AdWizard({ mode }) {
                                                     e.stopPropagation();
                                                     handleImageRemove(idx);
                                                 }}
+                                                title="Remove image"
                                             >✕</button>
 
                                             {/* Image preview */}
                                             <img src={img.url} alt={`preview-${idx}`} />
 
-                                            {/* Hover overlay */}
-                                            <div className="hover-overlay">
-                                                {mainImageIndex === idx ? '★ Main Image' : 'Set as main'}
+                                            {/* Image controls - always visible */}
+                                            <div className="image-controls" style={{
+                                                position: 'absolute',
+                                                bottom: '8px',
+                                                left: '8px',
+                                                right: '8px',
+                                                display: 'flex',
+                                                gap: '8px',
+                                                justifyContent: 'center'
+                                            }}>
+                                                {/* Main image button */}
+                                                <button
+                                                    type="button"
+                                                    className="control-btn"
+                                                    onClick={e => {
+                                                        e.stopPropagation();
+                                                        setMainImageIndex(idx);
+                                                    }}
+                                                    title="Set as main image"
+                                                    style={{
+                                                        background: mainImageIndex === idx ? '#b83c56' : 'rgba(0,0,0,0.7)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        padding: '6px 8px',
+                                                        fontSize: '14px',
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                    }}
+                                                >
+                                                    ⭐ {mainImageIndex === idx ? 'Main' : 'Set Main'}
+                                                </button>
+
+                                                {/* Litter with mother button (only for dogs/cats) */}
+                                                {(category === "dogs" || category === "cats") && (
+                                                    <button
+                                                        type="button"
+                                                        className="control-btn"
+                                                        onClick={e => {
+                                                            e.stopPropagation();
+                                                            setLitterWithMotherIndex(litterWithMotherIndex === idx ? null : idx);
+                                                        }}
+                                                        title="Mark as litter with mother"
+                                                        style={{
+                                                            background: litterWithMotherIndex === idx ? '#10b981' : 'rgba(0,0,0,0.7)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            padding: '6px 8px',
+                                                            fontSize: '12px',
+                                                            cursor: 'pointer',
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                        }}
+                                                    >
+                                                        👩‍👧‍👦 {litterWithMotherIndex === idx ? 'With Mom' : 'Set Mom'}
+                                                    </button>
+                                                )}
                                             </div>
+
+                                            {/* Status indicators at top */}
+                                            {(mainImageIndex === idx || litterWithMotherIndex === idx) && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    right: '8px',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '4px'
+                                                }}>
+                                                    {mainImageIndex === idx && (
+                                                        <span style={{
+                                                            background: '#b83c56',
+                                                            color: 'white',
+                                                            borderRadius: '50%',
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '14px',
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                        }}>★</span>
+                                                    )}
+                                                    {litterWithMotherIndex === idx && (
+                                                        <span style={{
+                                                            background: '#10b981',
+                                                            color: 'white',
+                                                            borderRadius: '50%',
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '10px',
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                        }}>👩‍👧‍👦</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             )}
+
+                            {/* Additional guidance for dogs/cats */}
+                            {(category === "dogs" || category === "cats") && images.length > 0 && (
+                                <div style={{
+                                    marginTop: '12px',
+                                    padding: '12px',
+                                    background: '#f0f9ff',
+                                    border: '1px solid #bfdbfe',
+                                    borderRadius: '6px',
+                                    fontSize: '14px',
+                                    color: '#1e40af'
+                                }}>
+                                    <strong>💡 Tip:</strong> Including a photo of the litter with their mother helps build trust with potential buyers and shows responsible breeding practices.
+                                </div>
+                            )}
+
                             {fieldErrors.images && (
                                 <div className="adwizard-error-message">
                                     {fieldErrors.images}
@@ -1194,7 +1406,9 @@ export default function AdWizard({ mode }) {
                                                 alt={`preview-${idx}`}
                                                 className="adwizard-summary-thumb"
                                                 style={{
-                                                    border: idx === mainImageIndex ? '3px solid #b83c56' : '1px solid #edf2f7'
+                                                    border: idx === mainImageIndex ? '3px solid #b83c56' :
+                                                        idx === litterWithMotherIndex ? '3px solid #10b981' :
+                                                            '1px solid #edf2f7'
                                                 }}
                                             />
                                             {idx === mainImageIndex && (
@@ -1215,6 +1429,24 @@ export default function AdWizard({ mode }) {
                                                     boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                                 }}>★</span>
                                             )}
+                                            {idx === litterWithMotherIndex && (
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    right: '8px',
+                                                    background: '#10b981',
+                                                    color: 'white',
+                                                    borderRadius: '50%',
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '12px',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                }}>👩‍👧‍👦</span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -1232,8 +1464,8 @@ export default function AdWizard({ mode }) {
                             >
                                 {isSubmitting ? (
                                     <span className="submitting-label">
-                                    <span className="spinner" /> Submitting…
-                                </span>
+                                        <span className="spinner" /> Submitting…
+                                    </span>
                                 ) : "Submit Advert"}
                             </button>
                         </div>
@@ -1268,9 +1500,7 @@ export default function AdWizard({ mode }) {
                         </div>
                     </div>
                 )}
-
             </div>
         </>
-
     );
 }
