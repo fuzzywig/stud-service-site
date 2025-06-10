@@ -5,18 +5,17 @@ import sgMail from '@sendgrid/mail';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__dirname);
 
-// Load .env from the server directory
+// Load .env from the server directory FIRST
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-import { FirebaseSitemapService } from './firebase-sitemap-service.js';
+// NOW import Firebase service AFTER env vars are loaded
+const { FirebaseSitemapService } = await import('./firebase-sitemap-service.js');
 
-
-// Add these debug lines after dotenv.config()
+// Debug lines
 console.log('🔍 DEBUG - Firebase env vars:');
 console.log('PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
 console.log('CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
@@ -24,6 +23,9 @@ console.log('PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? 'EXISTS' : 'MISSI
 console.log('🔍 END DEBUG');
 const app = express();
 const PORT = 8080;
+
+app.use(cors());
+app.use(express.json());
 
 app.use(cors());
 app.use(express.json());
