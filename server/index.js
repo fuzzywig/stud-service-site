@@ -5,12 +5,23 @@ import sgMail from '@sendgrid/mail';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load .env from the server directory
 dotenv.config({ path: path.join(__dirname, '.env') });
+
+import { FirebaseSitemapService } from './firebase-sitemap-service.js';
+
+
+// Add these debug lines after dotenv.config()
+console.log('🔍 DEBUG - Firebase env vars:');
+console.log('PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
+console.log('CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+console.log('PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? 'EXISTS' : 'MISSING');
+console.log('🔍 END DEBUG');
 const app = express();
 const PORT = 8080;
 
@@ -35,6 +46,268 @@ const templates = {
     REVIEW_RESPONSE: 'd-8e896410b34c4bd6bd183f5a2e3651e4'
 
 };
+
+// Simple cache for sitemap data
+const sitemapCache = new Map();
+const CACHE_DURATION = 3600000; // 1 hour
+
+const getCachedOrFetch = async (key, fetchFunction) => {
+    const cached = sitemapCache.get(key);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        return cached.data;
+    }
+
+    const data = await fetchFunction();
+    sitemapCache.set(key, { data, timestamp: Date.now() });
+    return data;
+};
+
+// Test Firebase connection endpoint
+app.get('/api/test-firebase-sitemap', async (req, res) => {
+    try {
+        console.log('🧪 Testing Firebase sitemap connection...');
+        await FirebaseSitemapService.testConnection();
+        const count = await FirebaseSitemapService.getActivePetsCount();
+        res.json({
+            success: true,
+            totalActivePets: count,
+            message: 'Firebase sitemap connection successful',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Firebase sitemap test failed:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Main sitemap index
+
+// Individual pet listings sitemap (add this to your index.js)
+app.get('/sitemap-pets-:page.xml', async (req, res) => {
+    try {
+        const page = parseInt(req.params.page);
+        const baseUrl = 'https://mypetconnect.co.uk';
+
+        if (isNaN(page) || page < 1) {
+            return res.status(404).send('Invalid sitemap page');
+        }
+
+        const petsPerPage = 5000;
+        const offset = (page - 1) * petsPerPage;
+
+        console.log(`🗺️ Getting pets for sitemap page ${page}, offset ${offset}`);
+
+        const pets = await getCachedOrFetch(`pets-page-${page}`, () =>
+            FirebaseSitemapService.getPetsBatch(offset, petsPerPage)
+        );
+
+        if (pets.length === 0) {
+            return res.status(404).send('Sitemap page not found');
+        }
+
+        const urlElements = pets.map(pet => {
+            // Higher priority for featured and recent listings
+            let priority = "0.8";
+            if (pet.featured) priority = "0.9";
+
+            const daysSinceUpdate = (new Date() - pet.updatedAt) / (1000 * 60 * 60 * 24);
+            if (daysSinceUpdate <= 7) priority = "0.9"; // Recent listings get higher priority
+
+            return `
+  <url>
+    <loc>${baseUrl}/advert-details/${pet.id}</loc>
+    <lastmod>${pet.updatedAt.toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+        }).join('');
+
+        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlElements}
+</urlset>`;
+
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemap);
+
+    } catch (error) {
+        console.error('❌ Error generating pets sitemap:', error);
+        res.status(500).send('Error generating pets sitemap');
+    }
+});
+
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://mypetconnect.co.uk';
+        const currentDate = new Date().toISOString();
+
+        console.log('🗺️ Generating sitemap index...');
+        const totalPets = await getCachedOrFetch('pets-count',
+            () => FirebaseSitemapService.getActivePetsCount()
+        );
+
+        const petsPerSitemap = 5000;
+        const totalSitemaps = Math.ceil(totalPets / petsPerSitemap);
+
+        console.log(`🗺️ Found ${totalPets} active pets, creating ${totalSitemaps} sitemaps`);
+
+        let sitemapEntries = `
+  <sitemap>
+    <loc>${baseUrl}/sitemap-static.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-categories.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-breeds.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-locations.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>`;
+
+        // Add pet sitemaps
+        for (let i = 1; i <= totalSitemaps; i++) {
+            sitemapEntries += `
+  <sitemap>
+    <loc>${baseUrl}/sitemap-pets-${i}.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>`;
+        }
+
+        const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries}
+</sitemapindex>`;
+
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemapIndex);
+
+    } catch (error) {
+        console.error('❌ Error generating sitemap index:', error);
+        res.status(500).send('Error generating sitemap index');
+    }
+});
+
+// Static pages sitemap
+app.get('/sitemap-static.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://mypetconnect.co.uk';
+
+        const staticRoutes = [
+            { url: '/', changefreq: 'daily', priority: '1.0' },
+            { url: '/about', changefreq: 'monthly', priority: '0.6' },
+            { url: '/contact', changefreq: 'monthly', priority: '0.5' },
+            { url: '/how-it-works', changefreq: 'monthly', priority: '0.7' },
+            { url: '/browse', changefreq: 'daily', priority: '0.9' },
+            { url: '/search', changefreq: 'daily', priority: '0.8' },
+            { url: '/post-ad', changefreq: 'monthly', priority: '0.9' },
+            { url: '/register', changefreq: 'monthly', priority: '0.8' },
+            { url: '/login', changefreq: 'monthly', priority: '0.4' },
+            { url: '/help', changefreq: 'monthly', priority: '0.6' }
+        ];
+
+        const urlElements = staticRoutes.map(route => `
+  <url>
+    <loc>${baseUrl}${route.url}</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+  </url>`).join('');
+
+        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlElements}
+</urlset>`;
+
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemap);
+
+    } catch (error) {
+        console.error('❌ Error generating static sitemap:', error);
+        res.status(500).send('Error generating static sitemap');
+    }
+});
+
+// Categories sitemap
+app.get('/sitemap-categories.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://mypetconnect.co.uk';
+        const categories = await getCachedOrFetch('categories', () => FirebaseSitemapService.getCategories());
+
+        let allRoutes = [];
+
+        categories.forEach(category => {
+            // Main category page
+            allRoutes.push({
+                url: `/category/${category.slug}`,
+                lastmod: category.lastUpdated.toISOString().split('T')[0],
+                changefreq: 'daily',
+                priority: category.priority
+            });
+
+            // Category + type combinations
+            ['sale', 'stud', 'wanted'].forEach(type => {
+                allRoutes.push({
+                    url: `/category/${category.slug}/${type}`,
+                    lastmod: category.lastUpdated.toISOString().split('T')[0],
+                    changefreq: 'daily',
+                    priority: (parseFloat(category.priority) - 0.1).toString()
+                });
+            });
+        });
+
+        const urlElements = allRoutes.map(route => `
+  <url>
+    <loc>${baseUrl}${route.url}</loc>
+    <lastmod>${route.lastmod}</lastmod>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+  </url>`).join('');
+
+        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlElements}
+</urlset>`;
+
+        res.set('Content-Type', 'application/xml');
+        res.send(sitemap);
+
+    } catch (error) {
+        console.error('❌ Error generating categories sitemap:', error);
+        res.status(500).send('Error generating categories sitemap');
+    }
+});
+
+// Cache management
+app.post('/admin/clear-sitemap-cache', (req, res) => {
+    sitemapCache.clear();
+    res.json({ message: 'Sitemap cache cleared successfully', timestamp: new Date().toISOString() });
+});
+
+// Health check for sitemaps
+app.get('/api/sitemap-health', async (req, res) => {
+    try {
+        const count = await FirebaseSitemapService.getActivePetsCount();
+        res.json({
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+            activePets: count,
+            cacheSize: sitemapCache.size
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERROR',
+            error: error.message
+        });
+    }
+});
 
 // Keep your existing endpoint (for backward compatibility)
 app.post('/api/send-email', async (req, res) => {
