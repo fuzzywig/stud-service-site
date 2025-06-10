@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__dirname);
+const __dirname = path.dirname(__filename);
 
 // Load .env from the server directory FIRST
 dotenv.config({ path: path.join(__dirname, '.env') });
