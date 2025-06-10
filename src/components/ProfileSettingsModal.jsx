@@ -553,12 +553,12 @@ export default function ProfileSettingsModal({ currentData, onSave, onClose, ini
                                 <textarea
                                     value={bioData.bio}
                                     onChange={handleBioChange}
-                                    maxLength={500}
+                                    maxLength={1000}
                                     rows={8}
                                     placeholder={getBioPlaceholder()}
                                 />
                                 <div className="psm-char-count">
-                                    {bioData.bio.length}/500 characters
+                                    {bioData.bio.length}/1000 characters
                                 </div>
                             </div>
                         </div>

@@ -75,6 +75,21 @@ export default function MyAdvertsPage() {
         setShowTooltip(!showTooltip);
     };
 
+    // Add this function after the imports, before the component
+    function getMainImageUrl(ad) {
+        // Use mainImageIndex if it exists and is valid
+        if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+            const mainIndex = ad.mainImageIndex;
+            if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+                return ad.images[mainIndex];
+            }
+            // Fallback to first image if mainImageIndex is invalid
+            return ad.images[0];
+        }
+
+        return "https://placehold.co/600x400?text=No+Image";
+    }
+
     // ✅ UPDATED: Authentication check with auth state tracking
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (user) => {
@@ -126,6 +141,8 @@ export default function MyAdvertsPage() {
                         title: ad.title || ad.name || "",
                         images: Array.isArray(ad.images) ? ad.images : [],
                         breed: ad.breed || ad.breedOrType || "Unknown",
+                        mainImageIndex: ad.mainImageIndex, // ADD THIS LINE
+
                         ageLabel,
                         expired: ad.expired || false,
                         approved: ad.approved || false,
@@ -456,7 +473,7 @@ export default function MyAdvertsPage() {
                                 <div className="my-ads-image-container">
                                     <Link to={`/advert-details/${ad.id}`} className="my-ads-image-link">
                                         <img
-                                            src={ad.images[0] || "https://placehold.co/600x400?text=No+Image"}
+                                            src={getMainImageUrl(ad)}
                                             alt={ad.title}
                                             className="my-ads-image"
                                         />

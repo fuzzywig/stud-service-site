@@ -36,6 +36,21 @@ function humanize(str = "") {
         .join(" ");
 }
 
+// Add this function after the humanize function
+function getMainImageUrl(ad) {
+    // Use mainImageIndex if it exists and is valid
+    if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+        const mainIndex = ad.mainImageIndex;
+        if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+            return ad.images[mainIndex];
+        }
+        // Fallback to first image if mainImageIndex is invalid
+        return ad.images[0];
+    }
+
+    return "https://placehold.co/400x300";
+}
+
 export default function RecentAdverts({ category, intent, title = "Recent Adverts", limitCount = 8 }) {
     const [ads, setAds] = useState([]);
     const [usersMap, setUsersMap] = useState({});
@@ -245,8 +260,7 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
                                 </div>
                                 <Link to={`/advert-details/${ad.id}`} className="recent-studs-image-container">
                                     <img
-                                        src={ad.images?.[0] || "https://placehold.co/400x300"}
-                                        alt={titleText}
+                                        src={getMainImageUrl(ad)}                                        alt={titleText}
                                         className="recent-studs-image"
                                     />
                                     <div className="recent-studs-overlay">

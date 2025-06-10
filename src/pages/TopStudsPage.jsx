@@ -216,6 +216,21 @@ export default function TopStudsPage() {
         }
     };
 
+    // Add this function after the humanize function
+    function getMainImageUrl(ad) {
+        // Use mainImageIndex if it exists and is valid
+        if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+            const mainIndex = ad.mainImageIndex;
+            if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+                return ad.images[mainIndex];
+            }
+            // Fallback to first image if mainImageIndex is invalid
+            return ad.images[0];
+        }
+
+        return "https://placehold.co/400x300";
+    }
+
     const getRankIcon = (rank) => {
         if (rank === 1) return { icon: faCrown, class: "rank-gold" };
         if (rank === 2) return { icon: faTrophy, class: "rank-silver" };
@@ -444,7 +459,7 @@ export default function TopStudsPage() {
                                         <span>2nd</span>
                                     </div>
                                     <Link to={`/advert-details/${currentStuds[1].id}`} className="elite-podium-image">
-                                        <img src={currentStuds[1].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[1].name} />
+                                        <img src={getMainImageUrl(currentStuds[1])} alt={currentStuds[1].name} />
                                         <div className="elite-podium-overlay">
                                             <span>View Profile</span>
                                         </div>
@@ -497,7 +512,7 @@ export default function TopStudsPage() {
                                         <span>3rd</span>
                                     </div>
                                     <Link to={`/advert-details/${currentStuds[2].id}`} className="elite-podium-image">
-                                        <img src={currentStuds[2].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[2].name} />
+                                        <img src={getMainImageUrl(currentStuds[2])} alt={currentStuds[2].name} />
                                         <div className="elite-podium-overlay">
                                             <span>View Profile</span>
                                         </div>
@@ -581,8 +596,7 @@ export default function TopStudsPage() {
 
                                         {/* Image */}
                                         <Link to={`/advert-details/${stud.id}`} className="elite-card-image">
-                                            <img src={stud.images?.[0] || "https://placehold.co/400x300"} alt={title} />
-                                            <div className="elite-card-overlay">
+                                            <img src={getMainImageUrl(stud)} alt={title} />                                           <div className="elite-card-overlay">
                                                 <div className="elite-overlay-content">
                                                     <FontAwesomeIcon icon={faPaw} className="elite-overlay-icon" />
                                                     <span>View Elite Profile</span>

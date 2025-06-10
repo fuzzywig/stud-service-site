@@ -590,7 +590,7 @@ export const updatedFieldConfigurations = {
     type: "select",
     label: "Gender",
     placeholder: "Select gender",
-    required: false,
+    required: true,
     options: [
       { value: "male", label: "Male" },
       { value: "female", label: "Female" },
@@ -670,7 +670,7 @@ export const updatedFieldConfigurations = {
     type: "date",
     label: "Date of birth",
     placeholder: "Date of birth",
-    required: false
+    required: true
   },
 
   // just below kcRegistered...
@@ -778,12 +778,12 @@ export const updatedFieldConfigurations = {
   proven: {
     type: "checkbox",
     label: "Proven",
-    required: true
+    required: false
   },
   mobileService: {
     type: "checkbox",
     label: "Mobile Service",
-    required: true
+    required: false
   },
 
   // Cat-specific fields
