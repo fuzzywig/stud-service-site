@@ -12,27 +12,42 @@ import {
     collection,
     updateDoc,
     arrayUnion,
-    getDocs,       // ← add this
+    getDocs,
     getDoc,
     setDoc,
     serverTimestamp,
-    query,          // ✅ MISSING
-    orderBy,        // ✅ MISSING
+    query,
+    orderBy,
     limit
 } from "firebase/firestore";
 import {db} from "../firebase/firebase";
 
-import {useSearchParams, useNavigate} from "react-router-dom"; // ✅ Add useNavigate
-import {useAuth, auth} from "../firebase/firebaseAuth"; // ✅ Import auth
+import {useSearchParams, useNavigate} from "react-router-dom";
+import {useAuth, auth} from "../firebase/firebaseAuth";
 import {
     getConversationId,
     sendMessage,
     listenToMessages,
     fetchUserConversations,
-    listenToUserConversations // ✅ this was missing
+    listenToUserConversations
 } from "../firebase/firestoreChat";
 import {Helmet} from "react-helmet-async";
-import { useLoginModal } from "../context/LoginContext"; // ✅ Add login context
+import { useLoginModal } from "../context/LoginContext";
+
+// Add this function after the imports, before the component
+function getMainImageUrl(ad) {
+    // Use mainImageIndex if it exists and is valid
+    if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+        const mainIndex = ad.mainImageIndex;
+        if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+            return ad.images[mainIndex];
+        }
+        // Fallback to first image if mainImageIndex is invalid
+        return ad.images[0];
+    }
+
+    return null;
+}
 
 // Permanently deletes a conversation and all its messages subcollection
 async function deleteConversation(convoId) {
@@ -106,15 +121,15 @@ function groupMessagesByDate(messages) {
 
 const Messages = () => {
     const {currentUser} = useAuth();
-    const navigate = useNavigate(); // ✅ Add navigate
-    const { openLogin } = useLoginModal(); // ✅ Add login modal
+    const navigate = useNavigate();
+    const { openLogin } = useLoginModal();
     const [conversations, setConversations] = useState([]);
     const [participants, setParticipants] = useState({});
     const [activeConversationId, setActiveConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [searchParams] = useSearchParams();
-    const advertId = searchParams.get("advert");   // ← new
+    const advertId = searchParams.get("advert");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewImageUrl, setPreviewImageUrl] = useState(null);
@@ -130,13 +145,15 @@ const Messages = () => {
     const [blockedUsers, setBlockedUsers] = useState([]);
     const [audioContext, setAudioContext] = useState(null);
     const [reactionMenuPosition, setReactionMenuPosition] = useState({ top: 0, left: 0 });
-    const [authChecked, setAuthChecked] = useState(false); // ✅ Add authChecked state
+    const [authChecked, setAuthChecked] = useState(false);
+
+    // ✅ ADD MISSING STATE
+    const [currentUserData, setCurrentUserData] = useState(null);
 
     const messagesEndRef = useRef(null);
     const [showSidebar, setShowSidebar] = useState(true);
     const conversationIdFromURL = searchParams.get("c");
     const recipientIdFromURL = searchParams.get("recipient");
-
 
     // ✅ CLEAN UP MALFORMED URLs
     useEffect(() => {
@@ -167,7 +184,7 @@ const Messages = () => {
         }
     }, []);
 
-    // ✅ NEW: Authentication state handler
+    // ✅ Authentication state handler
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             setAuthChecked(true);
@@ -178,8 +195,7 @@ const Messages = () => {
 
                 // Show login prompt or redirect
                 if (window.confirm('You need to log in to view messages. Would you like to log in now?')) {
-                    // Trigger your login modal
-                    openLogin(); // If you have access to login context
+                    openLogin();
                 } else {
                     // User declined - redirect to home
                     navigate('/');
@@ -190,7 +206,7 @@ const Messages = () => {
         return () => unsubscribe();
     }, [navigate, openLogin]);
 
-    // ✅ NEW: Handle redirect after login
+    // ✅ Handle redirect after login
     useEffect(() => {
         if (currentUser && authChecked) {
             const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
@@ -201,6 +217,7 @@ const Messages = () => {
             }
         }
     }, [currentUser, authChecked]);
+
     const handleBlockUser = async () => {
         if (!currentUser || !otherUserId) return;
 
@@ -323,19 +340,22 @@ const Messages = () => {
         }
     };
 
-    // All your existing useEffects remain the same, but add this FIXED one:
-
     useEffect(() => {
         console.log("reactionMenuOpen changed:", reactionMenuOpen);
     }, [reactionMenuOpen]);
 
+    // ✅ FIXED: Fetch current user data effect
     useEffect(() => {
         if (!currentUser?.uid) return;
 
         const fetchCurrentUserData = async () => {
-            const userSnap = await getDoc(doc(db, "users", currentUser.uid));
-            if (userSnap.exists()) {
-                setCurrentUserData(userSnap.data());
+            try {
+                const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+                if (userSnap.exists()) {
+                    setCurrentUserData(userSnap.data());
+                }
+            } catch (error) {
+                console.error("Error fetching current user data:", error);
             }
         };
 
@@ -515,7 +535,7 @@ const Messages = () => {
         };
 
         loadOrCreateConversation();
-    }, [currentUser, conversationIdFromURL, recipientIdFromURL, advertId, conversationsLoaded, conversations, authChecked]); // ✅ Add authChecked
+    }, [currentUser, conversationIdFromURL, recipientIdFromURL, advertId, conversationsLoaded, conversations, authChecked]);
 
     // Rest of your existing useEffects...
     useEffect(() => {
@@ -586,7 +606,7 @@ const Messages = () => {
             setParticipants(map);
 
             const titleMap = {};
-            const imageMap = {}; // ✅ add this line
+            const imageMap = {};
             for (const convo of convos) {
                 if (convo.advertId && !titleMap[convo.advertId]) {
                     try {
@@ -594,7 +614,7 @@ const Messages = () => {
                         if (adSnap.exists()) {
                             const adData = adSnap.data();
                             titleMap[convo.advertId] = adData.title || "Advert";
-                            imageMap[convo.advertId] = adData.images?.[0] || null;
+                            imageMap[convo.advertId] = getMainImageUrl(adData); // USE HELPER FUNCTION
                         }
                     } catch (err) {
                         console.error("Failed to fetch advert title for:", convo.advertId, err);
@@ -602,7 +622,7 @@ const Messages = () => {
                 }
             }
             setAdvertTitles(titleMap);
-            setAdvertImages(imageMap); // ✅ new state
+            setAdvertImages(imageMap);
         })();
     }, [currentUser]);
 
@@ -754,7 +774,7 @@ const Messages = () => {
         ?.users.find(u => u !== currentUser?.uid);
     const isOnline = otherUser?.lastSeen?.seconds > Date.now() / 1000 - 300;
 
-    // ✅ EARLY RETURNS for authentication states - MOVED TO END
+    // ✅ EARLY RETURNS for authentication states
     if (!authChecked) {
         return (
             <>
