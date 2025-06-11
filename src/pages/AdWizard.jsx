@@ -143,7 +143,7 @@ export default function AdWizard({ mode }) {
                 userId: user.uid
             });
 
-            const response = await fetch('http://localhost:6500/api/send-advert-submitted-email', {
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-submitted-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -189,8 +189,7 @@ export default function AdWizard({ mode }) {
                 adId: adId
             });
 
-            const response = await fetch('http://localhost:8080/api/send-admin-alert', {
-                method: 'POST',
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert', {                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
