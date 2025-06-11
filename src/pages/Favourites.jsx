@@ -21,6 +21,21 @@ import {
 import { useNavigate } from "react-router-dom";
 import {Helmet} from "react-helmet-async";
 
+// Add the same getMainImageUrl function from RecentAdverts
+function getMainImageUrl(ad) {
+    // Use mainImageIndex if it exists and is valid
+    if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+        const mainIndex = ad.mainImageIndex;
+        if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+            return ad.images[mainIndex];
+        }
+        // Fallback to first image if mainImageIndex is invalid
+        return ad.images[0];
+    }
+
+    return "https://placehold.co/400x300";
+}
+
 export default function Favourites() {
     const [user, setUser] = useState(null);
     const [favouriteAds, setFavouriteAds] = useState([]);
@@ -352,12 +367,12 @@ export default function Favourites() {
         );
     };
 
-    // Render a single favourite item
+    // Render a single favourite item - UPDATED TO USE getMainImageUrl
     const renderFavouriteItem = (ad) => (
         <div className="favourite-item" key={ad.id}>
             <div className="favourite-image-container">
                 <img
-                    src={ad.images?.[0] || "https://placehold.co/400x300"}
+                    src={getMainImageUrl(ad)}
                     alt={ad.title || ad.breed}
                     className="favourite-image"
                 />
@@ -404,65 +419,63 @@ export default function Favourites() {
     );
 
     return (
-
         <>
             <Helmet>
                 <title>Your Favourites | My Pet Connect</title>
                 <meta name="robots" content="noindex,follow" />
             </Helmet>
 
-        <div className="favourites-container">
-            <div className="favourites-header">
-                <h2 className="favourites-title">
-                    <FaHeart className="heart-icon" /> My Favourites
-                </h2>
-                <div className="favourites-controls">
-                    <div className="favourites-tabs">
-                        <button
-                            className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('all')}
-                        >
-                            All ({totalCount})
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'forSale' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('forSale')}
-                        >
-                            For Sale ({forSaleCount})
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'forStud' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('forStud')}
-                        >
-                            For Stud ({forStudCount})
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'forRescue' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('forRescue')}
-                        >
-                            For Adoption ({forRescueCount})
-                        </button>
-                    </div>
-                    <div className="view-toggle">
-                        <button
-                            className={`view-btn ${selectedView === "grid" ? "active" : ""}`}
-                            onClick={() => setSelectedView("grid")}
-                        >
-                            Grid View
-                        </button>
-                        <button
-                            className={`view-btn ${selectedView === "list" ? "active" : ""}`}
-                            onClick={() => setSelectedView("list")}
-                        >
-                            List View
-                        </button>
+            <div className="favourites-container">
+                <div className="favourites-header">
+                    <h2 className="favourites-title">
+                        <FaHeart className="heart-icon" /> My Favourites
+                    </h2>
+                    <div className="favourites-controls">
+                        <div className="favourites-tabs">
+                            <button
+                                className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('all')}
+                            >
+                                All ({totalCount})
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 'forSale' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('forSale')}
+                            >
+                                For Sale ({forSaleCount})
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 'forStud' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('forStud')}
+                            >
+                                For Stud ({forStudCount})
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 'forRescue' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('forRescue')}
+                            >
+                                For Adoption ({forRescueCount})
+                            </button>
+                        </div>
+                        <div className="view-toggle">
+                            <button
+                                className={`view-btn ${selectedView === "grid" ? "active" : ""}`}
+                                onClick={() => setSelectedView("grid")}
+                            >
+                                Grid View
+                            </button>
+                            <button
+                                className={`view-btn ${selectedView === "list" ? "active" : ""}`}
+                                onClick={() => setSelectedView("list")}
+                            >
+                                List View
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {renderListings()}
             </div>
-
-            {renderListings()}
-        </div>
-
-            </>
+        </>
     );
 }
