@@ -180,194 +180,57 @@ export default function AdWizard({ mode }) {
         }
     };
 
-    // Admin notification email function - Updated for your server
+    // Admin Alert Email - Only 7 Required Fields
     const sendAdminAlert = async (advertData, userEmail, advertId) => {
         try {
-            console.log('👮 =================================');
-            console.log('👮 STARTING ADMIN ALERT EMAIL SEND');
-            console.log('👮 advertData:', advertData);
-            console.log('👮 userEmail:', userEmail);
-            console.log('👮 advertId:', advertId);
-            console.log('👮 =================================');
+            console.log('👮 Sending admin alert with 7 fields only');
 
-            // Get current user details
-            const user = auth.currentUser;
-            if (!user) {
-                console.error('👮 No authenticated user found');
+            if (!advertId) {
+                console.error('👮 No advertId provided');
                 return;
             }
 
-            // Fetch user data from Firestore
-            let userData = {};
-            try {
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    userData = userSnap.data();
-                }
-            } catch (error) {
-                console.error('👮 Error fetching user data:', error);
+            const user = auth.currentUser;
+            if (!user) {
+                console.error('👮 No authenticated user');
+                return;
             }
 
-            // Generate risk flags
-            const riskFlags = getRiskFlags(advertData, userData);
+            // Get user data
+            let userData = {};
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                userData = userSnap.data();
+            }
 
-            // ✅ Generate title if not provided - same logic as in your form
-            const title = advertData.title || `${advertData.breedOrType} ${advertData.intent === 'stud' ? 'Stud Service' : 'For Sale'}`;
-
-            const adminEmailPayload = {
-                // Admin email configuration
-                adminEmail: 'gavinoxley@gmail.com', // Your admin email
-
-                // ✅ NEW: Quick Details fields (now required by server)
-                advertId: advertId,
-                userEmail: userEmail,
+            // Only 7 required fields
+            const payload = {
+                adminEmail: 'gavinoxley@gmail.com',
+                userEmail: userData.email,
                 userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
-                title: title,
-                intent: advertData.intent, // Server will format this as "For Sale" or "For Stud"
-                breedOrType: advertData.breedOrType,
-
-                // ✅ CRITICAL: Add missing required fields that server expects
-                petName: advertData.name || advertData.breedOrType || 'Unknown',
-                advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                categoryName: advertData.category ? advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1) : 'Pet',
-
-                // User information (existing)
-                userPhone: userData.phoneNumber || 'Not provided',
-                userPostcode: userData.postcode || 'Not provided',
-                userId: user.uid,
-
-                // Advert information (existing but moved up to be with required fields)
-                price: advertData.price || advertData.fee || 'Not specified',
-                description: advertData.description || 'No description provided',
-                imageCount: advertData.images ? advertData.images.length : 0,
-
-                // Additional details for admin review (existing)
-                submissionDate: new Date().toLocaleString('en-GB', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
-
-                // Health and safety flags for admin attention (existing)
-                healthTests: advertData.healthTests || [],
-                kcRegistered: advertData.kcRegistered || false,
-                vaccinated: advertData.vaccinated || false,
-                microchipped: advertData.microchipped || false,
-                withMother: advertData.withMother || false,
-
-                // Age information (important for compliance) (existing)
-                dateOfBirth: advertData.dob || 'Not provided',
-                availableDate: advertData.availableDate || 'Not provided',
-
-                // Location info (existing)
-                postcode: advertData.postcode || 'Not available',
-
-                // Quick action links for admin (updated URLs)
-                adminPanelUrl: `https://mypetconnect.co.uk/admin/view-advert/${advertId}`, // ✅ Main admin review URL
-                directApproveUrl: `https://mypetconnect.co.uk/admin/approve/${advertId}`,
-                directRejectUrl: `https://mypetconnect.co.uk/admin/reject/${advertId}`,
-                userProfileUrl: `https://mypetconnect.co.uk/profile/${user.uid}`,
-                advertPreviewUrl: `https://mypetconnect.co.uk/advert-details/${advertId}`,
-
-                // Risk assessment flags (existing)
-                riskFlags: riskFlags,
-
-                // Summary for quick admin decision (existing)
-                quickSummary: `${advertData.category.toUpperCase()} | ${advertData.breedOrType} | ${advertData.intent.toUpperCase()} | £${advertData.price || advertData.fee || 'TBC'}`
+                advertId: advertId,
+                title: advertData.title || `${advertData.breedOrType} ${advertData.intent === 'stud' ? 'Stud Service' : 'For Sale'}`,
+                intent: advertData.intent,
+                breedOrType: advertData.breedOrType
             };
-
-            console.log('👮 SENDING ADMIN ALERT TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email');
-            console.log('👮 Admin email payload:', adminEmailPayload);
-            console.log('👮 ✅ REQUIRED FIELDS CHECK:', {
-                adminEmail: !!adminEmailPayload.adminEmail,
-                userEmail: !!adminEmailPayload.userEmail,
-                userName: !!adminEmailPayload.userName,
-                advertId: !!adminEmailPayload.advertId,
-                title: !!adminEmailPayload.title,
-                intent: !!adminEmailPayload.intent,
-                breedOrType: !!adminEmailPayload.breedOrType
-            });
-            console.log('👮 ✅ ALL PAYLOAD KEYS:', Object.keys(adminEmailPayload));
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(adminEmailPayload),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
-            console.log('👮 Admin alert response status:', response.status);
-            console.log('👮 Admin alert response ok:', response.ok);
-
-            const result = await response.json();
-            console.log('👮 Admin alert response body:', result);
-
             if (response.ok) {
-                console.log('✅ ADMIN ALERT EMAIL SENT SUCCESSFULLY:', result);
+                console.log('✅ Admin alert sent');
             } else {
-                console.error('❌ ADMIN ALERT EMAIL FAILED:', result);
-                // Log the failure but don't block the user's submission
+                console.error('❌ Admin alert failed:', await response.json());
             }
         } catch (error) {
-            console.error('❌ ADMIN ALERT EMAIL ERROR:', error);
-            // Log the error but don't block the user's submission
+            console.error('❌ Admin alert error:', error);
         }
     };
 
-// Helper function to identify potential risk flags for admin attention
-    const getRiskFlags = (advertData, userData) => {
-        const flags = [];
-
-        // Age-related flags
-        if (advertData.dob) {
-            const dobDate = new Date(advertData.dob);
-            const ageInWeeks = Math.floor((Date.now() - dobDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-
-            if (ageInWeeks < 8 && advertData.intent === 'sale') {
-                flags.push('UNDER_8_WEEKS - Pet listed for sale before 8 weeks old');
-            }
-
-            if (ageInWeeks < 0) {
-                flags.push('FUTURE_DOB - Date of birth is in the future');
-            }
-        }
-
-        // Price-related flags
-        const price = parseFloat(advertData.price || advertData.fee || 0);
-        if (price > 5000) {
-            flags.push('HIGH_PRICE - Price exceeds £5,000');
-        }
-        if (price < 50 && advertData.intent === 'sale' && ['dogs', 'cats'].includes(advertData.category)) {
-            flags.push('SUSPICIOUSLY_LOW_PRICE - Very low price for dogs/cats');
-        }
-
-        // Health flags
-        if (!advertData.vaccinated && advertData.intent === 'sale') {
-            flags.push('UNVACCINATED - Pet not vaccinated');
-        }
-
-        // User flags
-        if (!userData.phoneNumber) {
-            flags.push('NO_PHONE - User has no phone number');
-        }
-
-        // Image flags
-        if (!advertData.images || advertData.images.length === 0) {
-            flags.push('NO_IMAGES - No images uploaded');
-        }
-
-        // Description flags
-        if (!advertData.description || advertData.description.length < 20) {
-            flags.push('POOR_DESCRIPTION - Very short or missing description');
-        }
-
-        return flags;
-    };
 
     // Capitalize helper
     const capitalize = str =>
