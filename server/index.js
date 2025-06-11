@@ -990,7 +990,7 @@ app.post('/api/send-new-review-email', async (req, res) => {
             // respondUrl: removed
 
             // URLs - Direct to profile reviews tab
-            reviewUrl: `http://https://mypetconnect.co.uk//profile/${ownerData.uid}?tab=reviews`,
+            reviewUrl: `http://https://mypetconnect.co.uk//profile/${advertData.id}?tab=reviews`,
             profileUrl: `http://https://mypetconnect.co.uk//profile/${ownerData.uid}`,
             advertUrl: `http://https://mypetconnect.co.uk//advert-details/${advertData.id}`,
 
