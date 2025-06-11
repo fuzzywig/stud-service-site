@@ -1076,74 +1076,75 @@ app.post('/api/send-new-review-email', async (req, res) => {
 });
 
 
-// NEW: Advert submitted email endpoint using SendGrid template
 app.post('/api/send-advert-submitted-email', async (req, res) => {
-    console.log('📧 Advert submitted email endpoint called');
+    console.log('📧 Updated advert submitted email endpoint called');
     console.log('📧 Request body:', JSON.stringify(req.body, null, 2));
 
     try {
         const {
             userEmail,
             userName,
-            petName,
-            advertType,
-            categoryName,
-            breedOrType,
-            price,
-            imageCount,
-            userId
+            title,
+            intent,
+            petName // Optional - only for stud services
         } = req.body;
 
-        if (!userEmail || !userName || !petName || !advertType || !categoryName) {
+        // ✅ Validate required fields
+        if (!userEmail || !userName || !title || !intent) {
             console.log('❌ Missing required fields for advert submitted email');
             return res.status(400).json({
                 error: 'Missing required fields',
-                required: ['userEmail', 'userName', 'petName', 'advertType', 'categoryName']
+                required: ['userEmail', 'userName', 'title', 'intent'],
+                received: Object.keys(req.body)
             });
         }
 
-        const adminEmail = 'gavinoxley@gmail.com';
+        // ✅ Build template data based on intent
+        const templateData = {
+            user_name: userName,
+            title: title,
+            intent: intent,
+            is_stud: intent === 'stud',
+            is_sale: intent === 'sale',
+            current_year: new Date().getFullYear(),
+            my_adverts_url: `https://mypetconnect.co.uk/my-adverts?login=true&tab=pending`
+        };
+
+        // ✅ Only include petName for stud services
+        if (intent === 'stud' && petName) {
+            templateData.pet_name = petName;
+        }
 
         const msg = {
-            personalizations: [{
-                to: [
-                    { email: userEmail },
-                    { email: adminEmail }
-                ],
-                dynamic_template_data: {
-                    user_name: userName,
-                    pet_name: petName,
-                    advert_type: advertType,
-                    category_name: categoryName,
-                    breed_or_type: breedOrType || 'Not specified',
-                    price: price ? `£${price}` : 'Price on application',
-                    image_count: imageCount || 0,
-                    my_adverts_url: `https://mypetconnect.co.uk/my-adverts?login=true&tab=pending`,
-                    current_year: new Date().getFullYear()
-                }
-            }],
+            to: userEmail,
             from: {
                 email: process.env.FROM_EMAIL,
                 name: process.env.FROM_NAME || 'MyPetConnect'
             },
             replyTo: process.env.REPLY_TO_EMAIL,
-            templateId: templates.ADVERT_SUBMITTED
+            templateId: templates.ADVERT_SUBMITTED,
+            dynamicTemplateData: templateData
         };
 
-        console.log('📧 Sending advert submitted email to:', [userEmail, adminEmail]);
+        console.log('📧 Sending updated advert submitted email to:', userEmail);
+        console.log('📧 Template data:', templateData);
+
         await sgMail.send(msg);
-        console.log('✅ Advert submitted email sent successfully to both');
+        console.log('✅ Updated user advert submitted email sent successfully');
 
         res.status(200).json({
             success: true,
-            message: 'Advert submitted email sent to user and admin'
+            message: 'Updated advert submitted email sent to user',
+            intent: intent,
+            includedPetName: intent === 'stud' && !!petName
         });
 
     } catch (error) {
-        console.error('❌ Error sending advert submitted email:', error);
+        console.error('❌ Error sending updated advert submitted email:', error);
         if (error.response) console.error('SendGrid error details:', error.response.body);
+
         res.status(500).json({
-            error: 'Failed to send advert submitted email',
+            error: 'Failed to send updated advert submitted email',
             details: error.message
         });
     }

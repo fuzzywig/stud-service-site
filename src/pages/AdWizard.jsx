@@ -138,20 +138,21 @@ export default function AdWizard({ mode }) {
             console.log('📧 user:', user);
             console.log('📧 =================================');
 
+            // ✅ UPDATED: Include intent and conditional petName
             const emailPayload = {
                 userEmail: userData.email,
                 userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
-                petName: advertData.name || advertData.breedOrType || 'your pet',
-                advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
-                breedOrType: advertData.breedOrType,
-                price: advertData.price || advertData.fee,
-                imageCount: advertData.images.length,
-                userId: user.uid
+                title: advertData.title || `${advertData.breedOrType} ${advertData.intent === 'stud' ? 'Stud Service' : 'For Sale'}`,
+                intent: advertData.intent // 'sale' or 'stud'
             };
 
+            // ✅ Only include petName if it's a stud service
+            if (advertData.intent === 'stud') {
+                emailPayload.petName = advertData.name || advertData.breedOrType || 'Your Pet';
+            }
+
             console.log('📧 SENDING TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-submitted-email');
-            console.log('📧 Email payload:', emailPayload);
+            console.log('📧 Updated email payload:', emailPayload);
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-submitted-email', {
                 method: 'POST',
