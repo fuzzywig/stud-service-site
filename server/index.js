@@ -1086,7 +1086,8 @@ app.post('/api/send-advert-submitted-email', async (req, res) => {
             userName,
             title,
             intent,
-            petName // Optional - only for stud services
+            petName, // Optional - only for stud services
+            breedOrType // Optional - for sale adverts
         } = req.body;
 
         // ✅ Validate required fields
@@ -1115,6 +1116,11 @@ app.post('/api/send-advert-submitted-email', async (req, res) => {
             templateData.pet_name = petName;
         }
 
+        // ✅ Include breedOrType for sale adverts (optional)
+        if (intent === 'sale' && breedOrType) {
+            templateData.breedOrType = breedOrType;
+        }
+
         const msg = {
             to: userEmail,
             from: {
@@ -1136,7 +1142,8 @@ app.post('/api/send-advert-submitted-email', async (req, res) => {
             success: true,
             message: 'Updated advert submitted email sent to user',
             intent: intent,
-            includedPetName: intent === 'stud' && !!petName
+            includedPetName: intent === 'stud' && !!petName,
+            includedBreedOrType: intent === 'sale' && !!breedOrType
         });
 
     } catch (error) {
