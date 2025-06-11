@@ -181,27 +181,27 @@ export default function AdWizard({ mode }) {
     const sendAdminAlert = async (advertData, userEmail, adId) => {
         try {
             console.log('🚨 =================================');
-            console.log('🚨 STARTING ADMIN ALERT SEND');
+            console.log('🚨 STARTING SIMPLE ADMIN ALERT');
             console.log('🚨 advertData:', advertData);
             console.log('🚨 userEmail:', userEmail);
             console.log('🚨 adId:', adId);
             console.log('🚨 =================================');
 
+            // Simple payload matching the SendGrid template
             const adminPayload = {
-                category: advertData.category,
-                intent: advertData.intent,
-                breedOrType: advertData.breedOrType,
-                ...(advertData.name && { name: advertData.name }),
-                price: advertData.price || advertData.fee,
-                gender: advertData.gender,
-                description: advertData.description,
-                images: advertData.images,
+                message: "New Pet Advertisement Submitted",
+                category: advertData.category || "Unknown",
+                intent: advertData.intent || "Unknown",
+                breedOrType: advertData.breedOrType || "Unknown",
                 ownerEmail: userEmail,
-                adId: adId
+                adId: adId,
+                timestamp: new Date().toLocaleString(),
+                adminPanelUrl: "https://mypetconnect.co.uk/admin", // ← Update this with your actual admin panel URL
+                currentYear: new Date().getFullYear()
             };
 
             console.log('🚨 SENDING TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert');
-            console.log('🚨 Admin payload:', adminPayload);
+            console.log('🚨 Simple admin payload:', adminPayload);
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert', {
                 method: 'POST',
@@ -218,7 +218,7 @@ export default function AdWizard({ mode }) {
             console.log('🚨 Response body:', result);
 
             if (response.ok) {
-                console.log('✅ ADMIN ALERT SENT SUCCESSFULLY:', result);
+                console.log('✅ SIMPLE ADMIN ALERT SENT SUCCESSFULLY:', result);
             } else {
                 console.error('❌ ADMIN ALERT FAILED:', result);
             }
