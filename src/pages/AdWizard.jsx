@@ -143,7 +143,9 @@ export default function AdWizard({ mode }) {
                 userEmail: userData.email,
                 userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
                 title: advertData.title || `${advertData.breedOrType} ${advertData.intent === 'stud' ? 'Stud Service' : 'For Sale'}`,
-                intent: advertData.intent // 'sale' or 'stud'
+                intent: advertData.intent,
+                breedOrType: advertData.breedOrType
+
             };
 
             // ✅ Only include petName if it's a stud service
