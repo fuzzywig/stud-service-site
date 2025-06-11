@@ -62,48 +62,37 @@ const getCachedOrFetch = async (key, fetchFunction) => {
     return data;
 };
 
-
-// UPDATED: Admin alert email endpoint using SendGrid dynamic template
+// UPDATED Admin alert email endpoint
 app.post('/api/send-admin-alert', async (req, res) => {
     console.log('🚨 Admin alert email endpoint called');
     console.log('🚨 Request body:', JSON.stringify(req.body, null, 2));
 
     try {
+        // only extract what the client sends
         const {
             category,
             intent,
             breedOrType,
-            name,
-            price,
-            fee,
-            age,
-            gender,
-            description,
-            images,
             ownerEmail,
             adId
         } = req.body;
 
-        // Validate required fields
-        if (!category || !intent || !breedOrType || !ownerEmail) {
+        // enforce presence
+        if (!category || !intent || !breedOrType || !ownerEmail || !adId) {
             console.log('❌ Missing required fields for admin alert');
             return res.status(400).json({
                 error: 'Missing required fields',
-                required: ['category', 'intent', 'breedOrType', 'ownerEmail']
+                required: ['category','intent','breedOrType','ownerEmail','adId']
             });
         }
 
-        // Get admin emails - Updated to use your specific email
         const adminEmails = ['gavinoxley@gmail.com'];
-
-        console.log('🚨 Sending admin alert to:', adminEmails);
-
-        // …inside app.post('/api/send-admin-alert')…
         const intentDisplay   = intent === 'stud' ? 'For Stud' : 'For Sale';
         const categoryDisplay = category.charAt(0).toUpperCase() + category.slice(1);
 
+        // this object must match your pared-down template exactly
         const dynamicTemplateData = {
-            message:       "New Pet Advertisement Submitted",
+            message:       'New Pet Advertisement Submitted',
             category:      categoryDisplay,
             intent:        intentDisplay,
             breedOrType:   breedOrType,
@@ -114,63 +103,34 @@ app.post('/api/send-admin-alert', async (req, res) => {
             currentYear:   new Date().getFullYear()
         };
 
-        const msg = {
-            to: adminEmail.trim(),
-            from: {
-                email: process.env.FROM_EMAIL,
-                name:  process.env.FROM_NAME || 'MyPetConnect Admin Alerts'
-            },
-            replyTo:                process.env.REPLY_TO_EMAIL,
-            templateId:             templates.ADMIN_ALERT,
-            dynamicTemplateData
-        };
+        console.log('🚨 Template data:', dynamicTemplateData);
 
-        await sgMail.send(msg);
-
-
-        console.log('🚨 Template data:', JSON.stringify(dynamicTemplateData, null, 2));
-
-        // Send to all admin emails using dynamic template
-        const emailPromises = adminEmails.map(adminEmail => {
-            const msg = {
-                to: adminEmail.trim(),
+        await Promise.all(
+            adminEmails.map(to => sgMail.send({
+                to,
                 from: {
                     email: process.env.FROM_EMAIL,
-                    name: process.env.FROM_NAME || 'MyPetConnect Admin Alerts'
+                    name:  process.env.FROM_NAME || 'MyPetConnect Admin Alerts'
                 },
-                replyTo: process.env.REPLY_TO_EMAIL,
-                templateId: templates.ADMIN_ALERT,
-                dynamicTemplateData: dynamicTemplateData
-            };
+                replyTo:                process.env.REPLY_TO_EMAIL,
+                templateId:             templates.ADMIN_ALERT,
+                dynamicTemplateData
+            }))
+        );
 
-            return sgMail.send(msg);
-        });
-
-        // Send all emails
-        await Promise.all(emailPromises);
-
-        console.log(`✅ Admin alert emails sent to ${adminEmails.length} admin(s) using template ${templates.ADMIN_ALERT}`);
-
-        res.status(200).json({
-            success: true,
-            message: `Admin alert emails sent to ${adminEmails.length} admin(s)`,
-            adminCount: adminEmails.length,
-            templateId: templates.ADMIN_ALERT
-        });
-
-    } catch (error) {
-        console.error('❌ Error sending admin alert emails:', error);
-
-        if (error.response) {
-            console.error('SendGrid error details:', error.response.body);
-        }
-
+        console.log(`✅ Admin alert emails sent to ${adminEmails.join(', ')}`);
+        res.status(200).json({ success:true });
+    }
+    catch(err) {
+        console.error('❌ Error sending admin alert emails:', err);
+        if(err.response?.body) console.error('SendGrid details:', err.response.body);
         res.status(500).json({
-            error: 'Failed to send admin alert emails',
-            details: error.message
+            error:   'Failed to send admin alert emails',
+            details: err.response?.body || err.message
         });
     }
 });
+
 
 
 // Test Firebase connection endpoint
