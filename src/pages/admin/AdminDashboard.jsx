@@ -4,13 +4,13 @@ import { collection, getDocs, query, where, orderBy, limit, getDoc, doc, updateD
 import { db, auth } from '../../firebase/firebase'; // Added auth import
 import AdminSidebar from '../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
-import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes, FaSync, FaPause, FaPlay, FaCog } from 'react-icons/fa';
 import './AdminDashboard.css';
 
 // Email functions copied from ApproveAdverts
 const sendAdvertApprovedEmail = async (userData, advertData) => {
     try {
-        const response = await fetch('http://localhost:6500/api/send-advert-approved-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-approved-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData, advertData }),
@@ -30,7 +30,7 @@ const sendAdvertApprovedEmail = async (userData, advertData) => {
 
 const sendAdvertRejectedEmail = async (userData, advertData, rejectionReason) => {
     try {
-        const response = await fetch('http://localhost:6500/api/send-advert-rejected-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-rejected-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData, advertData, rejectionReason }),
@@ -62,9 +62,123 @@ export default function AdminDashboard() {
     const [recentAds, setRecentAds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Auto-refresh state
+    const [lastRefresh, setLastRefresh] = useState(null);
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+    const [refreshInterval, setRefreshInterval] = useState(30);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+
     // Rejection modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [rejectionTarget, setRejectionTarget] = useState(null);
+
+    // Simple Settings Modal
+    const SettingsModal = ({ isOpen, onClose }) => {
+        const [tempAutoRefresh, setTempAutoRefresh] = useState(autoRefreshEnabled);
+        const [tempInterval, setTempInterval] = useState(refreshInterval);
+
+        if (!isOpen) return null;
+
+        const handleSave = () => {
+            setAutoRefreshEnabled(tempAutoRefresh);
+            setRefreshInterval(tempInterval);
+
+            // Save to localStorage
+            try {
+                localStorage.setItem('dashboardAutoRefresh', tempAutoRefresh.toString());
+                localStorage.setItem('dashboardRefreshInterval', tempInterval.toString());
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+            }
+
+            onClose();
+            alert('Settings saved!');
+        };
+
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+            }}>
+                <div style={{
+                    backgroundColor: 'white',
+                    padding: '2rem',
+                    borderRadius: '8px',
+                    minWidth: '400px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                    <h2 style={{ marginTop: 0 }}>Dashboard Settings</h2>
+
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input
+                                type="checkbox"
+                                checked={tempAutoRefresh}
+                                onChange={(e) => setTempAutoRefresh(e.target.checked)}
+                            />
+                            Enable auto-refresh
+                        </label>
+                    </div>
+
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label>
+                            Refresh interval:
+                            <select
+                                value={tempInterval}
+                                onChange={(e) => setTempInterval(Number(e.target.value))}
+                                disabled={!tempAutoRefresh}
+                                style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
+                            >
+                                <option value={15}>15 seconds</option>
+                                <option value={30}>30 seconds</option>
+                                <option value={60}>1 minute</option>
+                                <option value={120}>2 minutes</option>
+                                <option value={300}>5 minutes</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button
+                            onClick={onClose}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     // Rejection Modal Component
     const RejectionModal = ({ isOpen, onClose, onSubmit, dogName }) => {
@@ -116,98 +230,144 @@ export default function AdminDashboard() {
         );
     };
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
+    // Fetch stats function
+    const fetchStats = async (showRefreshIndicator = false) => {
+        try {
+            if (showRefreshIndicator) {
+                setIsRefreshing(true);
+            } else {
                 setIsLoading(true);
-
-                const now = new Date();
-                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-                const allAdsSnap = await getDocs(collection(db, 'allListings'));
-                const usersRef = collection(db, 'users');
-
-                const pendingAdsQuery = query(
-                    collection(db, 'allListings'),
-                    where('approved', '==', false),
-                    orderBy('createdAt', 'desc'),
-                    limit(5)
-                );
-                const pendingAdsSnap = await getDocs(pendingAdsQuery);
-
-                const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-
-                const activeUsersSnap = await getDocs(
-                    query(
-                        usersRef,
-                        where('lastSeen', '>=', tenMinutesAgo),
-                    )
-                );
-
-                const weeklyUsersSnap = await getDocs(
-                    query(usersRef, where('createdAt', '>=', oneWeekAgo))
-                );
-
-                const monthlyUsersSnap = await getDocs(
-                    query(usersRef, where('createdAt', '>=', oneMonthAgo))
-                );
-
-                const weeklyAdsSnap = await getDocs(
-                    query(collection(db, 'allListings'), where('createdAt', '>=', oneWeekAgo))
-                );
-
-                const reviewsSnap = await getDocs(
-                    query(collection(db, 'reviews'), where('approved', '==', false))
-                );
-
-                const allUsersSnap = await getDocs(usersRef);
-
-                setStats({
-                    totalAds: allAdsSnap.size,
-                    pendingAds: pendingAdsSnap.size,
-                    totalUsers: allUsersSnap.size,
-                    pendingReviews: reviewsSnap.size,
-                    activeUsers: activeUsersSnap.size,
-                    weeklyRegistrations: weeklyUsersSnap.size,
-                    monthlyRegistrations: monthlyUsersSnap.size,
-                    newAdsWeekly: weeklyAdsSnap.size,
-                });
-
-                const recentUnapproved = await Promise.all(
-                    pendingAdsSnap.docs.map(async advertDoc => {
-                        const data = advertDoc.data();
-                        let ownerName = "Unknown";
-
-                        if (data.ownerId) {
-                            const ownerSnap = await getDoc(doc(db, "users", data.ownerId));
-                            if (ownerSnap.exists()) {
-                                const ownerData = ownerSnap.data();
-                                ownerName = ownerData.firstName
-                                    ? `${ownerData.firstName} ${ownerData.lastName?.charAt(0) || ""}.`
-                                    : "Unknown";
-                            }
-                        }
-
-                        return {
-                            id: advertDoc.id,
-                            ...data,
-                            ownerName,
-                        };
-                    })
-                );
-
-                setRecentAds(recentUnapproved);
-
-            } catch (err) {
-                console.error('🔥 Failed to load stats:', err.message);
-            } finally {
-                setIsLoading(false);
             }
-        };
 
+            const now = new Date();
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const allAdsSnap = await getDocs(collection(db, 'allListings'));
+            const usersRef = collection(db, 'users');
+
+            const pendingAdsQuery = query(
+                collection(db, 'allListings'),
+                where('approved', '==', false),
+                orderBy('createdAt', 'desc'),
+                limit(5)
+            );
+            const pendingAdsSnap = await getDocs(pendingAdsQuery);
+
+            const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+
+            const activeUsersSnap = await getDocs(
+                query(
+                    usersRef,
+                    where('lastSeen', '>=', tenMinutesAgo),
+                )
+            );
+
+            const weeklyUsersSnap = await getDocs(
+                query(usersRef, where('createdAt', '>=', oneWeekAgo))
+            );
+
+            const monthlyUsersSnap = await getDocs(
+                query(usersRef, where('createdAt', '>=', oneMonthAgo))
+            );
+
+            const weeklyAdsSnap = await getDocs(
+                query(collection(db, 'allListings'), where('createdAt', '>=', oneWeekAgo))
+            );
+
+            const reviewsSnap = await getDocs(
+                query(collection(db, 'reviews'), where('approved', '==', false))
+            );
+
+            const allUsersSnap = await getDocs(usersRef);
+
+            setStats({
+                totalAds: allAdsSnap.size,
+                pendingAds: pendingAdsSnap.size,
+                totalUsers: allUsersSnap.size,
+                pendingReviews: reviewsSnap.size,
+                activeUsers: activeUsersSnap.size,
+                weeklyRegistrations: weeklyUsersSnap.size,
+                monthlyRegistrations: monthlyUsersSnap.size,
+                newAdsWeekly: weeklyAdsSnap.size,
+            });
+
+            const recentUnapproved = await Promise.all(
+                pendingAdsSnap.docs.map(async advertDoc => {
+                    const data = advertDoc.data();
+                    let ownerName = "Unknown";
+
+                    if (data.ownerId) {
+                        const ownerSnap = await getDoc(doc(db, "users", data.ownerId));
+                        if (ownerSnap.exists()) {
+                            const ownerData = ownerSnap.data();
+                            ownerName = ownerData.firstName
+                                ? `${ownerData.firstName} ${ownerData.lastName?.charAt(0) || ""}.`
+                                : "Unknown";
+                        }
+                    }
+
+                    return {
+                        id: advertDoc.id,
+                        ...data,
+                        ownerName,
+                    };
+                })
+            );
+
+            setRecentAds(recentUnapproved);
+            setLastRefresh(new Date());
+
+        } catch (err) {
+            console.error('🔥 Failed to load stats:', err.message);
+        } finally {
+            setIsLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    // Manual refresh function
+    const handleManualRefresh = () => {
+        fetchStats(true);
+    };
+
+    // Load saved settings and setup auto-refresh
+    useEffect(() => {
+        // Load saved settings
+        try {
+            const savedAutoRefresh = localStorage.getItem('dashboardAutoRefresh');
+            const savedInterval = localStorage.getItem('dashboardRefreshInterval');
+
+            if (savedAutoRefresh !== null) {
+                setAutoRefreshEnabled(savedAutoRefresh === 'true');
+            }
+            if (savedInterval !== null) {
+                setRefreshInterval(Number(savedInterval));
+            }
+        } catch (error) {
+            console.error('Failed to load settings:', error);
+        }
+
+        // Initial fetch
         fetchStats();
     }, []);
+
+    // Auto-refresh interval effect
+    useEffect(() => {
+        let intervalId = null;
+
+        if (autoRefreshEnabled && refreshInterval > 0) {
+            intervalId = setInterval(() => {
+                fetchStats(true);
+            }, refreshInterval * 1000);
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [autoRefreshEnabled, refreshInterval]);
 
     const handleApprove = async (advertId) => {
         try {
@@ -253,6 +413,9 @@ export default function AdminDashboard() {
                 ...prev,
                 pendingAds: Math.max(prev.pendingAds - 1, 0),
             }));
+
+            // Refresh data after action
+            setTimeout(() => fetchStats(true), 1000);
         } catch (error) {
             console.error("Error approving advert:", error);
             alert("Failed to approve advert. Please try again.");
@@ -336,6 +499,9 @@ export default function AdminDashboard() {
 
             alert("Advert rejected successfully.");
 
+            // Refresh data after action
+            setTimeout(() => fetchStats(true), 1000);
+
         } catch (error) {
             console.error('Error rejecting advert:', error);
             alert('Failed to reject advert. Please try again.');
@@ -347,7 +513,107 @@ export default function AdminDashboard() {
             <AdminSidebar />
 
             <div className="content-area">
-                <h1 className="page-title">Admin Dashboard</h1>
+                {/* Header with refresh controls */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '2rem',
+                    flexWrap: 'wrap',
+                    gap: '1rem'
+                }}>
+                    <h1 className="page-title">Admin Dashboard</h1>
+
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexWrap: 'wrap'
+                    }}>
+                        {lastRefresh && (
+                            <span style={{ fontSize: '0.875rem', color: '#666', marginRight: '1rem' }}>
+                                Last updated: {lastRefresh.toLocaleTimeString()}
+                            </span>
+                        )}
+
+                        <button
+                            onClick={() => setShowSettings(true)}
+                            style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            <FaCog /> Settings
+                        </button>
+
+                        <button
+                            onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                            style={{
+                                padding: '6px 12px',
+                                backgroundColor: autoRefreshEnabled ? '#28a745' : '#6c757d',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            {autoRefreshEnabled ? <FaPause /> : <FaPlay />}
+                            {autoRefreshEnabled ? 'Auto' : 'Manual'}
+                        </button>
+
+                        <select
+                            value={refreshInterval}
+                            onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                            disabled={!autoRefreshEnabled}
+                            style={{
+                                padding: '6px',
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            <option value={15}>15s</option>
+                            <option value={30}>30s</option>
+                            <option value={60}>1m</option>
+                            <option value={120}>2m</option>
+                            <option value={300}>5m</option>
+                        </select>
+
+                        <button
+                            onClick={handleManualRefresh}
+                            disabled={isRefreshing}
+                            style={{
+                                padding: '6px 12px',
+                                backgroundColor: isRefreshing ? '#ffc107' : '#17a2b8',
+                                color: isRefreshing ? '#000' : 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            <FaSync style={{
+                                animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+                            }} />
+                            Refresh
+                        </button>
+                    </div>
+                </div>
 
                 {isLoading ? (
                     <div className="loading-container">
@@ -549,6 +815,14 @@ export default function AdminDashboard() {
                     </>
                 )}
             </div>
+
+            {/* Settings Modal */}
+            {showSettings && (
+                <SettingsModal
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                />
+            )}
 
             {/* Rejection Modal */}
             {modalOpen && rejectionTarget && (
