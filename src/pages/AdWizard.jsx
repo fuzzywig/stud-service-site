@@ -131,7 +131,14 @@ export default function AdWizard({ mode }) {
     // SendGrid email function
     const sendAdvertSubmittedEmail = async (userData, advertData, user) => {
         try {
-            console.log('📧 Email payload:', {
+            console.log('📧 =================================');
+            console.log('📧 STARTING USER EMAIL SEND');
+            console.log('📧 userData:', userData);
+            console.log('📧 advertData:', advertData);
+            console.log('📧 user:', user);
+            console.log('📧 =================================');
+
+            const emailPayload = {
                 userEmail: userData.email,
                 userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
                 petName: advertData.name || advertData.breedOrType || 'your pet',
@@ -141,83 +148,84 @@ export default function AdWizard({ mode }) {
                 price: advertData.price || advertData.fee,
                 imageCount: advertData.images.length,
                 userId: user.uid
-            });
+            };
+
+            console.log('📧 SENDING TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-submitted-email');
+            console.log('📧 Email payload:', emailPayload);
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-submitted-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    userEmail: userData.email,
-                    userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
-                    petName: advertData.name || advertData.breedOrType || 'your pet',
-                    advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                    categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
-                    breedOrType: advertData.breedOrType,
-                    price: advertData.price || advertData.fee,
-                    imageCount: advertData.images.length,
-                    userId: user.uid
-                }),
+                body: JSON.stringify(emailPayload),
             });
 
             console.log('📧 Response status:', response.status);
-            console.log('📧 Response headers:', response.headers);
+            console.log('📧 Response ok:', response.ok);
 
             const result = await response.json();
             console.log('📧 Response body:', result);
 
             if (response.ok) {
-                console.log('✅ Advert submitted email sent successfully:', result);
+                console.log('✅ USER EMAIL SENT SUCCESSFULLY:', result);
             } else {
-                console.error('❌ Failed to send advert submitted email:', result);
+                console.error('❌ USER EMAIL FAILED:', result);
             }
         } catch (error) {
-            console.error('❌ Error sending advert submitted email:', error);
-            console.error('❌ Error details:', error.message, error.stack);
+            console.error('❌ USER EMAIL ERROR:', error);
         }
     };
 
+// Add this enhanced logging to your sendAdminAlert function (around line 181)
     const sendAdminAlert = async (advertData, userEmail, adId) => {
         try {
-            console.log('🚨 Sending admin alert...', {
+            console.log('🚨 =================================');
+            console.log('🚨 STARTING ADMIN ALERT SEND');
+            console.log('🚨 advertData:', advertData);
+            console.log('🚨 userEmail:', userEmail);
+            console.log('🚨 adId:', adId);
+            console.log('🚨 =================================');
+
+            const adminPayload = {
                 category: advertData.category,
                 intent: advertData.intent,
                 breedOrType: advertData.breedOrType,
                 name: advertData.name,
+                price: advertData.price,
+                fee: advertData.fee,
+                age: advertData.age,
+                gender: advertData.gender,
+                description: advertData.description,
+                images: advertData.images,
                 ownerEmail: userEmail,
                 adId: adId
-            });
+            };
 
-            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert', {                method: 'POST',
+            console.log('🚨 SENDING TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert');
+            console.log('🚨 Admin payload:', adminPayload);
+
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    category: advertData.category,
-                    intent: advertData.intent,
-                    breedOrType: advertData.breedOrType,
-                    name: advertData.name,
-                    price: advertData.price,
-                    fee: advertData.fee,
-                    age: advertData.age,
-                    gender: advertData.gender,
-                    description: advertData.description,
-                    images: advertData.images,
-                    ownerEmail: userEmail,
-                    adId: adId
-                }),
+                body: JSON.stringify(adminPayload),
             });
 
+            console.log('🚨 Response status:', response.status);
+            console.log('🚨 Response ok:', response.ok);
+
             const result = await response.json();
+            console.log('🚨 Response body:', result);
 
             if (response.ok) {
-                console.log('✅ Admin alert sent successfully:', result);
+                console.log('✅ ADMIN ALERT SENT SUCCESSFULLY:', result);
             } else {
-                console.error('❌ Failed to send admin alert:', result);
+                console.error('❌ ADMIN ALERT FAILED:', result);
             }
         } catch (error) {
-            console.error('❌ Error sending admin alert:', error);
+            console.error('❌ ADMIN ALERT ERROR:', error);
         }
     };
 
