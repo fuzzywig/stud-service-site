@@ -98,50 +98,35 @@ app.post('/api/send-admin-alert', async (req, res) => {
 
         console.log('🚨 Sending admin alert to:', adminEmails);
 
-        // Format data for template
-        const intentDisplay = intent === 'stud' ? 'For Stud' : 'For Sale';
-        const petName = name || breedOrType || 'Pet';
-        const priceDisplay = price ? `£${price}` : (fee ? `£${fee}` : 'Price not specified');
+        // …inside app.post('/api/send-admin-alert')…
+        const intentDisplay   = intent === 'stud' ? 'For Stud' : 'For Sale';
         const categoryDisplay = category.charAt(0).toUpperCase() + category.slice(1);
 
-        // Dynamic template data - Updated to match the template
         const dynamicTemplateData = {
-            // Pet details (matching template variables exactly)
-            petName: petName,
-            category: categoryDisplay,
-            breedOrType: breedOrType,
-            intent: intentDisplay,
-            price: priceDisplay,
-
-            // Optional fields (with conditional helpers)
-            age: age,
-            gender: gender,
-            hasAge: !!age,
-            hasGender: !!gender,
-
-            // Description with preview
-            description: description,
-            descriptionPreview: description ?
-                (description.length > 200 ? description.substring(0, 200) + '...' : description) : null,
-            hasDescription: !!description,
-
-            // Submission details
-            ownerEmail: ownerEmail,
-            submissionDate: new Date().toLocaleDateString('en-GB'),
-            submissionTime: new Date().toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            imageCount: images?.length || 0,
-            hasImages: images && images.length > 0,
-
-            // Action URLs - Updated to match your admin structure
-            reviewUrl: `https://mypetconnect.co.uk/admin/view-advert/${adId || 'new-ad'}`,
+            message:       "New Pet Advertisement Submitted",
+            category:      categoryDisplay,
+            intent:        intentDisplay,
+            breedOrType:   breedOrType,
+            ownerEmail:    ownerEmail,
+            adId:          adId,
+            timestamp:     new Date().toLocaleString('en-GB'),
             adminPanelUrl: 'https://mypetconnect.co.uk/admin',
-
-            // Footer
-            currentYear: new Date().getFullYear()
+            currentYear:   new Date().getFullYear()
         };
+
+        const msg = {
+            to: adminEmail.trim(),
+            from: {
+                email: process.env.FROM_EMAIL,
+                name:  process.env.FROM_NAME || 'MyPetConnect Admin Alerts'
+            },
+            replyTo:                process.env.REPLY_TO_EMAIL,
+            templateId:             templates.ADMIN_ALERT,
+            dynamicTemplateData
+        };
+
+        await sgMail.send(msg);
+
 
         console.log('🚨 Template data:', JSON.stringify(dynamicTemplateData, null, 2));
 
