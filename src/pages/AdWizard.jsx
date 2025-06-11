@@ -227,15 +227,17 @@ export default function AdWizard({ mode }) {
                 intent: advertData.intent, // Server will format this as "For Sale" or "For Stud"
                 breedOrType: advertData.breedOrType,
 
+                // ✅ CRITICAL: Add missing required fields that server expects
+                petName: advertData.name || advertData.breedOrType || 'Unknown',
+                advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
+                categoryName: advertData.category ? advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1) : 'Pet',
+
                 // User information (existing)
                 userPhone: userData.phoneNumber || 'Not provided',
                 userPostcode: userData.postcode || 'Not provided',
                 userId: user.uid,
 
-                // Advert information (existing)
-                petName: advertData.name || advertData.breedOrType || 'Unknown',
-                advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
-                categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
+                // Advert information (existing but moved up to be with required fields)
                 price: advertData.price || advertData.fee || 'Not specified',
                 description: advertData.description || 'No description provided',
                 imageCount: advertData.images ? advertData.images.length : 0,
@@ -280,11 +282,16 @@ export default function AdWizard({ mode }) {
 
             console.log('👮 SENDING ADMIN ALERT TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email');
             console.log('👮 Admin email payload:', adminEmailPayload);
-            console.log('👮 ✅ NEW FIELDS ADDED:', {
-                title: title,
-                intent: advertData.intent,
-                breedOrType: advertData.breedOrType
+            console.log('👮 ✅ REQUIRED FIELDS CHECK:', {
+                adminEmail: !!adminEmailPayload.adminEmail,
+                userEmail: !!adminEmailPayload.userEmail,
+                userName: !!adminEmailPayload.userName,
+                advertId: !!adminEmailPayload.advertId,
+                title: !!adminEmailPayload.title,
+                intent: !!adminEmailPayload.intent,
+                breedOrType: !!adminEmailPayload.breedOrType
             });
+            console.log('👮 ✅ ALL PAYLOAD KEYS:', Object.keys(adminEmailPayload));
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email', {
                 method: 'POST',
