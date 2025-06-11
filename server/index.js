@@ -43,7 +43,9 @@ const templates = {
     TICKET_CLOSED: 'd-5ff4ef6603ab4fca82db990f5c13c6b5',
     NEW_MESSAGE: 'd-3327bafe35b54cee995636d8f459a094',
     NEW_REVIEW: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6',
-    REVIEW_RESPONSE: 'd-8e896410b34c4bd6bd183f5a2e3651e4'
+    REVIEW_RESPONSE: 'd-8e896410b34c4bd6bd183f5a2e3651e4',
+    ADMIN_ALERT: 'd-de07c99d7fb44288a2f3e52fc55e24aa'
+
 
 };
 
@@ -470,6 +472,172 @@ app.post('/api/send-message-notification', async (req, res) => {
             success: false,
             error: 'Failed to send message notification email',
             details: error.message
+        });
+    }
+});
+
+
+// NEW: Admin Alert email endpoint using SendGrid template
+app.post('/api/send-admin-alert-email', async (req, res) => {
+    console.log('👮 Admin alert email endpoint called');
+    console.log('👮 Request body:', JSON.stringify(req.body, null, 2));
+
+    try {
+        const {
+            adminEmail,
+            userEmail,
+            userName,
+            userPhone,
+            userPostcode,
+            userId,
+            advertId,
+            petName,
+            advertType,
+            categoryName,
+            breedOrType,
+            price,
+            description,
+            imageCount,
+            submissionDate,
+            healthTests,
+            kcRegistered,
+            vaccinated,
+            microchipped,
+            withMother,
+            dateOfBirth,
+            availableDate,
+            postcode,
+            directApproveUrl,
+            directRejectUrl,
+            userProfileUrl,
+            advertPreviewUrl,
+            riskFlags,
+            quickSummary
+        } = req.body;
+
+        // Validate required fields
+        if (!adminEmail || !userEmail || !userName || !advertId || !petName) {
+            console.log('❌ Missing required fields for admin alert email');
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['adminEmail', 'userEmail', 'userName', 'advertId', 'petName'],
+                received: Object.keys(req.body)
+            });
+        }
+
+        console.log('👮 Preparing to send admin alert email to:', adminEmail);
+        console.log('👮 Using template ID:', templates.ADMIN_ALERT);
+
+        // Format the submission date nicely
+        const formattedDate = submissionDate || new Date().toLocaleString('en-GB', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Prepare template data matching your SendGrid template variables
+        const msg = {
+            to: adminEmail,
+            from: {
+                email: process.env.FROM_EMAIL,
+                name: process.env.FROM_NAME || 'MyPetConnect - Admin Alerts'
+            },
+            replyTo: process.env.REPLY_TO_EMAIL,
+            templateId: templates.ADMIN_ALERT, // d-de07c99d7fb44288a2f3e52fc55e24aa
+            dynamicTemplateData: {
+                // Quick summary info
+                quickSummary: quickSummary || `${categoryName} | ${breedOrType} | ${advertType} | £${price || 'TBC'}`,
+                advertId: advertId,
+                submissionDate: formattedDate,
+
+                // User information
+                userName: userName,
+                userEmail: userEmail,
+                userPhone: userPhone || 'Not provided',
+                userPostcode: userPostcode || 'Not provided',
+                userId: userId,
+
+                // Pet/Advert details
+                petName: petName,
+                advertType: advertType || 'For Sale',
+                categoryName: categoryName || 'Pet',
+                breedOrType: breedOrType || 'Unknown breed',
+                price: price ? `£${price}` : 'Price on application',
+                description: description ? (description.length > 200 ? description.substring(0, 200) + '...' : description) : 'No description provided',
+                imageCount: imageCount || 0,
+
+                // Health and compliance info
+                dateOfBirth: dateOfBirth || 'Not provided',
+                availableDate: availableDate || 'Not provided',
+                vaccinated: vaccinated ? 'Yes' : 'No',
+                microchipped: microchipped ? 'Yes' : 'No',
+                kcRegistered: kcRegistered ? 'Yes' : 'No',
+                withMother: withMother ? 'Yes' : 'No',
+                postcode: postcode || 'Not available',
+
+                // Health tests (if any)
+                healthTests: healthTests && healthTests.length > 0 ? healthTests : null,
+                hasHealthTests: healthTests && healthTests.length > 0,
+
+                // Risk flags
+                riskFlags: riskFlags && riskFlags.length > 0 ? riskFlags : null,
+                hasRiskFlags: riskFlags && riskFlags.length > 0,
+                riskFlagCount: riskFlags ? riskFlags.length : 0,
+
+                // Action URLs
+                directApproveUrl: directApproveUrl || `https://mypetconnect.co.uk/admin/approve/${advertId}`,
+                directRejectUrl: directRejectUrl || `https://mypetconnect.co.uk/admin/reject/${advertId}`,
+                advertPreviewUrl: advertPreviewUrl || `https://mypetconnect.co.uk/advert-details/${advertId}`,
+                userProfileUrl: userProfileUrl || `https://mypetconnect.co.uk/profile/${userId}`,
+
+                // System info
+                currentYear: new Date().getFullYear(),
+                systemName: 'My Pet Connect',
+
+                // Priority indicators
+                isHighPriority: (riskFlags && riskFlags.length > 3) || (price && parseInt(price) > 2000),
+                isUrgent: riskFlags && riskFlags.some(flag => flag.includes('UNDER_8_WEEKS') || flag.includes('SUSPICIOUS')),
+
+                // Additional context
+                advertStatus: 'Pending Approval',
+                reviewRequired: true,
+                autoApprovalEligible: (!riskFlags || riskFlags.length === 0) && imageCount > 0 && description && description.length > 50
+            }
+        };
+
+        console.log('👮 SendGrid template data:', JSON.stringify(msg.dynamicTemplateData, null, 2));
+
+        // Send the email
+        await sgMail.send(msg);
+
+        console.log(`✅ Admin alert email sent successfully to ${adminEmail}`);
+        console.log(`📧 For advert: ${petName} (${advertId})`);
+        console.log(`👤 User: ${userName} (${userEmail})`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Admin alert email sent successfully',
+            advertId: advertId,
+            sentTo: adminEmail
+        });
+
+    } catch (error) {
+        console.error('❌ Error sending admin alert email:', error);
+
+        if (error.response) {
+            console.error('👮 SendGrid error details:', error.response.body);
+            console.error('👮 SendGrid status code:', error.response.statusCode);
+        }
+
+        // Return error but don't fail the user's submission
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send admin alert email',
+            error: error.message,
+            sendgridError: error.response?.body || 'Unknown SendGrid error'
         });
     }
 });
