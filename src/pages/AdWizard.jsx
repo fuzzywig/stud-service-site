@@ -193,7 +193,6 @@ export default function AdWizard({ mode }) {
                 breedOrType: advertData.breedOrType,
                 ...(advertData.name && { name: advertData.name }),
                 price: advertData.price || advertData.fee,
-                age: advertData.age,
                 gender: advertData.gender,
                 description: advertData.description,
                 images: advertData.images,
