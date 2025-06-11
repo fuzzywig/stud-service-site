@@ -477,7 +477,7 @@ app.post('/api/send-message-notification', async (req, res) => {
 });
 
 
-// NEW: Admin Alert email endpoint using SendGrid template
+// NEW: Admin Alert email endpoint using SendGrid template - UPDATED VERSION
 app.post('/api/send-admin-alert-email', async (req, res) => {
     console.log('👮 Admin alert email endpoint called');
     console.log('👮 Request body:', JSON.stringify(req.body, null, 2));
@@ -491,6 +491,8 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
             userPostcode,
             userId,
             advertId,
+            title,           // ✅ NEW: Added title field
+            intent,          // ✅ NEW: Added intent field
             petName,
             advertType,
             categoryName,
@@ -507,6 +509,7 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
             dateOfBirth,
             availableDate,
             postcode,
+            adminPanelUrl,   // ✅ NEW: Main admin panel URL
             directApproveUrl,
             directRejectUrl,
             userProfileUrl,
@@ -515,12 +518,12 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
             quickSummary
         } = req.body;
 
-        // Validate required fields
-        if (!adminEmail || !userEmail || !userName || !advertId || !petName) {
+        // Validate required fields - UPDATED to include new fields
+        if (!adminEmail || !userEmail || !userName || !advertId || !title || !intent || !breedOrType) {
             console.log('❌ Missing required fields for admin alert email');
             return res.status(400).json({
                 error: 'Missing required fields',
-                required: ['adminEmail', 'userEmail', 'userName', 'advertId', 'petName'],
+                required: ['adminEmail', 'userEmail', 'userName', 'advertId', 'title', 'intent', 'breedOrType'],
                 received: Object.keys(req.body)
             });
         }
@@ -538,6 +541,12 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
             minute: '2-digit'
         });
 
+        // Format the intent for display
+        const formattedIntent = intent === 'stud' ? 'For Stud' : intent === 'sale' ? 'For Sale' : intent.charAt(0).toUpperCase() + intent.slice(1);
+
+        // Generate admin panel URL if not provided
+        const finalAdminPanelUrl = adminPanelUrl || `https://mypetconnect.co.uk/admin/view-advert/${advertId}`;
+
         // Prepare template data matching your SendGrid template variables
         const msg = {
             to: adminEmail,
@@ -548,28 +557,38 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
             replyTo: process.env.REPLY_TO_EMAIL,
             templateId: templates.ADMIN_ALERT, // d-de07c99d7fb44288a2f3e52fc55e24aa
             dynamicTemplateData: {
-                // Quick summary info
-                quickSummary: quickSummary || `${categoryName} | ${breedOrType} | ${advertType} | £${price || 'TBC'}`,
+                // ✅ UPDATED: Match the new template Quick Details fields
                 advertId: advertId,
+                userEmail: userEmail,
+                userName: userName,
+                title: title,
+                intent: formattedIntent,
+                breedOrType: breedOrType,
+
+                // Standard message field
+                message: `New ${formattedIntent} listing submitted`,
+
+                // Admin panel URL for the action button
+                adminPanelUrl: finalAdminPanelUrl,
+
+                // Additional context fields (keep existing ones)
+                quickSummary: quickSummary || `${categoryName} | ${breedOrType} | ${formattedIntent} | £${price || 'TBC'}`,
                 submissionDate: formattedDate,
 
-                // User information
-                userName: userName,
-                userEmail: userEmail,
+                // User information (existing)
                 userPhone: userPhone || 'Not provided',
                 userPostcode: userPostcode || 'Not provided',
                 userId: userId,
 
-                // Pet/Advert details
+                // Pet/Advert details (existing)
                 petName: petName,
-                advertType: advertType || 'For Sale',
+                advertType: formattedIntent,
                 categoryName: categoryName || 'Pet',
-                breedOrType: breedOrType || 'Unknown breed',
                 price: price ? `£${price}` : 'Price on application',
                 description: description ? (description.length > 200 ? description.substring(0, 200) + '...' : description) : 'No description provided',
                 imageCount: imageCount || 0,
 
-                // Health and compliance info
+                // Health and compliance info (existing)
                 dateOfBirth: dateOfBirth || 'Not provided',
                 availableDate: availableDate || 'Not provided',
                 vaccinated: vaccinated ? 'Yes' : 'No',
@@ -578,30 +597,30 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
                 withMother: withMother ? 'Yes' : 'No',
                 postcode: postcode || 'Not available',
 
-                // Health tests (if any)
+                // Health tests (if any) (existing)
                 healthTests: healthTests && healthTests.length > 0 ? healthTests : null,
                 hasHealthTests: healthTests && healthTests.length > 0,
 
-                // Risk flags
+                // Risk flags (existing)
                 riskFlags: riskFlags && riskFlags.length > 0 ? riskFlags : null,
                 hasRiskFlags: riskFlags && riskFlags.length > 0,
                 riskFlagCount: riskFlags ? riskFlags.length : 0,
 
-                // Action URLs
+                // Action URLs (existing)
                 directApproveUrl: directApproveUrl || `https://mypetconnect.co.uk/admin/approve/${advertId}`,
                 directRejectUrl: directRejectUrl || `https://mypetconnect.co.uk/admin/reject/${advertId}`,
                 advertPreviewUrl: advertPreviewUrl || `https://mypetconnect.co.uk/advert-details/${advertId}`,
                 userProfileUrl: userProfileUrl || `https://mypetconnect.co.uk/profile/${userId}`,
 
-                // System info
+                // System info (existing)
                 currentYear: new Date().getFullYear(),
                 systemName: 'My Pet Connect',
 
-                // Priority indicators
+                // Priority indicators (existing)
                 isHighPriority: (riskFlags && riskFlags.length > 3) || (price && parseInt(price) > 2000),
                 isUrgent: riskFlags && riskFlags.some(flag => flag.includes('UNDER_8_WEEKS') || flag.includes('SUSPICIOUS')),
 
-                // Additional context
+                // Additional context (existing)
                 advertStatus: 'Pending Approval',
                 reviewRequired: true,
                 autoApprovalEligible: (!riskFlags || riskFlags.length === 0) && imageCount > 0 && description && description.length > 50
@@ -614,14 +633,18 @@ app.post('/api/send-admin-alert-email', async (req, res) => {
         await sgMail.send(msg);
 
         console.log(`✅ Admin alert email sent successfully to ${adminEmail}`);
-        console.log(`📧 For advert: ${petName} (${advertId})`);
+        console.log(`📧 For advert: ${title} (${advertId})`);
         console.log(`👤 User: ${userName} (${userEmail})`);
+        console.log(`🎯 Intent: ${formattedIntent}, Breed: ${breedOrType}`);
 
         res.status(200).json({
             success: true,
             message: 'Admin alert email sent successfully',
             advertId: advertId,
-            sentTo: adminEmail
+            sentTo: adminEmail,
+            title: title,
+            intent: formattedIntent,
+            breedOrType: breedOrType
         });
 
     } catch (error) {

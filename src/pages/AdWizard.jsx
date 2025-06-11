@@ -212,28 +212,35 @@ export default function AdWizard({ mode }) {
             // Generate risk flags
             const riskFlags = getRiskFlags(advertData, userData);
 
+            // ✅ Generate title if not provided - same logic as in your form
+            const title = advertData.title || `${advertData.breedOrType} ${advertData.intent === 'stud' ? 'Stud Service' : 'For Sale'}`;
+
             const adminEmailPayload = {
                 // Admin email configuration
                 adminEmail: 'gavinoxley@gmail.com', // Your admin email
 
-                // User information
+                // ✅ NEW: Quick Details fields (now required by server)
+                advertId: advertId,
                 userEmail: userEmail,
                 userName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Pet Lover',
+                title: title,
+                intent: advertData.intent, // Server will format this as "For Sale" or "For Stud"
+                breedOrType: advertData.breedOrType,
+
+                // User information (existing)
                 userPhone: userData.phoneNumber || 'Not provided',
                 userPostcode: userData.postcode || 'Not provided',
                 userId: user.uid,
 
-                // Advert information
-                advertId: advertId,
+                // Advert information (existing)
                 petName: advertData.name || advertData.breedOrType || 'Unknown',
                 advertType: advertData.intent === 'stud' ? 'For Stud' : 'For Sale',
                 categoryName: advertData.category.charAt(0).toUpperCase() + advertData.category.slice(1),
-                breedOrType: advertData.breedOrType,
                 price: advertData.price || advertData.fee || 'Not specified',
                 description: advertData.description || 'No description provided',
                 imageCount: advertData.images ? advertData.images.length : 0,
 
-                // Additional details for admin review
+                // Additional details for admin review (existing)
                 submissionDate: new Date().toLocaleString('en-GB', {
                     weekday: 'long',
                     year: 'numeric',
@@ -243,35 +250,41 @@ export default function AdWizard({ mode }) {
                     minute: '2-digit'
                 }),
 
-                // Health and safety flags for admin attention
+                // Health and safety flags for admin attention (existing)
                 healthTests: advertData.healthTests || [],
                 kcRegistered: advertData.kcRegistered || false,
                 vaccinated: advertData.vaccinated || false,
                 microchipped: advertData.microchipped || false,
                 withMother: advertData.withMother || false,
 
-                // Age information (important for compliance)
+                // Age information (important for compliance) (existing)
                 dateOfBirth: advertData.dob || 'Not provided',
                 availableDate: advertData.availableDate || 'Not provided',
 
-                // Location info
+                // Location info (existing)
                 postcode: advertData.postcode || 'Not available',
 
-                // Quick action links for admin (customize these URLs to your admin panel)
-                directApproveUrl: `https://mypetconnect.co.uk/admin/approve/${advertId}`, // Replace with your actual admin panel
-                directRejectUrl: `https://mypetconnect.co.uk/admin/reject/${advertId}`,   // Replace with your actual admin panel
-                userProfileUrl: `https://mypetconnect.co.uk/profile/${user.uid}`,         // Replace with your actual site URL
-                advertPreviewUrl: `https://mypetconnect.co.uk/advert-details/${advertId}`, // Replace with your actual site URL
+                // Quick action links for admin (updated URLs)
+                adminPanelUrl: `https://mypetconnect.co.uk/admin/view-advert/${advertId}`, // ✅ Main admin review URL
+                directApproveUrl: `https://mypetconnect.co.uk/admin/approve/${advertId}`,
+                directRejectUrl: `https://mypetconnect.co.uk/admin/reject/${advertId}`,
+                userProfileUrl: `https://mypetconnect.co.uk/profile/${user.uid}`,
+                advertPreviewUrl: `https://mypetconnect.co.uk/advert-details/${advertId}`,
 
-                // Risk assessment flags
+                // Risk assessment flags (existing)
                 riskFlags: riskFlags,
 
-                // Summary for quick admin decision
+                // Summary for quick admin decision (existing)
                 quickSummary: `${advertData.category.toUpperCase()} | ${advertData.breedOrType} | ${advertData.intent.toUpperCase()} | £${advertData.price || advertData.fee || 'TBC'}`
             };
 
             console.log('👮 SENDING ADMIN ALERT TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email');
             console.log('👮 Admin email payload:', adminEmailPayload);
+            console.log('👮 ✅ NEW FIELDS ADDED:', {
+                title: title,
+                intent: advertData.intent,
+                breedOrType: advertData.breedOrType
+            });
 
             const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert-email', {
                 method: 'POST',
