@@ -36,7 +36,7 @@ import './ApproveAdverts.css';
 
 const sendAdvertApprovedEmail = async (userData, advertData) => {
     try {
-        const response = await fetch('http://localhost:6500/api/send-advert-approved-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-approved-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData, advertData }),
@@ -56,7 +56,7 @@ const sendAdvertApprovedEmail = async (userData, advertData) => {
 
 const sendAdvertRejectedEmail = async (userData, advertData, rejectionReason) => {
     try {
-        const response = await fetch('http://localhost:6500/api/send-advert-rejected-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-advert-rejected-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData, advertData, rejectionReason }),
