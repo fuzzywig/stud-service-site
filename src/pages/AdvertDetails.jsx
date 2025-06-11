@@ -168,8 +168,12 @@ function AdvertDetails() {
     const [userData, setUserData] = useState({});
     const [showGalleryModal, setShowGalleryModal] = useState(false);
     const [modalImageIndex, setModalImageIndex] = useState(0);
-    // Calculate title and description only when advert is loaded
-    const getSEOData = useCallback(() => {
+    const [viewStats, setViewStats] = useState({
+        today: 0,
+        yesterday: 0,
+        last7Days: 0,
+        last30Days: 0
+    });    const getSEOData = useCallback(() => {
         if (!advert) {
             return {
                 title: "Pet Advert | My Pet Connect",
@@ -200,6 +204,121 @@ function AdvertDetails() {
             `&title=${encodeURIComponent(advert.title)}`
         );
     }, [currentUser, advert, navigate]);
+
+    // REPLACE your existing trackDailyView function with this debug version:
+
+    const trackDailyView = async (advertId) => {
+        console.log("🔍 trackDailyView called for advertId:", advertId);
+
+        try {
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+            const viewDocId = `${advertId}_${today}`;
+            const viewDocRef = doc(db, "advertViews", viewDocId);
+
+            console.log("📅 Today's date:", today);
+            console.log("📄 View document ID:", viewDocId);
+            console.log("🔗 Document reference:", viewDocRef);
+
+            const viewDoc = await getDoc(viewDocRef);
+            console.log("📖 Existing document exists?", viewDoc.exists());
+
+            if (viewDoc.exists()) {
+                console.log("📈 Incrementing existing view count...");
+                console.log("📊 Current views:", viewDoc.data().views);
+
+                // Increment today's views
+                await updateDoc(viewDocRef, {
+                    views: increment(1),
+                    lastUpdated: new Date()
+                });
+                console.log("✅ View count incremented successfully");
+            } else {
+                console.log("📝 Creating new view document...");
+
+                // Create first view for today
+                await setDoc(viewDocRef, {
+                    advertId: advertId,
+                    date: today,
+                    views: 1,
+                    lastUpdated: new Date()
+                });
+                console.log("✅ New view document created successfully");
+            }
+
+            console.log(`📊 Daily view tracked for ${advertId} on ${today}`);
+
+        } catch (error) {
+            console.error("❌ Error tracking daily view:", error);
+            console.error("❌ Error code:", error.code);
+            console.error("❌ Error message:", error.message);
+        }
+    };
+
+    const fetchAdvertViewStats = async (advertId) => {
+        const today = new Date();
+        const viewStats = {
+            today: 0,
+            yesterday: 0,
+            last7Days: 0,
+            last30Days: 0
+        };
+
+        try {
+            // Get today's views
+            const todayStr = today.toISOString().split('T')[0];
+            const todayDocRef = doc(db, "advertViews", `${advertId}_${todayStr}`);
+            const todayDoc = await getDoc(todayDocRef);
+            if (todayDoc.exists()) {
+                viewStats.today = todayDoc.data().views || 0;
+            }
+
+            // Get yesterday's views
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            const yesterdayDocRef = doc(db, "advertViews", `${advertId}_${yesterdayStr}`);
+            const yesterdayDoc = await getDoc(yesterdayDocRef);
+            if (yesterdayDoc.exists()) {
+                viewStats.yesterday = yesterdayDoc.data().views || 0;
+            }
+
+            // Get last 7 days total
+            const promises7Days = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const viewDocRef = doc(db, "advertViews", `${advertId}_${dateStr}`);
+                promises7Days.push(getDoc(viewDocRef));
+            }
+
+            const docs7Days = await Promise.all(promises7Days);
+            viewStats.last7Days = docs7Days.reduce((sum, doc) => {
+                return sum + (doc.exists() ? doc.data().views || 0 : 0);
+            }, 0);
+
+            // Get last 30 days total
+            const promises30Days = [];
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const viewDocRef = doc(db, "advertViews", `${advertId}_${dateStr}`);
+                promises30Days.push(getDoc(viewDocRef));
+            }
+
+            const docs30Days = await Promise.all(promises30Days);
+            viewStats.last30Days = docs30Days.reduce((sum, doc) => {
+                return sum + (doc.exists() ? doc.data().views || 0 : 0);
+            }, 0);
+
+            return viewStats;
+
+        } catch (error) {
+            console.error("Error fetching view stats:", error);
+            return viewStats;
+        }
+    };
 
     // Add this function at the top of your AdvertDetails.jsx file
     const sendNewReviewEmail = useCallback(async (ownerData, reviewerData, reviewData, advertData) => {
@@ -519,11 +638,18 @@ function AdvertDetails() {
 
         const incrementViews = async () => {
             try {
+                // Track daily views first
+                await trackDailyView(advert.id);
+
+                // Then update total views on the main advert document
                 const adRef = doc(db, "allListings", advert.id);
                 await updateDoc(adRef, {
-                    views: increment(1)
+                    views: increment(1),
+                    lastViewedAt: new Date()
                 });
+
                 sessionStorage.setItem(viewedKey, "true");
+                console.log(`👁️ View tracked for advert ${advert.id}`);
             } catch (err) {
                 console.error("Failed to increment views:", err);
             }
@@ -1884,33 +2010,6 @@ function AdvertDetails() {
                                 {modalImageIndex + 1} / {advert.images.length}
                             </div>
                         </div>
-
-                        {/* Thumbnail strip at bottom */}
-                        {advert.images.length > 1 && (
-                            <div className="gallery-modal-thumbnails">
-                                {advert.images.map((img, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`gallery-modal-thumbnail ${idx === modalImageIndex ? "active" : ""} ${advert.litterWithMotherIndex === idx ? "litter-with-mother" : ""}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setModalImageIndex(idx);
-                                        }}
-                                    >
-                                        <img
-                                            src={img}
-                                            alt={`Thumbnail ${idx + 1}`}
-                                            onError={(e) => {
-                                                e.target.src = 'https://placehold.co/100x100/f0f0f0/999999?text=No+Image';
-                                            }}
-                                        />
-                                        {advert.litterWithMotherIndex === idx && (
-                                            <div className="gallery-modal-thumbnail-badge">M</div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

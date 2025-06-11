@@ -10,8 +10,6 @@ import {
     doc,
     getDoc,
     updateDoc,
-    arrayUnion,
-    arrayRemove,
     setDoc,
     deleteDoc,
     increment,
@@ -208,6 +206,8 @@ export default function BrowseStuds() {
         }
     };
 
+
+
     // helper: human-readable age
     function getAdAge(seconds) {
         const diffMs = Date.now() - seconds * 1000;
@@ -273,6 +273,8 @@ export default function BrowseStuds() {
         // Clear URL params
         navigate("/browse", { replace: true });
     }
+
+
 
     useEffect(() => {
         // when currentPage changes, scroll to top of window
@@ -363,24 +365,35 @@ export default function BrowseStuds() {
                         }
                     }
 
-                    // Normalize color field - check all possible color field names
+                    // Normalize color field - FIXED ORDER to match your Firebase data
                     let normalizedColor = "";
-                    if (ad.colour) normalizedColor = ad.colour;
-                    else if (ad.color) normalizedColor = ad.color;
-                    else if (ad.dogColor) normalizedColor = ad.dogColor;
+                    if (ad.dogColor) normalizedColor = ad.dogColor;  // Check dogColor FIRST
                     else if (ad.catColor) normalizedColor = ad.catColor;
+                    else if (ad.colour) normalizedColor = ad.colour;
+                    else if (ad.color) normalizedColor = ad.color;
+
+                    // Fix the breed field too - your Firebase has breedOrType
+                    const normalizedBreed = ad.breedOrType || ad.breed || "Unknown";
+
+                    // Fix the fee field - your Firebase has price as string "200"
+                    let normalizedFee = 0;
+                    if (ad.intent === 'rescue') {
+                        normalizedFee = parseInt(ad.adoptionFee, 10) || 0;
+                    } else {
+                        // For stud/sale, check price field first (which is in your Firebase)
+                        normalizedFee = parseInt(ad.price, 10) || parseInt(ad.fee, 10) || 0;
+                    }
 
                     return {
                         ...ad,
-                        fee: ad.intent === 'rescue' ? (ad.adoptionFee || 0) : (ad.fee || ad.price || 0),
-                        breed: ad.breed || ad.breedOrType || "Unknown",
-                        colour: normalizedColor, // Use the normalized color
+                        fee: normalizedFee,
+                        breed: normalizedBreed,
+                        colour: normalizedColor,
                         images: Array.isArray(ad.images) ? ad.images : [],
-                        ageLabel,
+                        mainImageIndex: typeof ad.mainImageIndex === "number" ? ad.mainImageIndex : 1,                        ageLabel,
                         age,
                         healthTests: Array.isArray(ad.healthTests) ? ad.healthTests : [],
-                        healthTested:
-                            Array.isArray(ad.healthTests) && ad.healthTests.length > 0,
+                        healthTested: Array.isArray(ad.healthTests) && ad.healthTests.length > 0,
                         ownerDisplay: owner.breederType === 'rescue' && owner.organizationName
                             ? owner.organizationName
                             : owner.firstName
@@ -390,13 +403,54 @@ export default function BrowseStuds() {
                         ownerLocation: owner.city
                             ? `${owner.city}${owner.postcode ? `, ${owner.postcode}` : ""}`
                             : "",
-                        breederType: owner.breederType || "", // Add breeder type from owner data
+                        breederType: owner.breederType || "",
                         sourceCollection: "allListings",
                     };
+
                 })
             );
 
+            // RIGHT AFTER your enrichment, add this debugging (replace your current debug log):
             console.log("✅ Enriched ads:", enriched.map(ad => ad.breed));
+
+// ADD THIS DETAILED DEBUG:
+            console.warn("🔍 ENRICHMENT DEBUG - Sample ad data:");
+            if (enriched.length > 0) {
+                const firstAd = enriched[0];
+                console.warn("🔍 Raw ad mainImageIndex:", raw[0]?.mainImageIndex);
+                console.warn("🔍 Enriched ad mainImageIndex:", firstAd.mainImageIndex);
+                console.warn("🔍 Images count:", firstAd.images?.length);
+                console.warn("🔍 Testing image function:", getMainImageUrl(firstAd));
+            }
+
+            console.log("🔍 DETAILED DEBUG - First enriched ad:");
+            if (enriched.length > 0) {
+                const firstAd = enriched[0];
+                console.log("🔍 ID:", firstAd.id);
+                console.log("🔍 Original mainImageIndex from raw data:", raw[0]?.mainImageIndex);
+                console.log("🔍 Enriched mainImageIndex:", firstAd.mainImageIndex);
+                console.log("🔍 mainImageIndex type:", typeof firstAd.mainImageIndex);
+                console.log("🔍 Images array length:", firstAd.images?.length);
+                console.log("🔍 First few images:", firstAd.images?.slice(0, 3));
+                console.log("🔍 Breed:", firstAd.breed);
+                console.log("🔍 Colour:", firstAd.colour);
+                console.log("🔍 Fee:", firstAd.fee);
+
+                // Test the function right here
+                console.log("🔍 Testing getMainImageUrl with first ad:");
+                const testUrl = getMainImageUrl(firstAd);
+                console.log("🔍 Result URL:", testUrl);
+            }
+            // Add debug log for main image
+            console.log("✅ Sample enriched ad:", {
+                id: enriched[0]?.id,
+                originalMainImageIndex: raw[0]?.mainImageIndex,
+                enrichedMainImageIndex: enriched[0]?.mainImageIndex,
+                imagesLength: enriched[0]?.images?.length,
+                breed: enriched[0]?.breed,
+                colour: enriched[0]?.colour,
+                fee: enriched[0]?.fee
+            });
 
             setAds(enriched);
 
@@ -699,6 +753,38 @@ export default function BrowseStuds() {
         // fallback
         return [{ value: "", label: "Any colour" }];
     }, [selectedCategory]);
+
+    function getMainImageUrl(ad) {
+        try {
+            // Force logging to appear
+            console.warn('🖼️ MAIN IMAGE DEBUG - Ad:', ad.id, 'mainImageIndex:', ad.mainImageIndex, 'images:', ad.images?.length);
+
+            if (!ad.images || !Array.isArray(ad.images) || ad.images.length === 0) {
+                console.warn('🖼️ No images array found, using placeholder');
+                return "https://placehold.co/400x300";
+            }
+
+            // Check if mainImageIndex exists and is valid
+            const mainIndex = ad.mainImageIndex;
+
+            if (mainIndex !== null && mainIndex !== undefined &&
+                typeof mainIndex === 'number' &&
+                Number.isInteger(mainIndex) &&
+                mainIndex >= 0 &&
+                mainIndex < ad.images.length) {
+
+                console.warn('🖼️ Using mainImageIndex:', mainIndex, 'URL:', ad.images[mainIndex]);
+                return ad.images[mainIndex];
+            }
+
+            console.warn('🖼️ Invalid mainImageIndex, using first image. mainIndex was:', mainIndex);
+            return ad.images[0];
+
+        } catch (error) {
+            console.error('🖼️ Error in getMainImageUrl:', error);
+            return "https://placehold.co/400x300";
+        }
+    }
 
     // Get the dynamic SEO data
     const { title: seoTitle, description: seoDescription } = getSEOData();
@@ -1319,9 +1405,21 @@ export default function BrowseStuds() {
                                 </div>
                                 <div className="browse-studs-card-image">
                                     <img
-                                        src={ad.images?.[0] || "https://placehold.co/400x300"}
+                                        src={(() => {
+                                            console.log('🖼️ JSX DEBUG - About to call getMainImageUrl for ad:', ad.id);
+                                            const url = getMainImageUrl(ad);
+                                            console.log('🖼️ JSX DEBUG - Got URL:', url);
+                                            return url;
+                                        })()}
                                         alt={ad.title}
                                         className="browse-studs-card-img"
+                                        onError={(e) => {
+                                            console.error('🖼️ JSX DEBUG - Image failed to load for ad:', ad.id, 'URL:', e.target.src);
+                                            e.target.src = "https://placehold.co/400x300";
+                                        }}
+                                        onLoad={(e) => {
+                                            console.log('🖼️ JSX DEBUG - Image loaded successfully for ad:', ad.id, 'URL:', e.target.src);
+                                        }}
                                     />
                                 </div>
                                 <div className="browse-studs-card-details">

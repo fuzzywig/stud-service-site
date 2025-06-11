@@ -162,6 +162,9 @@ function Register() {
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
         if (!formData.phone) newErrors.phone = "Phone is required";
         if (!formData.postcode) newErrors.postcode = "Postcode is required";
+        if (!formData.address1) newErrors.address1 = "Address is required";
+        if (!formData.city) newErrors.city = "City is required";
+        if (!formData.county) newErrors.county = "County is required";
         if (!formData.breederType) newErrors.breederType = "Account type is required";
 
         // Validate license fields if breeder type is licensed
@@ -593,27 +596,31 @@ function Register() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label htmlFor="city">City</label>
+                                    <label htmlFor="city">City<span className="required">*</span></label>
                                     <input
                                         id="city"
                                         type="text"
                                         name="city"
                                         value={formData.city}
                                         onChange={handleChange}
+                                        className={errors.city ? "input-error" : ""}
                                     />
+                                    {errors.city && <p className="error">{errors.city}</p>}
                                 </div>
                             </div>
 
                             <div className="form-row">
                                 <div className="form-group full-width">
-                                    <label htmlFor="address1">Address Line 1</label>
+                                    <label htmlFor="address1">Address Line 1<span className="required">*</span></label>
                                     <input
                                         id="address1"
                                         type="text"
                                         name="address1"
                                         value={formData.address1}
                                         onChange={handleChange}
+                                        className={errors.address1 ? "input-error" : ""}
                                     />
+                                    {errors.address1 && <p className="error">{errors.address1}</p>}
                                 </div>
                             </div>
 
@@ -632,14 +639,16 @@ function Register() {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label htmlFor="county">County</label>
+                                    <label htmlFor="county">County<span className="required">*</span></label>
                                     <input
                                         id="county"
                                         type="text"
                                         name="county"
                                         value={formData.county}
                                         onChange={handleChange}
+                                        className={errors.county ? "input-error" : ""}
                                     />
+                                    {errors.county && <p className="error">{errors.county}</p>}
                                 </div>
                             </div>
                         </div>

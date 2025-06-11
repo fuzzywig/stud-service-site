@@ -24,31 +24,6 @@ import {
 // Import modernized styles
 import "./AdWizard.css"; // Using same styles as AdWizard
 
-// Function to calculate ready to leave date (8 weeks from date of birth)
-const calculateReadyToLeaveDate = (dob) => {
-    console.log('🔧 calculateReadyToLeaveDate called with:', dob);
-    if (!dob) {
-        console.log('🔧 No dob provided, returning empty');
-        return "";
-    }
-
-    try {
-        const dobDate = new Date(dob);
-        console.log('🔧 Parsed DOB:', dobDate);
-        const readyToLeave = new Date(dobDate);
-        readyToLeave.setDate(dobDate.getDate() + 56); // Add 56 days (8 weeks)
-        console.log('🔧 Calculated ready date:', readyToLeave);
-
-        // Format as YYYY-MM-DD for input[type="date"]
-        const result = readyToLeave.toISOString().split('T')[0];
-        console.log('🔧 Formatted result:', result);
-        return result;
-    } catch (error) {
-        console.error('🔧 Error in calculateReadyToLeaveDate:', error);
-        return "";
-    }
-};
-
 export default function AdWizardRescue({ mode }) {
     const { adId } = useParams();
     const [step, setStep] = useState(1);
@@ -204,23 +179,6 @@ export default function AdWizardRescue({ mode }) {
             setFieldErrors({});
         }
     };
-
-    // Auto-calculate availableDate when dob changes (for cats and dogs)
-    useEffect(() => {
-        if ((category === "dogs" || category === "cats") && formData.dob && !formData.availableDate) {
-            console.log('🔄 useEffect: Auto-calculating availableDate from dob:', formData.dob);
-            const calculatedDate = calculateReadyToLeaveDate(formData.dob);
-            console.log('🔄 useEffect: Calculated date:', calculatedDate);
-
-            if (calculatedDate) {
-                console.log('🔄 useEffect: Updating availableDate to:', calculatedDate);
-                setFormData(prev => ({
-                    ...prev,
-                    availableDate: calculatedDate
-                }));
-            }
-        }
-    }, [formData.dob, category]); // Only depend on dob and category
 
     // Capitalize helper
     const capitalize = str =>
@@ -450,81 +408,29 @@ export default function AdWizardRescue({ mode }) {
         ].filter(Boolean).join(' ');
 
         if (fieldName === "availableDate" || fieldName === "dob") {
-            const isDateOfBirth = fieldName === "dob";
-            const isAvailableDate = fieldName === "availableDate";
-            const isAutoCalculated = isAvailableDate && (category === "dogs" || category === "cats");
-
-            // Format date for display in text field
-            const formatDateForDisplay = (dateString) => {
-                if (!dateString) return "";
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-            };
-
             return (
                 <div className={groupClasses} key={fieldName}>
                     <label htmlFor={fieldName}>
                         {config.label}
                         {isRequired && <span className="required-asterisk"> *</span>}
-                        {isAutoCalculated && (
-                            <span className="field-note"> (Auto-calculated from date of birth - UK law requires 8 weeks minimum)</span>
-                        )}
                     </label>
                     <div className="adwizard-date-input-container">
-                        {isAutoCalculated ? (
-                            // Read-only text field for auto-calculated available date
-                            <input
-                                type="text"
-                                id={fieldName}
-                                name={fieldName}
-                                value={formData.dob && formData.availableDate ? formatDateForDisplay(formData.availableDate) : ""}
-                                readOnly
-                                className={`${fieldClasses} auto-calculated-field`}
-                                placeholder="Will be calculated from date of birth"
-                                style={{ backgroundColor: '#f0f9f4', color: '#1c5235' }}
-                            />
-                        ) : (
-                            // Regular date picker for other date fields
-                            <input
-                                type="date"
-                                id={fieldName}
-                                name={fieldName}
-                                value={formData[fieldName] || ""}
-                                onChange={(e) => {
-                                    const newValue = e.target.value;
-
-                                    setFormData((prev) => {
-                                        const updated = {
-                                            ...prev,
-                                            [fieldName]: newValue
-                                        };
-
-                                        // Auto-calculate available date for cats and dogs
-                                        if (isDateOfBirth && (category === "dogs" || category === "cats")) {
-                                            console.log('🔧 DOB changed, calculating ready date for:', newValue);
-                                            const readyDate = calculateReadyToLeaveDate(newValue);
-                                            if (readyDate) {
-                                                console.log('🔧 Setting availableDate to:', readyDate);
-                                                updated.availableDate = readyDate;
-                                            }
-                                        }
-
-                                        return updated;
-                                    });
-
-                                    if (fieldErrors?.[fieldName]) {
-                                        setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
-                                    }
-                                }}
-                                className={fieldClasses}
-                                placeholder={`Select ${config.label.toLowerCase()}`}
-                                required={isRequired}
-                            />
-                        )}
+                        <input
+                            type="date"
+                            id={fieldName}
+                            name={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={(e) => {
+                                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }));
+                                // Clear error when user inputs data
+                                if (fieldErrors?.[fieldName]) {
+                                    setFieldErrors(prev => ({ ...prev, [fieldName]: null }));
+                                }
+                            }}
+                            className={fieldClasses}
+                            placeholder={`Select ${config.label.toLowerCase()}`}
+                            required={isRequired}
+                        />
                     </div>
                     {hasError && (
                         <div className="adwizard-error-message">

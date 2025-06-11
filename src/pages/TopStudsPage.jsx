@@ -17,6 +17,37 @@ import "./TopStudsPage.css";
 // Import your breed data
 import { petBreedOptions } from "./data/breedOptions";
 
+// Add this function after the imports, before the component
+function getMainImageUrl(ad) {
+    console.log('🖼️ getMainImageUrl called for ad:', ad.id || 'unknown');
+    console.log('📋 Ad data:', {
+        hasImages: !!ad.images,
+        imagesLength: ad.images?.length,
+        mainImageIndex: ad.mainImageIndex,
+        mainImageIndexType: typeof ad.mainImageIndex,
+        firstImage: ad.images?.[0]?.substring(0, 50) + '...' || 'none'
+    });
+
+    // Use mainImageIndex if it exists and is valid
+    if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
+        const mainIndex = ad.mainImageIndex;
+
+        console.log('🔍 Checking mainImageIndex:', mainIndex);
+
+        if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
+            console.log('✅ Using mainImageIndex:', mainIndex, 'URL:', ad.images[mainIndex].substring(0, 50) + '...');
+            return ad.images[mainIndex];
+        }
+
+        console.log('⚠️ mainImageIndex invalid, falling back to first image');
+        // Fallback to first image if mainImageIndex is invalid
+        return ad.images[0];
+    }
+
+    console.log('❌ No images found, using placeholder');
+    return "https://placehold.co/400x300";
+}
+
 export default function TopStudsPage() {
     const [dogStuds, setDogStuds] = useState([]);
     const [catStuds, setCatStuds] = useState([]);
@@ -216,20 +247,6 @@ export default function TopStudsPage() {
         }
     };
 
-    // Add this function after the humanize function
-    function getMainImageUrl(ad) {
-        // Use mainImageIndex if it exists and is valid
-        if (ad.images && Array.isArray(ad.images) && ad.images.length > 0) {
-            const mainIndex = ad.mainImageIndex;
-            if (typeof mainIndex === 'number' && mainIndex >= 0 && mainIndex < ad.images.length) {
-                return ad.images[mainIndex];
-            }
-            // Fallback to first image if mainImageIndex is invalid
-            return ad.images[0];
-        }
-
-        return "https://placehold.co/400x300";
-    }
 
     const getRankIcon = (rank) => {
         if (rank === 1) return { icon: faCrown, class: "rank-gold" };

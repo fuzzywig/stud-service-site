@@ -626,3 +626,318 @@
         font-size: 0.85rem;
     }
 }
+/* ADD THESE STYLES TO YOUR EXISTING MyAdvertsPage.css FILE */
+
+/* Enhanced Stats Section for Daily Views */
+.my-ads-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 12px 0;
+    padding: 12px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.my-ads-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    min-width: fit-content;
+}
+
+.my-ads-stat-icon {
+    font-size: 1rem;
+    width: 16px;
+    text-align: center;
+}
+
+.my-ads-stat-icon.favorites {
+    color: #e74c3c;
+}
+
+.my-ads-stat-icon.views {
+    color: #3498db;
+}
+
+.my-ads-stat-icon.daily-views {
+    color: #1c5235;
+}
+
+.my-ads-stat-icon.weekly-views {
+    color: #b83c56;
+}
+
+.my-ads-stat-value {
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 20px;
+    text-align: center;
+}
+
+.my-ads-stat-label {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* Daily Breakdown Chart */
+.my-ads-daily-breakdown {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(28, 82, 53, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(28, 82, 53, 0.1);
+}
+
+.my-ads-breakdown-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1c5235;
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.my-ads-breakdown-chart {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 80px;
+    gap: 4px;
+}
+
+.my-ads-chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    position: relative;
+}
+
+.my-ads-bar-fill {
+    width: 100%;
+    max-width: 20px;
+    background: linear-gradient(to top, #1c5235, rgba(28, 82, 53, 0.7));
+    border-radius: 3px 3px 0 0;
+    min-height: 2px;
+    margin-top: auto;
+    transition: all 0.3s ease;
+}
+
+.my-ads-chart-bar:hover .my-ads-bar-fill {
+    background: linear-gradient(to top, #b83c56, rgba(184, 60, 86, 0.7));
+    transform: scaleY(1.05);
+}
+
+.my-ads-bar-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1c5235;
+    margin-bottom: 4px;
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.my-ads-bar-label {
+    font-size: 0.7rem;
+    color: #7f8c8d;
+    margin-top: 4px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Overview Stats Section */
+.my-ads-overview-stats {
+    background: linear-gradient(135deg, rgba(28, 82, 53, 0.03), rgba(184, 60, 86, 0.03));
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(28, 82, 53, 0.1);
+}
+
+.my-ads-overview-stats h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: #1c5235;
+    font-weight: 600;
+    text-align: center;
+}
+
+.overview-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+}
+
+.overview-stat-card {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(28, 82, 53, 0.08);
+    transition: all 0.3s ease;
+}
+
+.overview-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(28, 82, 53, 0.1);
+}
+
+.overview-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1c5235;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.overview-stat-label {
+    font-size: 12px;
+    color: #7f8c8d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mobile responsive adjustments for stats */
+@media (max-width: 768px) {
+    .my-ads-stats {
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    .my-ads-stat {
+        font-size: 0.8rem;
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .my-ads-stat-label {
+        font-size: 0.75rem;
+    }
+
+    .my-ads-breakdown-chart {
+        height: 60px;
+        gap: 2px;
+    }
+
+    .my-ads-bar-fill {
+        max-width: 16px;
+    }
+
+    .my-ads-bar-value {
+        font-size: 0.7rem;
+        top: -18px;
+    }
+
+    .my-ads-bar-label {
+        font-size: 0.65rem;
+    }
+
+    .overview-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .overview-stat-card {
+        padding: 12px;
+    }
+
+    .overview-stat-value {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .my-ads-stats {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .my-ads-stat {
+        font-size: 0.75rem;
+        flex-basis: calc(50% - 4px);
+        margin-bottom: 5px;
+    }
+
+    .my-ads-stat-icon {
+        font-size: 0.9rem;
+    }
+
+    .my-ads-stat-label {
+        font-size: 0.7rem;
+    }
+
+    /* Hide daily breakdown on very small screens to save space */
+    .my-ads-daily-breakdown {
+        display: none;
+    }
+
+    .overview-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .overview-stat-value {
+        font-size: 18px;
+    }
+
+    .overview-stat-label {
+        font-size: 11px;
+    }
+}
+
+/* Enhanced card content spacing with new stats */
+.my-ads-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Animation for stats loading */
+@keyframes statsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-ads-stats {
+    animation: statsFadeIn 0.5s ease-out;
+}
+
+.my-ads-daily-breakdown {
+    animation: statsFadeIn 0.5s ease-out 0.2s both;
+}
+
+/* Highlighting today's stats */
+.my-ads-stat.today {
+    background: rgba(28, 82, 53, 0.05);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.my-ads-stat.today .my-ads-stat-value {
+    color: #1c5235;
+    font-weight: 700;
+}
+
+.my-ads-stat.today .my-ads-stat-label {
+    color: #1c5235;
+    font-weight: 600;
+}

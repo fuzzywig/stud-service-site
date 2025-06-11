@@ -864,6 +864,9 @@ export default function AdWizard({ mode }) {
         );
     };
 
+    // Check if we should show the "with mum" option - only for sale intent
+    const shouldShowWithMumOption = intent === "sale" && (category === "dogs" || category === "cats");
+
     return (
         <>
             <SEO
@@ -1187,8 +1190,8 @@ export default function AdWizard({ mode }) {
                             }}>
                                 Upload your images, then use the buttons below each image to:
                                 <br />• Click the <strong>⭐ star</strong> to set the main image (thumbnail)
-                                {(category === "dogs" || category === "cats") && (
-                                    <span><br />• Click the <strong>👩‍👧‍👦 family icon</strong> to mark an image showing the litter with mother</span>
+                                {shouldShowWithMumOption && (
+                                    <span><br />• Click the <strong>👩‍👧‍👦 family icon</strong> to mark an image showing the litter with mum</span>
                                 )}
                             </p>
                             <div>
@@ -1254,8 +1257,8 @@ export default function AdWizard({ mode }) {
                                                     ⭐ {mainImageIndex === idx ? 'Main' : 'Set Main'}
                                                 </button>
 
-                                                {/* Litter with mother button (only for dogs/cats) */}
-                                                {(category === "dogs" || category === "cats") && (
+                                                {/* Litter with mum button (only for dogs/cats and sale intent) */}
+                                                {shouldShowWithMumOption && (
                                                     <button
                                                         type="button"
                                                         className="control-btn"
@@ -1263,7 +1266,7 @@ export default function AdWizard({ mode }) {
                                                             e.stopPropagation();
                                                             setLitterWithMotherIndex(litterWithMotherIndex === idx ? null : idx);
                                                         }}
-                                                        title="Mark as litter with mother"
+                                                        title="Mark as litter with mum"
                                                         style={{
                                                             background: litterWithMotherIndex === idx ? '#10b981' : 'rgba(0,0,0,0.7)',
                                                             color: 'white',
@@ -1275,7 +1278,7 @@ export default function AdWizard({ mode }) {
                                                             boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                                         }}
                                                     >
-                                                        👩‍👧‍👦 {litterWithMotherIndex === idx ? 'With Mom' : 'Set Mom'}
+                                                        👩‍👧‍👦 {litterWithMotherIndex === idx ? 'With Mum' : 'Set Mum'}
                                                     </button>
                                                 )}
                                             </div>
@@ -1325,8 +1328,8 @@ export default function AdWizard({ mode }) {
                                 </div>
                             )}
 
-                            {/* Additional guidance for dogs/cats */}
-                            {(category === "dogs" || category === "cats") && images.length > 0 && (
+                            {/* Additional guidance for dogs/cats sales only */}
+                            {shouldShowWithMumOption && images.length > 0 && (
                                 <div style={{
                                     marginTop: '12px',
                                     padding: '12px',
@@ -1336,7 +1339,7 @@ export default function AdWizard({ mode }) {
                                     fontSize: '14px',
                                     color: '#1e40af'
                                 }}>
-                                    <strong>💡 Tip:</strong> Including a photo of the litter with their mother helps build trust with potential buyers and shows responsible breeding practices.
+                                    <strong>💡 Tip:</strong> Including a photo of the litter with their mum helps build trust with potential buyers and shows responsible breeding practices.
                                 </div>
                             )}
 

@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom"; // ✅ Add useSearchParams
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faPencilAlt, faTrashAlt,
+    faPencilAlt, faTrashAlt, faEye, faCalendarWeek,
+    faChartLine,
     faInfoCircle, faTimes, faSync, faCheck, faHeart
 } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -90,6 +91,55 @@ export default function MyAdvertsPage() {
         return "https://placehold.co/600x400?text=No+Image";
     }
 
+    // ✅ NEW: Daily views fetching function
+    const fetchDailyViewsForAdverts = async (advertIds) => {
+        const dailyViewsData = {};
+        const today = new Date();
+
+        console.log(`📊 Fetching daily views for ${advertIds.length} adverts...`);
+
+        // Get last 7 days of data
+        const promises = advertIds.map(async (advertId) => {
+            const last7Days = [];
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+
+                const viewDocId = `${advertId}_${dateStr}`;
+                const viewDocRef = doc(db, "advertViews", viewDocId);
+
+                try {
+                    const viewDoc = await getDoc(viewDocRef);
+                    const views = viewDoc.exists() ? viewDoc.data().views : 0;
+                    last7Days.push({ date: dateStr, views });
+                } catch (error) {
+                    // Handle permission errors gracefully
+                    if (error.code === 'permission-denied') {
+                        console.warn(`⚠️ Permission denied for ${viewDocId} - using fallback data`);
+                        last7Days.push({ date: dateStr, views: 0 });
+                    } else {
+                        console.error(`❌ Error fetching views for ${viewDocId}:`, error);
+                        last7Days.push({ date: dateStr, views: 0 });
+                    }
+                }
+            }
+
+            dailyViewsData[advertId] = {
+                today: last7Days[0].views,
+                yesterday: last7Days[1].views,
+                last7Days: last7Days,
+                weekTotal: last7Days.reduce((sum, day) => sum + day.views, 0)
+            };
+        });
+
+        await Promise.all(promises);
+
+        console.log(`✅ Daily views data fetched for ${advertIds.length} adverts`);
+        return dailyViewsData;
+    };
+
     // ✅ UPDATED: Authentication check with auth state tracking
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, async (user) => {
@@ -107,7 +157,7 @@ export default function MyAdvertsPage() {
         return unsub;
     }, [navigate, searchParams]);
 
-    // Fetch user's ads with favorite counts
+    // ✅ UPDATED: Fetch user's ads with favorite counts AND daily views
     useEffect(() => {
         const fetchUserAds = async () => {
             if (!currentUserId) return;
@@ -119,6 +169,12 @@ export default function MyAdvertsPage() {
                 );
 
                 const rawAds = adsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Get advert IDs for daily views lookup
+                const advertIds = rawAds.map(ad => ad.id);
+
+                // Fetch daily views data
+                const dailyViewsData = await fetchDailyViewsForAdverts(advertIds);
 
                 // Enrich each advert with calculated age and fetch favorite counts
                 const enrichedAds = await Promise.all(rawAds.map(async (ad) => {
@@ -141,8 +197,7 @@ export default function MyAdvertsPage() {
                         title: ad.title || ad.name || "",
                         images: Array.isArray(ad.images) ? ad.images : [],
                         breed: ad.breed || ad.breedOrType || "Unknown",
-                        mainImageIndex: ad.mainImageIndex, // ADD THIS LINE
-
+                        mainImageIndex: ad.mainImageIndex,
                         ageLabel,
                         expired: ad.expired || false,
                         approved: ad.approved || false,
@@ -152,7 +207,14 @@ export default function MyAdvertsPage() {
                         description: ad.description || "",
                         favoriteCount: favoriteCount,
                         views: ad.views || 0,
-                        intent: ad.intent || 'sale' // ADD THIS LINE
+                        intent: ad.intent || 'sale',
+                        // ✅ NEW: Add daily view stats
+                        dailyStats: dailyViewsData[ad.id] || {
+                            today: 0,
+                            yesterday: 0,
+                            weekTotal: 0,
+                            last7Days: []
+                        }
                     };
                 }));
 
@@ -336,7 +398,6 @@ export default function MyAdvertsPage() {
     }
 
     return (
-
         <>
             <Helmet>
                 <title>My Adverts | My Pet Connect</title>
@@ -391,6 +452,39 @@ export default function MyAdvertsPage() {
                                     <li><strong>Republishing:</strong> Expired adverts can be republished with one click, requiring approval again.</li>
                                     <li><strong>Deletion Policy:</strong> Expired adverts not republished within 14 days will be permanently deleted.</li>
                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ✅ NEW: Overview Stats Section */}
+                {userAds.length > 0 && (
+                    <div className="my-ads-overview-stats">
+                        <h3>📊 Overview</h3>
+                        <div className="overview-stats-grid">
+                            <div className="overview-stat-card">
+                                <div className="overview-stat-value">
+                                    {userAds.reduce((sum, ad) => sum + (ad.dailyStats?.today || 0), 0)}
+                                </div>
+                                <div className="overview-stat-label">Views Today</div>
+                            </div>
+                            <div className="overview-stat-card">
+                                <div className="overview-stat-value">
+                                    {userAds.reduce((sum, ad) => sum + (ad.dailyStats?.weekTotal || 0), 0)}
+                                </div>
+                                <div className="overview-stat-label">Views This Week</div>
+                            </div>
+                            <div className="overview-stat-card">
+                                <div className="overview-stat-value">
+                                    {userAds.reduce((sum, ad) => sum + (ad.views || 0), 0)}
+                                </div>
+                                <div className="overview-stat-label">Total Views</div>
+                            </div>
+                            <div className="overview-stat-card">
+                                <div className="overview-stat-value">
+                                    {userAds.reduce((sum, ad) => sum + (ad.favoriteCount || 0), 0)}
+                                </div>
+                                <div className="overview-stat-label">Total Favourites</div>
                             </div>
                         </div>
                     </div>
@@ -565,21 +659,62 @@ export default function MyAdvertsPage() {
                                         )}
                                     </div>
 
-                                    {/* Stats Section - New! */}
+                                    {/* ✅ UPDATED: Enhanced Stats Section with Daily Views */}
                                     <div className="my-ads-stats">
                                         <div className="my-ads-stat">
                                             <FontAwesomeIcon icon={faHeart} className="my-ads-stat-icon favorites" />
                                             <span className="my-ads-stat-value">{ad.favoriteCount}</span>
                                             <span className="my-ads-stat-label">Favourited</span>
                                         </div>
-                                        {ad.views > 0 && (
-                                            <div className="my-ads-stat">
-                                                <FontAwesomeIcon icon={faInfoCircle} className="my-ads-stat-icon views" />
-                                                <span className="my-ads-stat-value">{ad.views}</span>
-                                                <span className="my-ads-stat-label">views</span>
-                                            </div>
-                                        )}
+
+                                        <div className="my-ads-stat">
+                                            <FontAwesomeIcon icon={faEye} className="my-ads-stat-icon views" />
+                                            <span className="my-ads-stat-value">{ad.views || 0}</span>
+                                            <span className="my-ads-stat-label">Total Views</span>
+                                        </div>
+
+                                        {/* Today's Views */}
+                                        <div className="my-ads-stat">
+                                            <FontAwesomeIcon icon={faEye} className="my-ads-stat-icon daily-views" />
+                                            <span className="my-ads-stat-value">{ad.dailyStats?.today || 0}</span>
+                                            <span className="my-ads-stat-label">Today</span>
+                                        </div>
+
+                                        {/* This Week's Views */}
+                                        <div className="my-ads-stat">
+                                            <FontAwesomeIcon icon={faCalendarWeek} className="my-ads-stat-icon weekly-views" />
+                                            <span className="my-ads-stat-value">{ad.dailyStats?.weekTotal || 0}</span>
+                                            <span className="my-ads-stat-label">This Week</span>
+                                        </div>
                                     </div>
+
+                                    {/* ✅ NEW: Optional detailed daily breakdown */}
+                                    {ad.dailyStats?.last7Days && ad.dailyStats.weekTotal > 0 && (
+                                        <div className="my-ads-daily-breakdown">
+                                            <div className="my-ads-breakdown-header">
+                                                <FontAwesomeIcon icon={faChartLine} />
+                                                <span>Daily Views (Last 7 Days)</span>
+                                            </div>
+                                            <div className="my-ads-breakdown-chart">
+                                                {ad.dailyStats.last7Days.map((day, index) => {
+                                                    const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+                                                    const maxViews = Math.max(...ad.dailyStats.last7Days.map(d => d.views));
+                                                    const height = maxViews > 0 ? (day.views / maxViews) * 100 : 0;
+
+                                                    return (
+                                                        <div key={day.date} className="my-ads-chart-bar">
+                                                            <div
+                                                                className="my-ads-bar-fill"
+                                                                style={{ height: `${Math.max(height, 2)}%` }}
+                                                            ></div>
+                                                            <span className="my-ads-bar-value">{day.views}</span>
+                                                            <span className="my-ads-bar-label">{dayName}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="my-ads-date">
                                         {ad.expired ? 'Expired on' : 'Created on'}: {formatDate(ad.createdAt)}
@@ -590,7 +725,6 @@ export default function MyAdvertsPage() {
                     </div>
                 )}
             </div>
-
         </>
     );
 }
