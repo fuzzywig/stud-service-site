@@ -62,22 +62,6 @@ const getCachedOrFetch = async (key, fetchFunction) => {
     return data;
 };
 
-// ADD THIS TO YOUR EXISTING templates OBJECT in index.js (around line 32)
-const templates = {
-    WELCOME: 'd-c7dbabc9e55846378fb0e4b9970ed43d',
-    PASSWORD_CHANGED: 'd-4961110921694f6a9321fda734fd2211',
-    ADVERT_SUBMITTED: 'd-08f7c66e3a024bb687db46b3f372343f',
-    ADVERT_APPROVED: 'd-f8805dc163fc49d3b9355698d2f389c6',
-    ADVERT_REJECTED: 'd-2bf7a62047d6430580ac02e8a175e9d3',
-    ADVERT_EXPIRING: 'd-8d9e3e9fde62448181217b7b2823d891',
-    TICKET_SUBMITTED: 'd-6c179356393347f39bfb04e6dce0d51d',
-    TICKET_UPDATED: 'd-d0bad97e0acb4241bbc9ac49e19c2dba',
-    TICKET_CLOSED: 'd-5ff4ef6603ab4fca82db990f5c13c6b5',
-    NEW_MESSAGE: 'd-3327bafe35b54cee995636d8f459a094',
-    NEW_REVIEW: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6',
-    REVIEW_RESPONSE: 'd-8e896410b34c4bd6bd183f5a2e3651e4',
-    ADMIN_ALERT: 'd-your-template-id-here' // 👈 ADD THIS - replace with your actual template ID
-};
 
 // UPDATED: Admin alert email endpoint using SendGrid dynamic template
 app.post('/api/send-admin-alert', async (req, res) => {
