@@ -24,7 +24,7 @@ import { useLoginModal } from "../context/LoginContext";
 
 const sendWelcomeEmail = async (userData) => {
     try {
-        const response = await fetch('http://localhost:6500/api/send-welcome-email', {
+        const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-welcome-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userData }),

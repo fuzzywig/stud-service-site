@@ -177,56 +177,6 @@ export default function AdWizard({ mode }) {
         }
     };
 
-// Add this enhanced logging to your sendAdminAlert function (around line 181)
-    const sendAdminAlert = async (advertData, userEmail, adId) => {
-        try {
-            console.log('🚨 =================================');
-            console.log('🚨 STARTING SIMPLE ADMIN ALERT');
-            console.log('🚨 advertData:', advertData);
-            console.log('🚨 userEmail:', userEmail);
-            console.log('🚨 adId:', adId);
-            console.log('🚨 =================================');
-
-            // Simple payload matching the SendGrid template
-            const adminPayload = {
-                message: "New Pet Advertisement Submitted",
-                category: advertData.category || "Unknown",
-                intent: advertData.intent || "Unknown",
-                breedOrType: advertData.breedOrType || "Unknown",
-                ownerEmail: userEmail,
-                adId: adId,
-                timestamp: new Date().toLocaleString(),
-                adminPanelUrl: "https://mypetconnect.co.uk/admin", // ← Update this with your actual admin panel URL
-                currentYear: new Date().getFullYear()
-            };
-
-            console.log('🚨 SENDING TO URL: https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert');
-            console.log('🚨 Simple admin payload:', adminPayload);
-
-            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-admin-alert', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(adminPayload),
-            });
-
-            console.log('🚨 Response status:', response.status);
-            console.log('🚨 Response ok:', response.ok);
-
-            const result = await response.json();
-            console.log('🚨 Response body:', result);
-
-            if (response.ok) {
-                console.log('✅ SIMPLE ADMIN ALERT SENT SUCCESSFULLY:', result);
-            } else {
-                console.error('❌ ADMIN ALERT FAILED:', result);
-            }
-        } catch (error) {
-            console.error('❌ ADMIN ALERT ERROR:', error);
-        }
-    };
-
     // Capitalize helper
     const capitalize = str =>
         str && str.length
@@ -448,56 +398,19 @@ export default function AdWizard({ mode }) {
     };
 
     // Render form fields based on configuration with validation
-    // Safe renderField function to prevent infinite loops
     const renderField = (fieldName) => {
-        // Early return for invalid inputs
-        if (!fieldName || typeof fieldName !== 'string') {
-            console.warn('🚨 Invalid fieldName:', fieldName);
+        console.log('🎨 renderField called for:', fieldName);
+
+        const config = fieldConfigurations[fieldName];
+        if (!config) {
+            console.log('🎨 No config found for field:', fieldName);
             return null;
         }
 
-        console.log('🎨 renderField called for:', fieldName);
-
-        // Check if fieldConfigurations exists and is an object
-        if (!fieldConfigurations || typeof fieldConfigurations !== 'object') {
-            console.error('🚨 fieldConfigurations is not available or not an object');
-            console.error('🚨 Type:', typeof fieldConfigurations);
-            console.error('🚨 Value:', fieldConfigurations);
-            return (
-                <div key={fieldName} style={{
-                    color: 'red',
-                    border: '1px solid red',
-                    padding: '10px',
-                    margin: '10px 0'
-                }}>
-                    ❌ Configuration Error: fieldConfigurations not loaded
-                </div>
-            );
-        }
-
-        // Check if the specific field configuration exists
-        const config = fieldConfigurations[fieldName];
-        if (!config) {
-            console.warn(`🚨 No config found for field: ${fieldName}`);
-            console.warn('🚨 Available fields:', Object.keys(fieldConfigurations));
-
-            // Return a visible error instead of null to help debug
-            return (
-                <div key={fieldName} style={{
-                    color: 'orange',
-                    border: '1px solid orange',
-                    padding: '5px',
-                    margin: '5px 0',
-                    fontSize: '12px'
-                }}>
-                    ⚠️ Missing config for: {fieldName}
-                </div>
-            );
-        }
-
-        // Now we know config exists, continue safely
+        // Override required status for optional checkboxes
         const isRequired = config.required === true && !(config.type === 'checkbox' && OPTIONAL_CHECKBOXES.includes(fieldName));
 
+        // Debug logging for checkboxes
         if (config.type === 'checkbox') {
             console.log(`🔍 Checkbox ${fieldName}: originally required=${config.required}, in optional list=${OPTIONAL_CHECKBOXES.includes(fieldName)}, final isRequired=${isRequired}`);
         }
@@ -505,6 +418,7 @@ export default function AdWizard({ mode }) {
         const hasError = fieldErrors?.[fieldName];
         const hasValue = formData[fieldName] && formData[fieldName].toString().trim() !== '';
 
+        // Add required class and error state
         const fieldClasses = [
             'adwizard-form-control',
             hasError ? 'error' : '',
@@ -518,8 +432,8 @@ export default function AdWizard({ mode }) {
         ].filter(Boolean).join(' ');
 
         console.log('🎨 Field type for', fieldName, ':', config.type);
+        console.log('🎨 Type check:', `"${config.type}" === "date"`, config.type === "date");
 
-        // Safe switch statement with all cases handled
         switch (config.type) {
             case "text":
                 console.log('🎨 Rendering text field for:', fieldName);
@@ -591,15 +505,6 @@ export default function AdWizard({ mode }) {
                 );
 
             case "select":
-                if (!config.options || !Array.isArray(config.options)) {
-                    console.error(`🚨 Select field ${fieldName} has no options array`);
-                    return (
-                        <div key={fieldName} style={{ color: 'red' }}>
-                            ❌ Select field {fieldName} missing options
-                        </div>
-                    );
-                }
-
                 return (
                     <div className={groupClasses} key={fieldName}>
                         <label htmlFor={fieldName}>
@@ -624,8 +529,8 @@ export default function AdWizard({ mode }) {
                         >
                             <option value="">{`Select ${config.label.toLowerCase()}`}</option>
                             {config.options.map((opt) => (
-                                <option key={opt.value || opt} value={opt.value || opt}>
-                                    {opt.label || opt}
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
                                 </option>
                             ))}
                         </select>
@@ -700,11 +605,12 @@ export default function AdWizard({ mode }) {
                     </div>
                 );
 
-            case "date":
+            case "date": {
                 const isDateOfBirth = fieldName === "dob";
                 const isAvailableDate = fieldName === "availableDate";
                 const isAutoCalculated = isAvailableDate && (category === "dogs" || category === "cats");
 
+                // Format date for display in text field
                 const formatDateForDisplay = (dateString) => {
                     if (!dateString) return "";
                     const date = new Date(dateString);
@@ -714,7 +620,6 @@ export default function AdWizard({ mode }) {
                         year: 'numeric'
                     });
                 };
-
                 return (
                     <div className={groupClasses} key={fieldName}>
                         <label htmlFor={fieldName}>
@@ -726,6 +631,7 @@ export default function AdWizard({ mode }) {
                         </label>
                         <div className="adwizard-date-input-container">
                             {isAutoCalculated ? (
+                                // Read-only text field for auto-calculated available date
                                 <input
                                     type="text"
                                     id={fieldName}
@@ -736,6 +642,7 @@ export default function AdWizard({ mode }) {
                                     placeholder="Will be calculated from date of birth"
                                 />
                             ) : (
+                                // Regular date picker for other date fields
                                 <input
                                     type="date"
                                     id={fieldName}
@@ -750,6 +657,7 @@ export default function AdWizard({ mode }) {
                                                 [fieldName]: newValue
                                             };
 
+                                            // Auto-calculate available date for cats and dogs
                                             if (isDateOfBirth && (category === "dogs" || category === "cats")) {
                                                 const readyDate = calculateReadyToLeaveDate(newValue);
                                                 if (readyDate) {
@@ -778,18 +686,10 @@ export default function AdWizard({ mode }) {
                         )}
                     </div>
                 );
-
+            }
             default:
-                console.error('🚨 Unknown field type:', config.type, 'for field:', fieldName);
-                return (
-                    <div key={fieldName} style={{
-                        color: 'red',
-                        border: '1px solid red',
-                        padding: '10px'
-                    }}>
-                        ❌ Unknown field type: {config.type} for {fieldName}
-                    </div>
-                );
+                console.log('🚨 DEFAULT case hit for field:', fieldName, 'with type:', config.type);
+                return null;
         }
     };
 

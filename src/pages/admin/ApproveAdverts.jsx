@@ -412,7 +412,7 @@ export default function ApproveAdverts() {
                             {/* Content Section */}
                             <div className="approve-adverts-content">
                                 <h3 className="approve-adverts-title">
-                                    {ad.name || 'Unnamed'}
+                                    {ad.dogName || 'Unnamed'}
                                     {ad.breedOrType && ` - ${ad.breedOrType}`}
                                 </h3>
 

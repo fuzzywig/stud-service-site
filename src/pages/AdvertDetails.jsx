@@ -323,7 +323,7 @@ function AdvertDetails() {
     // Add this function at the top of your AdvertDetails.jsx file
     const sendNewReviewEmail = useCallback(async (ownerData, reviewerData, reviewData, advertData) => {
         try {
-            const response = await fetch('http://localhost:6500/api/send-new-review-email', {
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-new-review-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ownerData, reviewerData, reviewData, advertData }),
