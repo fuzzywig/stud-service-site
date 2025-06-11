@@ -62,6 +62,148 @@ const getCachedOrFetch = async (key, fetchFunction) => {
     return data;
 };
 
+// ADD THIS TO YOUR EXISTING templates OBJECT in index.js (around line 32)
+const templates = {
+    WELCOME: 'd-c7dbabc9e55846378fb0e4b9970ed43d',
+    PASSWORD_CHANGED: 'd-4961110921694f6a9321fda734fd2211',
+    ADVERT_SUBMITTED: 'd-08f7c66e3a024bb687db46b3f372343f',
+    ADVERT_APPROVED: 'd-f8805dc163fc49d3b9355698d2f389c6',
+    ADVERT_REJECTED: 'd-2bf7a62047d6430580ac02e8a175e9d3',
+    ADVERT_EXPIRING: 'd-8d9e3e9fde62448181217b7b2823d891',
+    TICKET_SUBMITTED: 'd-6c179356393347f39bfb04e6dce0d51d',
+    TICKET_UPDATED: 'd-d0bad97e0acb4241bbc9ac49e19c2dba',
+    TICKET_CLOSED: 'd-5ff4ef6603ab4fca82db990f5c13c6b5',
+    NEW_MESSAGE: 'd-3327bafe35b54cee995636d8f459a094',
+    NEW_REVIEW: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6',
+    REVIEW_RESPONSE: 'd-8e896410b34c4bd6bd183f5a2e3651e4',
+    ADMIN_ALERT: 'd-your-template-id-here' // 👈 ADD THIS - replace with your actual template ID
+};
+
+// UPDATED: Admin alert email endpoint using SendGrid dynamic template
+app.post('/api/send-admin-alert', async (req, res) => {
+    console.log('🚨 Admin alert email endpoint called');
+    console.log('🚨 Request body:', JSON.stringify(req.body, null, 2));
+
+    try {
+        const {
+            category,
+            intent,
+            breedOrType,
+            name,
+            price,
+            fee,
+            age,
+            gender,
+            description,
+            images,
+            ownerEmail,
+            adId
+        } = req.body;
+
+        // Validate required fields
+        if (!category || !intent || !breedOrType || !ownerEmail) {
+            console.log('❌ Missing required fields for admin alert');
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['category', 'intent', 'breedOrType', 'ownerEmail']
+            });
+        }
+
+        // Get admin emails - Updated to use your specific email
+        const adminEmails = ['gavinoxley@gmail.com'];
+
+        console.log('🚨 Sending admin alert to:', adminEmails);
+
+        // Format data for template
+        const intentDisplay = intent === 'stud' ? 'For Stud' : 'For Sale';
+        const petName = name || breedOrType || 'Pet';
+        const priceDisplay = price ? `£${price}` : (fee ? `£${fee}` : 'Price not specified');
+        const categoryDisplay = category.charAt(0).toUpperCase() + category.slice(1);
+
+        // Dynamic template data - Updated to match the template
+        const dynamicTemplateData = {
+            // Pet details (matching template variables exactly)
+            petName: petName,
+            category: categoryDisplay,
+            breedOrType: breedOrType,
+            intent: intentDisplay,
+            price: priceDisplay,
+
+            // Optional fields (with conditional helpers)
+            age: age,
+            gender: gender,
+            hasAge: !!age,
+            hasGender: !!gender,
+
+            // Description with preview
+            description: description,
+            descriptionPreview: description ?
+                (description.length > 200 ? description.substring(0, 200) + '...' : description) : null,
+            hasDescription: !!description,
+
+            // Submission details
+            ownerEmail: ownerEmail,
+            submissionDate: new Date().toLocaleDateString('en-GB'),
+            submissionTime: new Date().toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            imageCount: images?.length || 0,
+            hasImages: images && images.length > 0,
+
+            // Action URLs - Updated to match your admin structure
+            reviewUrl: `https://mypetconnect.co.uk/admin/view-advert/${adId || 'new-ad'}`,
+            adminPanelUrl: 'https://mypetconnect.co.uk/admin',
+
+            // Footer
+            currentYear: new Date().getFullYear()
+        };
+
+        console.log('🚨 Template data:', JSON.stringify(dynamicTemplateData, null, 2));
+
+        // Send to all admin emails using dynamic template
+        const emailPromises = adminEmails.map(adminEmail => {
+            const msg = {
+                to: adminEmail.trim(),
+                from: {
+                    email: process.env.FROM_EMAIL,
+                    name: process.env.FROM_NAME || 'MyPetConnect Admin Alerts'
+                },
+                replyTo: process.env.REPLY_TO_EMAIL,
+                templateId: templates.ADMIN_ALERT,
+                dynamicTemplateData: dynamicTemplateData
+            };
+
+            return sgMail.send(msg);
+        });
+
+        // Send all emails
+        await Promise.all(emailPromises);
+
+        console.log(`✅ Admin alert emails sent to ${adminEmails.length} admin(s) using template ${templates.ADMIN_ALERT}`);
+
+        res.status(200).json({
+            success: true,
+            message: `Admin alert emails sent to ${adminEmails.length} admin(s)`,
+            adminCount: adminEmails.length,
+            templateId: templates.ADMIN_ALERT
+        });
+
+    } catch (error) {
+        console.error('❌ Error sending admin alert emails:', error);
+
+        if (error.response) {
+            console.error('SendGrid error details:', error.response.body);
+        }
+
+        res.status(500).json({
+            error: 'Failed to send admin alert emails',
+            details: error.message
+        });
+    }
+});
+
+
 // Test Firebase connection endpoint
 app.get('/api/test-firebase-sitemap', async (req, res) => {
     try {

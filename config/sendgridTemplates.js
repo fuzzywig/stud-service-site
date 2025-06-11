@@ -17,6 +17,7 @@ export const templates = {
         // Communication Templates
         NEW_MESSAGE: 'd-3327bafe35b54cee995636d8f459a094',
         NEW_REVIEW: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6',
-        REVIEW_RESPONSE: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6' // ADD THIS LINE
+        REVIEW_RESPONSE: 'd-42c4264d5a8e4fa68d9fc94eb17f72b6',
+        ADMIN_ALERT: 'd-de07c99d7fb44288a2f3e52fc55e24aa'
 
 };

@@ -178,6 +178,50 @@ export default function AdWizard({ mode }) {
         }
     };
 
+    const sendAdminAlert = async (advertData, userEmail, adId) => {
+        try {
+            console.log('🚨 Sending admin alert...', {
+                category: advertData.category,
+                intent: advertData.intent,
+                breedOrType: advertData.breedOrType,
+                name: advertData.name,
+                ownerEmail: userEmail,
+                adId: adId
+            });
+
+            const response = await fetch('http://localhost:8080/api/send-admin-alert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    category: advertData.category,
+                    intent: advertData.intent,
+                    breedOrType: advertData.breedOrType,
+                    name: advertData.name,
+                    price: advertData.price,
+                    fee: advertData.fee,
+                    age: advertData.age,
+                    gender: advertData.gender,
+                    description: advertData.description,
+                    images: advertData.images,
+                    ownerEmail: userEmail,
+                    adId: adId
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log('✅ Admin alert sent successfully:', result);
+            } else {
+                console.error('❌ Failed to send admin alert:', result);
+            }
+        } catch (error) {
+            console.error('❌ Error sending admin alert:', error);
+        }
+    };
+
     // Capitalize helper
     const capitalize = str =>
         str && str.length
@@ -810,8 +854,19 @@ export default function AdWizard({ mode }) {
             }
 
             // 5) Create or update in Firestore
+            let docRef;
             if (mode === "create") {
-                await addDoc(collection(db, "allListings"), advertData);
+                docRef = await addDoc(collection(db, "allListings"), advertData);
+
+                // 🚨 Send admin alert for new ads
+                if (userData && userData.email) {
+                    try {
+                        await sendAdminAlert(advertData, userData.email, docRef.id);
+                    } catch (adminEmailError) {
+                        console.error('Failed to send admin alert:', adminEmailError);
+                        // Don't block the submission if admin email fails
+                    }
+                }
 
                 // Send creation confirmation email using SendGrid template
                 if (userData && userData.email) {
@@ -819,7 +874,6 @@ export default function AdWizard({ mode }) {
                         await sendAdvertSubmittedEmail(userData, advertData, user);
                     } catch (emailError) {
                         console.error('Failed to send creation email:', emailError);
-                        // Don't block the submission if email fails
                     }
                 }
             } else {
