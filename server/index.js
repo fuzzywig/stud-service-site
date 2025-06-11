@@ -629,7 +629,7 @@ app.post('/api/parse-email-reply', express.raw({type: 'application/json', limit:
                     };
 
                     // Call your existing message notification endpoint
-                    const notificationUrl = `http://localhost:${PORT}/api/send-message-notification`;
+                    const notificationUrl = `https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-message-notification`;
                     const notificationResponse = await fetch(notificationUrl, {
                         method: 'POST',
                         headers: {
@@ -926,7 +926,6 @@ app.post('/api/send-advert-submitted-email', async (req, res) => {
             userId
         } = req.body;
 
-        // Validate required fields
         if (!userEmail || !userName || !petName || !advertType || !categoryName) {
             console.log('❌ Missing required fields for advert submitted email');
             return res.status(400).json({
@@ -935,50 +934,53 @@ app.post('/api/send-advert-submitted-email', async (req, res) => {
             });
         }
 
+        const adminEmail = 'gavinoxley@gmail.com';
+
         const msg = {
-            to: userEmail,
+            personalizations: [{
+                to: [
+                    { email: userEmail },
+                    { email: adminEmail }
+                ],
+                dynamic_template_data: {
+                    user_name: userName,
+                    pet_name: petName,
+                    advert_type: advertType,
+                    category_name: categoryName,
+                    breed_or_type: breedOrType || 'Not specified',
+                    price: price ? `£${price}` : 'Price on application',
+                    image_count: imageCount || 0,
+                    my_adverts_url: `https://mypetconnect.co.uk/my-adverts?login=true&tab=pending`,
+                    current_year: new Date().getFullYear()
+                }
+            }],
             from: {
                 email: process.env.FROM_EMAIL,
                 name: process.env.FROM_NAME || 'MyPetConnect'
             },
             replyTo: process.env.REPLY_TO_EMAIL,
-            templateId: templates.ADVERT_SUBMITTED,
-            dynamicTemplateData: {
-                user_name: userName,
-                pet_name: petName,
-                advert_type: advertType,
-                category_name: categoryName,
-                breed_or_type: breedOrType || 'Not specified',
-                price: price ? `£${price}` : 'Price on application',
-                image_count: imageCount || 0,
-                my_adverts_url: `https://mypetconnect.co.uk/my-adverts?login=true&tab=pending`, // 👈 Added tab=pending
-                current_year: new Date().getFullYear()
-            }
+            templateId: templates.ADVERT_SUBMITTED
         };
 
-        console.log('📧 Sending advert submitted email with template data:', msg.dynamicTemplateData);
-
+        console.log('📧 Sending advert submitted email to:', [userEmail, adminEmail]);
         await sgMail.send(msg);
-        console.log('✅ Advert submitted email sent successfully');
+        console.log('✅ Advert submitted email sent successfully to both');
 
         res.status(200).json({
             success: true,
-            message: 'Advert submitted email sent successfully'
+            message: 'Advert submitted email sent to user and admin'
         });
 
     } catch (error) {
         console.error('❌ Error sending advert submitted email:', error);
-
-        if (error.response) {
-            console.error('SendGrid error details:', error.response.body);
-        }
-
+        if (error.response) console.error('SendGrid error details:', error.response.body);
         res.status(500).json({
             error: 'Failed to send advert submitted email',
             details: error.message
         });
     }
 });
+
 
 
 // NEW: Password changed email endpoint using SendGrid template
