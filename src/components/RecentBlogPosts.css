@@ -54,6 +54,15 @@
     gap: 2rem;
     margin-bottom: 3rem;
 }
+.blog-section__header h2 {
+
+    font-size: 3rem;
+    color: #256845;
+    margin-bottom: 12px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+
+}
 
 @media (min-width: 640px) {
     .blog-section__grid {
