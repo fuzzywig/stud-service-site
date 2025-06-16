@@ -36,7 +36,7 @@ const popularBreeds = [
     {
         name: "Bulldog",
         adverts: 8,
-        image: "/images/PopularBreedsImages/bulldog.png",
+        image: "/src/assets/images/bulldog.png",
         link: "/blog/english-bulldog-breed-guide-health-temperament-daily-care"
     },
     {
