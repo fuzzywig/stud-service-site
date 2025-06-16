@@ -10,26 +10,25 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-// Trust proxy headers (for correct protocol detection behind load balancers)
 app.set('trust proxy', true);
 
-// Redirect logic: force HTTPS and remove www
 app.use((req, res, next) => {
     const host = req.headers.host;
 
-    // If on HTTP, redirect to HTTPS
-    if (req.protocol === 'http') {
-        return res.redirect(301, `https://${host}${req.originalUrl}`);
-    }
-
-    // If www, redirect to non-www
+    // Redirect www to non-www first
     if (host && host.startsWith('www.')) {
         const newHost = host.replace(/^www\./, '');
         return res.redirect(301, `https://${newHost}${req.originalUrl}`);
     }
 
+    // Then redirect http to https
+    if (req.protocol === 'http') {
+        return res.redirect(301, `https://${host}${req.originalUrl}`);
+    }
+
     next();
 });
+
 
 // 1) Serve the Vite/React build statically from ./dist
 app.use(express.static(path.join(__dirname, 'dist')));
