@@ -12,15 +12,15 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-// Redirect www.mypetconnect.co.uk to mypetconnect.co.uk
 app.use((req, res, next) => {
     const host = req.headers.host;
     if (host && host.startsWith('www.')) {
         const newHost = host.replace(/^www\./, '');
-        return res.redirect(301, `${req.protocol}://${newHost}${req.originalUrl}`);
+        return res.redirect(301, `https://${newHost}${req.originalUrl}`);
     }
     next();
 });
+
 
 
 // 1) Serve the Vite/React build statically from ./dist
