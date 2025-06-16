@@ -9,6 +9,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import {initGA, trackPageView, trackEvent} from "./utils/analytics";
 
 import {NotificationProvider} from "./context/NotificationContext";
+import { HelmetProvider } from 'react-helmet-async';
 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -196,7 +197,7 @@ function App() {
     // Cookie consent effect with GA4 initialization
     React.useEffect(() => {
         const consent = localStorage.getItem('cookieConsent');
-        setShowCookieBanner(!consent);
+        setShowBanner(!consent);
 
         // Add GA4 initialization if consent already exists
         if (consent === 'accepted') {
@@ -207,115 +208,117 @@ function App() {
     }, []);
 
     return (
-        <NotificationProvider>
-            <PageTracker/>
-            <LoginModal isOpen={isLoginOpen} onClose={closeLogin}/>
-            <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner}/>
+        <HelmetProvider>
+            <NotificationProvider>
+                <PageTracker/>
+                <LoginModal isOpen={isLoginOpen} onClose={closeLogin}/>
+                <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner}/>
 
-            <Routes>
-                {/* Admin routes */}
-                <Route path="/admin/uid-inspector" element={<AdminUIDInspector/>}/>
-                <Route
-                    path="/admin/tickets"
-                    element={
-                        <RequireAdmin>
-                            <AdminTickets/>
-                        </RequireAdmin>
-                    }
-                />
+                <Routes>
+                    {/* Admin routes */}
+                    <Route path="/admin/uid-inspector" element={<AdminUIDInspector/>}/>
+                    <Route
+                        path="/admin/tickets"
+                        element={
+                            <RequireAdmin>
+                                <AdminTickets/>
+                            </RequireAdmin>
+                        }
+                    />
 
-                <Route
-                    path="/admin"
-                    element={<RequireAdmin><AdminDashboard/></RequireAdmin>}
-                />
-                <Route
-                    path="/admin/approve-adverts"
-                    element={<RequireAdmin><ApproveAdverts/></RequireAdmin>}
-                />
-                <Route
-                    path="/admin/approve-reviews"
-                    element={<RequireAdmin><ApproveReviews/></RequireAdmin>}
-                />
-                <Route
-                    path="/admin/manage-users"
-                    element={<RequireAdmin><ManageUsers/></RequireAdmin>}
-                />
-                <Route path="/admin/reported-users" element={<ReportedUsers/>}/>
-                <Route path="/admin/user/:userId" element={<ManageUserProfile/>}/>
-                <Route
-                    path="/admin/view-advert/:advertId"
-                    element={<RequireAdmin><AdminViewAdvert/></RequireAdmin>}
-                />
-                <Route
-                    path="/blog-admin"
-                    element={
-                        <RequireAdmin>
-                            <BlogAdmin/>
-                        </RequireAdmin>
-                    }
-                />
-                <Route
-                    path="/admin/staff-management"
-                    element={
-                        <RequireAdmin>
-                            <AdminStaffManagement/>
-                        </RequireAdmin>
-                    }
-                />
-                <Route
-                    path="/admin/sms-marketing"
-                    element={<RequireAdmin><SMSAdminPanel /></RequireAdmin>}
-                />
+                    <Route
+                        path="/admin"
+                        element={<RequireAdmin><AdminDashboard/></RequireAdmin>}
+                    />
+                    <Route
+                        path="/admin/approve-adverts"
+                        element={<RequireAdmin><ApproveAdverts/></RequireAdmin>}
+                    />
+                    <Route
+                        path="/admin/approve-reviews"
+                        element={<RequireAdmin><ApproveReviews/></RequireAdmin>}
+                    />
+                    <Route
+                        path="/admin/manage-users"
+                        element={<RequireAdmin><ManageUsers/></RequireAdmin>}
+                    />
+                    <Route path="/admin/reported-users" element={<ReportedUsers/>}/>
+                    <Route path="/admin/user/:userId" element={<ManageUserProfile/>}/>
+                    <Route
+                        path="/admin/view-advert/:advertId"
+                        element={<RequireAdmin><AdminViewAdvert/></RequireAdmin>}
+                    />
+                    <Route
+                        path="/blog-admin"
+                        element={
+                            <RequireAdmin>
+                                <BlogAdmin/>
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route
+                        path="/admin/staff-management"
+                        element={
+                            <RequireAdmin>
+                                <AdminStaffManagement/>
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route
+                        path="/admin/sms-marketing"
+                        element={<RequireAdmin><SMSAdminPanel /></RequireAdmin>}
+                    />
 
 
-                {/* Main layout */}
-                <Route
-                    path="/"
-                    element={<Layout onLoginClick={openLogin} onResetCookieConsent={resetCookieConsent}/>}
-                >
-                    {/* Nested routes inside main layout */}
-                    <Route index element={<Home/>}/>
-                    <Route path="browse" element={<BrowseStuds/>}/>
-                    <Route path="new-advert" element={<AdWizard mode="create"/>}/>
-                    <Route path="edit/:adId/*" element={<AdWizard mode="edit"/>}/>
-                    <Route path="advert-details/:id" element={<AdvertDetails/>}/>
-                    <Route path="profile/:uid" element={<UserProfile/>}/>
-                    <Route path="logout" element={<Logout/>}/>
-                    <Route path="edit-stud/:id" element={<EditStud/>}/>
-                    <Route path="favourites" element={<Favourites/>}/>
-                    <Route path="my-adverts" element={<MyAdvertsPage/>}/>
-                    <Route path="top-studs" element={<TopStuds/>}/>
-                    <Route path="help" element={<HelpSupport/>}/>
-                    <Route path="breeding-guide" element={<BreedingGuide/>}/>
-                    <Route path="cookie-policy" element={<CookiePolicyPage/>}/>
-                    <Route path="terms-of-service" element={<TermsOfServicePage/>}/>
-                    <Route path="about" element={<AboutUs/>}/>
-                    <Route path="following-feed" element={<FollowingFeed/>}/>
-                    <Route path="dog-rescue" element={<DogRescueDashboard/>}/>
-                    <Route path="/adwizard-rescue" element={<AdWizardRescue mode="create"/>}/>
-                    <Route path="/adwizard-rescue/edit/:adId" element={<AdWizardRescue mode="edit"/>}/>
-                    <Route path="privacy-policy" element={<PrivacyPolicyPage/>}/>
+                    {/* Main layout */}
+                    <Route
+                        path="/"
+                        element={<Layout onLoginClick={openLogin} onResetCookieConsent={resetCookieConsent}/>}
+                    >
+                        {/* Nested routes inside main layout */}
+                        <Route index element={<Home/>}/>
+                        <Route path="browse" element={<BrowseStuds/>}/>
+                        <Route path="new-advert" element={<AdWizard mode="create"/>}/>
+                        <Route path="edit/:adId/*" element={<AdWizard mode="edit"/>}/>
+                        <Route path="advert-details/:id" element={<AdvertDetails/>}/>
+                        <Route path="profile/:uid" element={<UserProfile/>}/>
+                        <Route path="logout" element={<Logout/>}/>
+                        <Route path="edit-stud/:id" element={<EditStud/>}/>
+                        <Route path="favourites" element={<Favourites/>}/>
+                        <Route path="my-adverts" element={<MyAdvertsPage/>}/>
+                        <Route path="top-studs" element={<TopStuds/>}/>
+                        <Route path="help" element={<HelpSupport/>}/>
+                        <Route path="breeding-guide" element={<BreedingGuide/>}/>
+                        <Route path="cookie-policy" element={<CookiePolicyPage/>}/>
+                        <Route path="terms-of-service" element={<TermsOfServicePage/>}/>
+                        <Route path="about" element={<AboutUs/>}/>
+                        <Route path="following-feed" element={<FollowingFeed/>}/>
+                        <Route path="dog-rescue" element={<DogRescueDashboard/>}/>
+                        <Route path="/adwizard-rescue" element={<AdWizardRescue mode="create"/>}/>
+                        <Route path="/adwizard-rescue/edit/:adId" element={<AdWizardRescue mode="edit"/>}/>
+                        <Route path="privacy-policy" element={<PrivacyPolicyPage/>}/>
 
-                    {/* ✅ PUBLIC: Blog routes - accessible to all users */}
-                    <Route path="/blog" element={<Blog/>}/>
-                    <Route path="/blog/:slug" element={<BlogPost/>}/>
-                    <Route path="/blog/category/:categoryName" element={<BlogCategoryPage />} />
-                    <Route path="/blog/archive/:monthYear" element={<BlogArchivePage />} />
-                </Route>
+                        {/* ✅ PUBLIC: Blog routes - accessible to all users */}
+                        <Route path="/blog" element={<Blog/>}/>
+                        <Route path="/blog/:slug" element={<BlogPost/>}/>
+                        <Route path="/blog/category/:categoryName" element={<BlogCategoryPage />} />
+                        <Route path="/blog/archive/:monthYear" element={<BlogArchivePage />} />
+                    </Route>
 
-                <Route
-                    path="/messages"
-                    element={
-                        <MinimalLayout onLoginClick={openLogin}>
-                            <MessagesPage/>
-                        </MinimalLayout>
-                    }
-                />
+                    <Route
+                        path="/messages"
+                        element={
+                            <MinimalLayout onLoginClick={openLogin}>
+                                <MessagesPage/>
+                            </MinimalLayout>
+                        }
+                    />
 
-                {/* Standalone auth routes */}
-                <Route path="register" element={<Register/>}/>
-            </Routes>
-        </NotificationProvider>
+                    {/* Standalone auth routes */}
+                    <Route path="register" element={<Register/>}/>
+                </Routes>
+            </NotificationProvider>
+        </HelmetProvider>
     );
 }
 
