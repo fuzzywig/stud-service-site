@@ -99,6 +99,13 @@
     border-bottom: 1px solid #e1e1e1;
 }
 
+.optional-text {
+    color: #6b7280;
+    font-weight: 400;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -204,13 +211,22 @@
     margin: 0;
 }
 
-.login-link a {
+.login-link a,
+.login-modal-link {
     color: #256845;
     text-decoration: none;
     font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+    margin-left: 4px;
 }
 
-.login-link a:hover {
+.login-link a:hover,
+.login-modal-link:hover {
     text-decoration: underline;
 }
 
@@ -308,7 +324,6 @@
     margin-bottom: 0;
 }
 
-/* Privacy Settings Section */
 /* Privacy Settings Section - Updated */
 .privacy-settings {
     background-color: #f9fafb;
@@ -316,6 +331,15 @@
     border-radius: 8px;
     border: 1px solid #e5e7eb;
     margin-top: 20px;
+}
+
+/* Notification Options */
+.notification-option {
+    margin-bottom: 20px;
+}
+
+.notification-option:last-child {
+    margin-bottom: 0;
 }
 
 .checkbox-field-prominent {
@@ -372,7 +396,6 @@
     font-weight: normal;
     margin: 0;
 }
-/* Add these styles to your Register.css file */
 
 /* Select field styling */
 .form-select {
@@ -424,31 +447,6 @@
     font-weight: 600;
 }
 
-/* Select field styling */
-.form-select {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #fff;
-    color: #333;
-    box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    padding-right: 40px;
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: #256845;
-    box-shadow: 0 0 0 2px rgba(37, 104, 69, 0.2);
-}
-
 /* Breeder type info text */
 .breeder-type-info {
     margin-top: 10px;
@@ -478,5 +476,17 @@
 @media (max-width: 768px) {
     .form-select {
         font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .notification-option {
+        margin-bottom: 16px;
+    }
+
+    .checkbox-label {
+        font-size: 15px;
+    }
+
+    .checkbox-description {
+        font-size: 13px;
     }
 }

@@ -18,11 +18,10 @@ import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as fasHeart, faMapMarkerAlt, faDog, faCat, faPoundSign, faStar, faTrophy, faEye } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../firebase/firebaseAuth";
 
-export default function Recommended({ ads = [], title, subtitle, browseLink }) {    const [usersMap, setUsersMap] = useState({});
+export default function Recommended({ ads = [], title, subtitle, browseLink }) {
+    const [usersMap, setUsersMap] = useState({});
     const { currentUser } = useAuth();
     const [favourites, setFavourites] = useState({});
-
-
 
     // Fetch favorites
     useEffect(() => {
@@ -83,7 +82,6 @@ export default function Recommended({ ads = [], title, subtitle, browseLink }) {
 
         enrichAds();
     }, [ads]);
-
 
     // Toggle favorite
     const toggleFavourite = async (e, adId) => {
@@ -147,105 +145,111 @@ export default function Recommended({ ads = [], title, subtitle, browseLink }) {
                         <p className="recommended-studs-subtitle">Our highest rated and most reviewed studs</p>
                     )}
 
-                        <div className="recommended-studs-grid">
+                    <div className="recommended-studs-grid">
+                        {ads.filter(dog => !dog.sold).map(dog => {
+                            const breedLabel = dog.breedOrType ? humanize(dog.breedOrType) : "Unknown Breed";
+                            const title = dog.title || dog.name || "Unnamed Stud";
+                            // Location info or placeholder
+                            const user = usersMap[dog.ownerId] || {};
+                            const { city, county } = user;
+                            const areaLabel =
+                                city || county
+                                    ? [city, county].filter(Boolean).join(", ")
+                                    : dog.location
+                                        ? `${dog.location.latitude?.toFixed(4)}, ${dog.location.longitude?.toFixed(4)}`
+                                        : "Location N/A";
 
-                            {ads.filter(dog => !dog.sold).map(dog => {
-                                const breedLabel = dog.breedOrType ? humanize(dog.breedOrType) : "Unknown Breed";
-                                const title = dog.title || dog.name || "Unnamed Stud";
-                                // Location info or placeholder
-                                const user = usersMap[dog.ownerId] || {};
-                                const { city, county } = user;
-                                const areaLabel =
-                                    city || county
-                                        ? [city, county].filter(Boolean).join(", ")
-                                        : dog.location
-                                            ? `${dog.location.latitude?.toFixed(4)}, ${dog.location.longitude?.toFixed(4)}`
-                                            : "Location N/A";
+                            // Check if intent is sale to hide rating (case-insensitive)
+                            const isSaleIntent = dog.intent && dog.intent.toLowerCase() === "sale";
 
-                                return (
-                                    <div className="recommended-studs-card" key={dog.id}>
-                                        <div className="recommended-studs-card-header">
-                                            <div className="recommended-studs-price">
-                                                <FontAwesomeIcon icon={faPoundSign} />
-                                                <span>{dog.price || dog.fee || "200"}</span>
+                            return (
+                                <div className="recommended-studs-card" key={dog.id}>
+                                    <div className="recommended-studs-card-header">
+                                        <div className="recommended-studs-price">
+                                            <FontAwesomeIcon icon={faPoundSign} />
+                                            <span>{dog.price || dog.fee || "200"}</span>
+                                        </div>
+                                        <div className="recommended-studs-controls">
+                                            <div className="recommended-studs-trophy">
+                                                <FontAwesomeIcon icon={faTrophy} />
                                             </div>
-                                            <div className="recommended-studs-controls">
-                                                <div className="recommended-studs-trophy">
-                                                    <FontAwesomeIcon icon={faTrophy} />
-                                                </div>
-                                                <button
-                                                    className={`recommended-studs-favorite ${favourites[dog.id] ? "active" : ""}`}
-                                                    onClick={(e) => toggleFavourite(e, dog.id)}
-                                                    aria-label="Toggle Favourite"
-                                                >
-                                                    <FontAwesomeIcon icon={favourites[dog.id] ? fasHeart : farHeart} />
-                                                </button>
+                                            <button
+                                                className={`recommended-studs-favorite ${favourites[dog.id] ? "active" : ""}`}
+                                                onClick={(e) => toggleFavourite(e, dog.id)}
+                                                aria-label="Toggle Favourite"
+                                            >
+                                                <FontAwesomeIcon icon={favourites[dog.id] ? fasHeart : farHeart} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <Link to={`/advert-details/${dog.id}`} className="recommended-studs-image-container">
+                                        <img
+                                            src={dog.images?.[0] || "https://placehold.co/400x300"}
+                                            alt={title}
+                                            className="recommended-studs-image"
+                                        />
+                                        <div className="recommended-studs-overlay">
+                                            <span>View Details</span>
+                                        </div>
+                                    </Link>
+
+                                    <div className="recommended-studs-content">
+                                        <h3 className="recommended-studs-card-title">
+                                            {title.length > 58 ? title.slice(0, 58) + "..." : title}
+                                        </h3>
+
+                                        {/* Spacer div to push details to bottom */}
+                                        <div className="recommended-studs-spacer"></div>
+
+                                        {/* Divider above details section */}
+                                        <div className="recommended-studs-details-divider"></div>
+
+                                        <div className="recommended-studs-details">
+                                            <div className="recommended-studs-detail-item">
+                                                <FontAwesomeIcon icon={dog.category === "cats" ? faCat : faDog} />
+                                                <span>{breedLabel}</span>
+                                            </div>
+                                            <div className="recommended-studs-detail-item">
+                                                <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                                <span>{areaLabel}</span>
                                             </div>
                                         </div>
 
-                                        <Link to={`/advert-details/${dog.id}`} className="recommended-studs-image-container">
-                                            <img
-                                                src={dog.images?.[0] || "https://placehold.co/400x300"}
-                                                alt={title}
-                                                className="recommended-studs-image"
-                                            />
-                                            <div className="recommended-studs-overlay">
-                                                <span>View Details</span>
-                                            </div>
-                                        </Link>
-
-                                        <div className="recommended-studs-content">
-                                            <h3 className="recommended-studs-card-title">
-                                                {title.length > 58 ? title.slice(0, 58) + "..." : title}
-                                            </h3>
-
-                                            {/* Spacer div to push details to bottom */}
-                                            <div className="recommended-studs-spacer"></div>
-
-                                            {/* Divider above details section */}
-                                            <div className="recommended-studs-details-divider"></div>
-
-                                            <div className="recommended-studs-details">
-                                                <div className="recommended-studs-detail-item">
-                                                    <FontAwesomeIcon icon={dog.category === "cats" ? faCat : faDog} />
-                                                    <span>{breedLabel}</span>
-                                                </div>
-                                                <div className="recommended-studs-detail-item">
-                                                    <FontAwesomeIcon icon={faMapMarkerAlt} />
-                                                    <span>{areaLabel}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="recommended-studs-card-footer">
+                                        <div className="recommended-studs-card-footer">
+                                            {/* Only show rating if intent is not sale */}
+                                            {!isSaleIntent && (
                                                 <div className="recommended-studs-rating">
                                                     <FontAwesomeIcon icon={faStar} className="recommended-studs-star-icon" />
                                                     <span className="recommended-studs-rating-value">
-{dog.avgRating ? dog.avgRating.toFixed(1) : "N/A"}
+                                                        {dog.avgRating ? dog.avgRating.toFixed(1) : "N/A"}
                                                     </span>
                                                 </div>
+                                            )}
 
-                                                <div className="recommended-studs-views">
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                    <span>{dog.views ?? 0}</span>
-                                                </div>
+                                            <div className="recommended-studs-views">
+                                                <FontAwesomeIcon icon={faEye} />
+                                                <span>{dog.views ?? 0}</span>
+                                            </div>
 
+                                            {/* Only show reviews if intent is not sale */}
+                                            {!isSaleIntent && (
                                                 <div className="recommended-studs-reviews">
                                                     <span>{dog.reviewCount}</span>
                                                     <span> {dog.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
                 <div className="recommended-studs-more">
                     <Link to={browseLink || "/browse"} className="recommended-studs-more-button">
                         Browse More Studs
                     </Link>
-
                 </div>
             </section>
         </div>

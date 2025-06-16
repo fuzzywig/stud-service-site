@@ -243,10 +243,6 @@
     position: relative;
 }
 
-.admin-sidebar-username:hover {
-    color: #2563eb;
-}
-
 .admin-sidebar-name {
     display: block;
     overflow: hidden;

@@ -1768,22 +1768,28 @@ function AdvertDetails() {
                                                 </div>
 
                                                 <div className="similar-studs-card-footer">
-                                                    <div className="similar-studs-rating">
-                                                        <FontAwesomeIcon icon={solidStar} className="similar-studs-star-icon" />
-                                                        <span className="similar-studs-rating-value">
-                                                            {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
-                                                        </span>
-                                                    </div>
+                                                    {/* Only show rating if intent is not sale */}
+                                                    {advert.intent !== 'sale' && (
+                                                        <div className="similar-studs-rating">
+                                                            <FontAwesomeIcon icon={solidStar} className="similar-studs-star-icon" />
+                                                            <span className="similar-studs-rating-value">
+                {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
+            </span>
+                                                        </div>
+                                                    )}
 
                                                     <div className="similar-studs-views">
                                                         <FontAwesomeIcon icon={faEye} />
                                                         <span>{ad.views ?? 0}</span>
                                                     </div>
 
-                                                    <div className="similar-studs-reviews">
-                                                        <span>{rating.reviewCount}</span>
-                                                        <span> {rating.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
-                                                    </div>
+                                                    {/* Only show reviews if intent is not sale */}
+                                                    {advert.intent !== 'sale' && (
+                                                        <div className="similar-studs-reviews">
+                                                            <span>{rating.reviewCount}</span>
+                                                            <span> {rating.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

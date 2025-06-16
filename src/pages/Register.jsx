@@ -66,6 +66,8 @@ function Register() {
         organizationName: "",
         charityNumber: "",
         websiteUrl: "",
+        allowNotifications: true, // Added essential notifications field (default to true)
+        marketingOptIn: false, // Marketing opt-in field
     });
 
 
@@ -260,6 +262,8 @@ function Register() {
                 breederType: formData.breederType,
                 showPhoneOnAdverts: formData.showContactInfo || false,
                 showEmailOnProfile: formData.showContactInfo || false,
+                allowNotifications: formData.allowNotifications !== false, // Added essential notifications to user data
+                marketingOptIn: formData.marketingOptIn || false, // Marketing opt-in to user data
                 createdAt: serverTimestamp(),
                 compositeKey: compositeKey,
                 isActive: true,
@@ -293,7 +297,9 @@ function Register() {
                         accountType: formData.breederType,
                         breederType: formData.breederType,
                         licenceNumber: formData.licenceNumber || null,
-                        organizationName: formData.organizationName || null
+                        organizationName: formData.organizationName || null,
+                        allowNotifications: formData.allowNotifications !== false, // Include essential notifications in welcome email data
+                        marketingOptIn: formData.marketingOptIn || false // Include marketing opt-in in welcome email data
                     });
                 } catch (emailError) {
                     console.error('Failed to send welcome email:', emailError);
@@ -342,6 +348,8 @@ function Register() {
                 organizationName: "",
                 charityNumber: "",
                 websiteUrl: "",
+                allowNotifications: true, // Reset essential notifications to default
+                marketingOptIn: false, // Reset marketing opt-in
             });
 
             setConfirmationMessage(
@@ -721,7 +729,7 @@ function Register() {
                         </div>
 
                         <div className="form-section">
-                            <h3 className="section-title">Privacy Settings</h3>
+                            <h3 className="section-title">Privacy Settings <span className="optional-text">(Optional)</span></h3>
 
                             <div className="privacy-settings">
                                 <label className="checkbox-field-prominent">
@@ -741,11 +749,60 @@ function Register() {
                             </div>
                         </div>
 
+                        <div className="form-section">
+                            <h3 className="section-title">Communication Preferences <span className="optional-text">(Optional)</span></h3>
+
+                            <div className="privacy-settings">
+                                <div className="notification-option">
+                                    <label className="checkbox-field-prominent">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.allowNotifications !== false}
+                                            onChange={e => setFormData({ ...formData, allowNotifications: e.target.checked })}
+                                        />
+                                        <div className="checkbox-content">
+                                            <span className="checkbox-label">Allow email and SMS notifications</span>
+                                            <span className="checkbox-description">
+                                                Receive notifications about messages, reviews, inquiries, and important account updates.
+                                                You can change this preference at any time.
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div className="notification-option">
+                                    <label className="checkbox-field-prominent">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.marketingOptIn || false}
+                                            onChange={e => setFormData({ ...formData, marketingOptIn: e.target.checked })}
+                                        />
+                                        <div className="checkbox-content">
+                                            <span className="checkbox-label">Keep me updated with news and offers from MyPetConnect</span>
+                                            <span className="checkbox-description">
+                                                Receive occasional emails about new features, tips for pet care, breeding advice, and special offers.
+                                                We respect your privacy and you can unsubscribe at any time.
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="form-actions">
                             <button type="submit" className="submit-btn" disabled={isSubmitting}>
                                 {isSubmitting ? "Registering..." : "Create Account"}
                             </button>
-                            <p className="login-link">Already have an account? <a href="/login">Sign in</a></p>
+                            <p className="login-link">
+                                Already have an account?
+                                <button
+                                    type="button"
+                                    className="login-modal-link"
+                                    onClick={openLogin}
+                                >
+                                    Sign in
+                                </button>
+                            </p>
                         </div>
                     </form>
                 </div>

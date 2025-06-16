@@ -1,14 +1,14 @@
 import React, {useEffect} from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import {Routes, Route, useLocation} from "react-router-dom";
 import {onAuthStateChanged} from "firebase/auth";
 import {doc, updateDoc, setDoc, serverTimestamp, getDoc} from "firebase/firestore";
 import {auth, db} from "./firebase/firebase";
 import useIdleLogout from "./hooks/useIdleLogout";
 import './index.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { initGA, trackPageView, trackEvent } from "./utils/analytics";
+import {initGA, trackPageView, trackEvent} from "./utils/analytics";
 
-import { NotificationProvider } from "./context/NotificationContext";
+import {NotificationProvider} from "./context/NotificationContext";
 
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -33,7 +33,7 @@ import AdminViewAdvert from "./pages/admin/AdminViewAdvert";
 import MinimalLayout from "./components/MinimalLayout";
 import ReportedUsers from "./pages/admin/ReportedUsers";
 import TopStuds from "./pages/TopStudsPage";
-import { useLoginModal } from "./context/LoginContext";
+import {useLoginModal} from "./context/LoginContext";
 import HelpSupport from "./pages/HelpSupport";
 import AdminUIDInspector from "./pages/admin/AdminUIDInspector";
 import AdminTickets from "./pages/admin/AdminTickets.jsx";
@@ -46,6 +46,19 @@ import AboutUs from './pages/AboutUs';
 import FollowingFeed from "./pages/FollowingFeed";
 import DogRescueDashboard from './pages/DogRescueDashboard';
 import AdWizardRescue from './pages/AdWizardRescue';
+
+//BlogRoutes
+import Blog from './blog/Blog';
+import BlogPost from './blog/BlogPost';
+import BlogAdmin from './pages/admin/BlogAdmin.jsx';
+import BlogCategoryPage from './blog/BlogCategoryPage';
+import BlogArchivePage from './blog/BlogArchivePage';
+
+//Admin Imports
+import AdminStaffManagement from './pages/admin/AdminStaffManagement';
+import SMSAdminPanel from './pages/admin/SMSAdminPanel';
+
+
 
 // Page Tracker Component for automatic tracking
 function PageTracker() {
@@ -70,7 +83,9 @@ function PageTracker() {
                 '/cookie-policy': 'Cookie Policy - My Pet Connect',
                 '/privacy-policy': 'Privacy Policy - My Pet Connect',
                 '/terms-of-service': 'Terms of Service - My Pet Connect',
-                '/following-feed': 'Following Feed - My Pet Connect'
+                '/following-feed': 'Following Feed - My Pet Connect',
+                '/blog': 'Blog - My Pet Connect',
+                '/blog-admin': 'Blog Admin - My Pet Connect'
             };
 
             // Handle dynamic routes
@@ -80,6 +95,7 @@ function PageTracker() {
             if (pathname.includes('/edit-stud/')) return 'Edit Stud - My Pet Connect';
             if (pathname.includes('/admin/')) return 'Admin Dashboard - My Pet Connect';
             if (pathname.includes('/adwizard-rescue')) return 'Rescue Advert - My Pet Connect';
+            if (pathname.includes('/blog/')) return 'Blog Post - My Pet Connect';
 
             return routes[pathname] || `${pathname} - My Pet Connect`;
         };
@@ -97,7 +113,7 @@ function PageTracker() {
 }
 
 function App() {
-    const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
+    const {isLoginOpen, openLogin, closeLogin} = useLoginModal();
 
     useIdleLogout();
 
@@ -128,7 +144,7 @@ function App() {
 
                         if (userDoc.exists()) {
                             // Document exists, use updateDoc
-                            await updateDoc(userRef, { lastSeen: serverTimestamp() });
+                            await updateDoc(userRef, {lastSeen: serverTimestamp()});
                         } else {
                             // Document doesn't exist, create it with setDoc
                             await setDoc(userRef, {
@@ -136,7 +152,7 @@ function App() {
                                 email: user.email,
                                 uid: user.uid,
                                 createdAt: serverTimestamp()
-                            }, { merge: true });
+                            }, {merge: true});
                         }
                     } catch (error) {
                         // Only log if it's not a permission error
@@ -164,6 +180,19 @@ function App() {
         };
     }, []);
 
+    useEffect(() => {
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', '#ffffff');
+        } else {
+            const newMeta = document.createElement('meta');
+            newMeta.name = "theme-color";
+            newMeta.content = "#ffffff";
+            document.head.appendChild(newMeta);
+        }
+    }, []);
+
+
     // Cookie consent effect with GA4 initialization
     React.useEffect(() => {
         const consent = localStorage.getItem('cookieConsent');
@@ -179,18 +208,18 @@ function App() {
 
     return (
         <NotificationProvider>
-            <PageTracker />
-            <LoginModal isOpen={isLoginOpen} onClose={closeLogin} />
-            <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner} />
+            <PageTracker/>
+            <LoginModal isOpen={isLoginOpen} onClose={closeLogin}/>
+            <CookieConsentBanner showBanner={showCookieBanner} setShowBanner={setShowCookieBanner}/>
 
             <Routes>
                 {/* Admin routes */}
-                <Route path="/admin/uid-inspector" element={<AdminUIDInspector />} />
+                <Route path="/admin/uid-inspector" element={<AdminUIDInspector/>}/>
                 <Route
                     path="/admin/tickets"
                     element={
                         <RequireAdmin>
-                            <AdminTickets />
+                            <AdminTickets/>
                         </RequireAdmin>
                     }
                 />
@@ -217,47 +246,74 @@ function App() {
                     path="/admin/view-advert/:advertId"
                     element={<RequireAdmin><AdminViewAdvert/></RequireAdmin>}
                 />
+                <Route
+                    path="/blog-admin"
+                    element={
+                        <RequireAdmin>
+                            <BlogAdmin/>
+                        </RequireAdmin>
+                    }
+                />
+                <Route
+                    path="/admin/staff-management"
+                    element={
+                        <RequireAdmin>
+                            <AdminStaffManagement/>
+                        </RequireAdmin>
+                    }
+                />
+                <Route
+                    path="/admin/sms-marketing"
+                    element={<RequireAdmin><SMSAdminPanel /></RequireAdmin>}
+                />
+
 
                 {/* Main layout */}
                 <Route
                     path="/"
-                    element={<Layout onLoginClick={openLogin} onResetCookieConsent={resetCookieConsent} />}
+                    element={<Layout onLoginClick={openLogin} onResetCookieConsent={resetCookieConsent}/>}
                 >
                     {/* Nested routes inside main layout */}
-                    <Route index element={<Home />} />
-                    <Route path="browse" element={<BrowseStuds />} />
-                    <Route path="new-advert" element={<AdWizard mode="create" />} />
-                    <Route path="edit/:adId/*" element={<AdWizard mode="edit" />} />
-                    <Route path="advert-details/:id" element={<AdvertDetails />} />
-                    <Route path="profile/:uid" element={<UserProfile />} />
-                    <Route path="logout" element={<Logout />} />
-                    <Route path="edit-stud/:id" element={<EditStud />} />
-                    <Route path="favourites" element={<Favourites />} />
-                    <Route path="my-adverts" element={<MyAdvertsPage />} />
-                    <Route path="top-studs" element={<TopStuds />} />
-                    <Route path="help" element={<HelpSupport />} />
-                    <Route path="breeding-guide" element={<BreedingGuide />} />
-                    <Route path="cookie-policy" element={<CookiePolicyPage />} />
-                    <Route path="terms-of-service" element={<TermsOfServicePage />} />
-                    <Route path="about" element={<AboutUs />} />
-                    <Route path="following-feed" element={<FollowingFeed />} />
-                    <Route path="dog-rescue" element={<DogRescueDashboard />} />
-                    <Route path="/adwizard-rescue" element={<AdWizardRescue mode="create" />} />
-                    <Route path="/adwizard-rescue/edit/:adId" element={<AdWizardRescue mode="edit" />} />
-                    <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+                    <Route index element={<Home/>}/>
+                    <Route path="browse" element={<BrowseStuds/>}/>
+                    <Route path="new-advert" element={<AdWizard mode="create"/>}/>
+                    <Route path="edit/:adId/*" element={<AdWizard mode="edit"/>}/>
+                    <Route path="advert-details/:id" element={<AdvertDetails/>}/>
+                    <Route path="profile/:uid" element={<UserProfile/>}/>
+                    <Route path="logout" element={<Logout/>}/>
+                    <Route path="edit-stud/:id" element={<EditStud/>}/>
+                    <Route path="favourites" element={<Favourites/>}/>
+                    <Route path="my-adverts" element={<MyAdvertsPage/>}/>
+                    <Route path="top-studs" element={<TopStuds/>}/>
+                    <Route path="help" element={<HelpSupport/>}/>
+                    <Route path="breeding-guide" element={<BreedingGuide/>}/>
+                    <Route path="cookie-policy" element={<CookiePolicyPage/>}/>
+                    <Route path="terms-of-service" element={<TermsOfServicePage/>}/>
+                    <Route path="about" element={<AboutUs/>}/>
+                    <Route path="following-feed" element={<FollowingFeed/>}/>
+                    <Route path="dog-rescue" element={<DogRescueDashboard/>}/>
+                    <Route path="/adwizard-rescue" element={<AdWizardRescue mode="create"/>}/>
+                    <Route path="/adwizard-rescue/edit/:adId" element={<AdWizardRescue mode="edit"/>}/>
+                    <Route path="privacy-policy" element={<PrivacyPolicyPage/>}/>
+
+                    {/* ✅ PUBLIC: Blog routes - accessible to all users */}
+                    <Route path="/blog" element={<Blog/>}/>
+                    <Route path="/blog/:slug" element={<BlogPost/>}/>
+                    <Route path="/blog/category/:categoryName" element={<BlogCategoryPage />} />
+                    <Route path="/blog/archive/:monthYear" element={<BlogArchivePage />} />
                 </Route>
 
                 <Route
                     path="/messages"
                     element={
                         <MinimalLayout onLoginClick={openLogin}>
-                            <MessagesPage />
+                            <MessagesPage/>
                         </MinimalLayout>
                     }
                 />
 
                 {/* Standalone auth routes */}
-                <Route path="register" element={<Register />} />
+                <Route path="register" element={<Register/>}/>
             </Routes>
         </NotificationProvider>
     );

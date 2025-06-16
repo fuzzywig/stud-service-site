@@ -1,11 +1,18 @@
+html, body {
+  background-color: #ffffff;
+  overscroll-behavior-x: none;  /* Only disable horizontal overscroll */
+  overscroll-behavior-y: auto;  /* Allow vertical overscroll (pull-to-refresh) */
+  -webkit-tap-highlight-color: transparent;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light; /* Force light mode only */
+  color: #213547; /* Match body color */
+  background-color: #ffffff; /* Match body background */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -41,5 +48,6 @@ h1 {
   overflow: hidden;
   height: 100vh;
 }
+
 
 

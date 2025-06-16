@@ -146,7 +146,7 @@ const Messages = () => {
     const [audioContext, setAudioContext] = useState(null);
     const [reactionMenuPosition, setReactionMenuPosition] = useState({ top: 0, left: 0 });
     const [authChecked, setAuthChecked] = useState(false);
-
+    const [userInitiatedAction, setUserInitiatedAction] = useState(false);
     // ✅ ADD MISSING STATE
     const [currentUserData, setCurrentUserData] = useState(null);
 
@@ -467,9 +467,9 @@ const Messages = () => {
                 }
             }
 
-            // ✅ PRIORITY 2: If no conversation ID or conversation not found, handle recipient-based logic
-            if (recipientIdFromURL && recipientIdFromURL !== 'undefined') {
-                console.log('📧 Looking for conversation with recipient:', recipientIdFromURL);
+            // ✅ PRIORITY 2: Only handle recipient-based logic if there's both recipient AND advert (indicating external link)
+            if (recipientIdFromURL && recipientIdFromURL !== 'undefined' && advertId) {
+                console.log('📧 Looking for conversation with recipient:', recipientIdFromURL, 'for advert:', advertId);
 
                 // First check if conversation already exists in loaded conversations
                 const existingConvo = conversations.find(convo => {
@@ -842,14 +842,7 @@ const Messages = () => {
                         <h2 className="messages-page-sidebar-header">Your Conversations</h2>
                         <button
                             className="messages-page-sidebar-close"
-                            onClick={() => {
-                                if (activeConversationId) {
-                                    setShowSidebar(false);
-                                } else {
-                                    setShowAlert(true);
-                                    setTimeout(() => setShowAlert(false), 2500); // auto-hide after 2.5s
-                                }
-                            }}
+                            onClick={() => setShowSidebar(false)}
                         >
                             ✕
                         </button>
@@ -1233,7 +1226,27 @@ const Messages = () => {
                             </>
                         ) : (
                             <div className="messages-page-no-chat">
-                                Select a conversation to start messaging
+                                {!showSidebar && (
+                                    <button
+                                        className="messages-page-open-sidebar-button"
+                                        onClick={() => setShowSidebar(true)}
+                                        aria-label="Open conversations"
+                                    >
+                                        <ChevronRight />
+                                        View Conversations
+                                    </button>
+                                )}
+                                <div className="no-chat-content">
+                                    <div className="no-chat-icon">💬</div>
+                                    <h3>No conversation selected</h3>
+                                    <div className="no-chat-instructions">
+                                        <p><strong>To start messaging:</strong></p>
+                                        <ul>
+                                            <li>Select an existing conversation from the sidebar</li>
+                                            <li>Or click "Message Owner" on any advert page</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

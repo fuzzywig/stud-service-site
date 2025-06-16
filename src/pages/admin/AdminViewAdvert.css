@@ -2482,3 +2482,250 @@
         font-size: 0.8125rem;
     }
 }
+/* Modal Scroll Fix - Add this to your AdminViewAdvert.css */
+
+/* Base modal styles with proper scrolling */
+.advert-view-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+    /* Enable scrolling when content overflows */
+    overflow-y: auto;
+    /* Ensure modal takes full viewport height */
+    min-height: 100vh;
+    /* Fix for iOS Safari */
+    -webkit-overflow-scrolling: touch;
+}
+
+.advert-view-modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 90vw;
+    /* Adjust max-height to leave space for scrolling */
+    max-height: calc(100vh - 2rem);
+    position: relative;
+    /* Enable internal scrolling if needed */
+    overflow-y: auto;
+    /* Ensure content doesn't get cut off */
+    margin: auto;
+    /* Center vertically when there's extra space */
+    align-self: center;
+}
+
+/* Specific fixes for delete modal */
+.advert-view-delete-modal {
+    /* Ensure delete modal can scroll on small screens */
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive modal adjustments */
+@media (max-width: 768px) {
+    .advert-view-modal {
+        /* Reduce padding on mobile */
+        padding: 0.5rem;
+        /* Ensure proper alignment */
+        align-items: flex-start;
+        /* Add top padding for better UX */
+        padding-top: 2rem;
+    }
+
+    .advert-view-modal-content {
+        /* Use more screen width on mobile */
+        max-width: 95vw;
+        /* Reduce max height to ensure scrollability */
+        max-height: calc(100vh - 4rem);
+        /* Ensure minimum spacing from edges */
+        margin: 0;
+    }
+
+    .advert-view-delete-modal,
+    .advert-view-reject-modal {
+        /* Adjust padding for mobile */
+        padding: 1.5rem 1rem;
+        /* Ensure full height usage when needed */
+        max-height: calc(100vh - 4rem);
+        /* Enable scrolling */
+        overflow-y: auto;
+    }
+
+    /* Fix for very small screens */
+    @media (max-height: 600px) {
+        .advert-view-modal {
+            padding-top: 1rem;
+        }
+
+        .advert-view-modal-content {
+            max-height: calc(100vh - 2rem);
+        }
+    }
+
+    /* Landscape phone adjustments */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .advert-view-modal {
+            padding: 0.25rem;
+            padding-top: 0.5rem;
+        }
+
+        .advert-view-modal-content {
+            max-height: calc(100vh - 1rem);
+        }
+    }
+}
+
+/* Additional fix for image modal */
+.advert-view-modal-content img {
+    max-width: 100%;
+    /* Adjust image height for mobile scrolling */
+    max-height: calc(100vh - 8rem);
+    object-fit: contain;
+}
+
+/* Fix for reject modal textarea on mobile */
+@media (max-width: 768px) {
+    .advert-view-reject-modal textarea {
+        /* Reduce height on mobile to fit screen */
+        min-height: 100px;
+        max-height: 150px;
+    }
+
+    .advert-view-reject-templates {
+        /* Make template buttons more touch-friendly */
+        margin-bottom: 1rem;
+    }
+
+    .advert-view-template-btn {
+        /* Better touch targets */
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Ensure delete confirmation input is always visible */
+@media (max-width: 768px) {
+    .advert-view-delete-modal input[type="text"] {
+        /* Prevent zoom on iOS */
+        font-size: 16px;
+    }
+}
+
+/* Fix for modals that might have long content */
+.advert-view-modal-content * {
+    /* Prevent horizontal overflow */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Smooth scrolling for all modals */
+.advert-view-modal,
+.advert-view-modal-content {
+    scroll-behavior: smooth;
+}
+/* Cancel Button Visibility Fix - Add this to your AdminViewAdvert.css */
+
+/* Fix cancel button in header actions */
+.advert-view-cancel-btn {
+    background: #6b7280;
+    color: white !important; /* Force white text */
+    border: 1px solid #4b5563;
+    font-weight: 500;
+}
+
+.advert-view-cancel-btn:hover {
+    background: #4b5563;
+    color: white !important; /* Keep white text on hover */
+    border-color: #374151;
+}
+
+/* Fix cancel buttons in modals */
+.advert-view-modal-actions button:first-child,
+.advert-view-modal-actions .advert-view-cancel-btn,
+button[onclick*="setShow"][onclick*="false"] {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important; /* Dark text for better contrast */
+    border: 1px solid #d1d5db !important;
+    font-weight: 500;
+}
+
+.advert-view-modal-actions button:first-child:hover,
+.advert-view-modal-actions .advert-view-cancel-btn:hover,
+button[onclick*="setShow"][onclick*="false"]:hover {
+    background: #e5e7eb !important;
+    color: #111827 !important; /* Even darker on hover */
+    border-color: #9ca3af !important;
+}
+
+/* Specific fix for delete modal cancel button */
+.advert-view-delete-modal button:first-child {
+    background: #f9fafb !important;
+    color: #374151 !important;
+    border: 2px solid #d1d5db !important;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+}
+
+.advert-view-delete-modal button:first-child:hover {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+    border-color: #9ca3af !important;
+}
+
+/* Reject modal cancel button fix */
+.advert-view-reject-modal button:first-child {
+    background: #f8f9fa !important;
+    color: #495057 !important;
+    border: 1px solid #ced4da !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.advert-view-reject-modal button:first-child:hover {
+    background: #e9ecef !important;
+    color: #212529 !important;
+    border-color: #adb5bd !important;
+}
+
+/* General cancel button class that can be applied anywhere */
+.cancel-btn-visible {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 500;
+}
+
+.cancel-btn-visible:hover {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    border-color: #94a3b8 !important;
+}
+
+/* Ensure proper contrast in all modal buttons */
+.advert-view-modal button {
+    transition: all 0.2s ease;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .advert-view-cancel-btn,
+    .advert-view-modal-actions button:first-child {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .advert-view-cancel-btn:hover,
+    .advert-view-modal-actions button:first-child:hover {
+        background: #f0f0f0 !important;
+        color: #000000 !important;
+    }
+}

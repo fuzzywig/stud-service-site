@@ -1,33 +1,98 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth, logoutUser } from '../firebase/firebaseAuth';
 import { useLoginModal } from '../context/LoginContext';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 
 export default function RequireAdmin({ children }) {
     const { currentUser, userData, loading } = useAuth();
-    const { openLogin, closeLogin, isLoginOpen } = useLoginModal(); // Make sure to get isLoginOpen
+    const { openLogin, closeLogin, isLoginOpen } = useLoginModal();
     const [authError, setAuthError] = useState(null);
     const [isSigningOut, setIsSigningOut] = useState(false);
     const [fullUserData, setFullUserData] = useState(null);
 
+    // Enhanced function to check both users and adminUsers collections
+    const fetchUserAdminStatus = async (uid) => {
+        try {
+            console.log('RequireAdmin: Checking admin status for:', uid);
+
+            // First, check the users collection (existing logic for frontend users)
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log('RequireAdmin: Found user in users collection:', userData);
+
+                if (userData.isAdmin === true) {
+                    return {
+                        isAdmin: true,
+                        userData: { uid, ...userData },
+                        source: 'users'
+                    };
+                }
+            }
+
+            // Then, check the adminUsers collection (new logic for staff members)
+            const adminQuery = query(collection(db, 'adminUsers'), where('uid', '==', uid));
+            const adminSnapshot = await getDocs(adminQuery);
+
+            if (!adminSnapshot.empty) {
+                const adminData = adminSnapshot.docs[0].data();
+                console.log('RequireAdmin: Found user in adminUsers collection:', adminData);
+
+                return {
+                    isAdmin: true,
+                    userData: {
+                        uid,
+                        email: adminData.email,
+                        firstName: adminData.firstName,
+                        lastName: adminData.lastName,
+                        role: adminData.role,
+                        avatar: adminData.avatar,
+                        isActive: adminData.isActive,
+                        department: adminData.department,
+                        jobTitle: adminData.jobTitle,
+                        // Add any other fields you need
+                        isAdmin: true,
+                        isStaffUser: true // Flag to identify staff users
+                    },
+                    source: 'adminUsers'
+                };
+            }
+
+            console.log('RequireAdmin: User not found in either collection or not admin');
+            return {
+                isAdmin: false,
+                userData: null,
+                source: null
+            };
+
+        } catch (error) {
+            console.error('RequireAdmin: Error checking admin status:', error);
+            return {
+                isAdmin: false,
+                userData: null,
+                source: null,
+                error: error.message
+            };
+        }
+    };
+
     // Fetch full user data if we have a user but incomplete data
     useEffect(() => {
         const fetchFullUserData = async () => {
-            if (currentUser && (!userData || !userData.isAdmin === undefined)) {
-                try {
-                    console.log('RequireAdmin: Fetching full user data for:', currentUser.uid);
-                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        console.log('RequireAdmin: Full user data:', data);
-                        setFullUserData({
-                            uid: currentUser.uid,
-                            ...data
-                        });
-                    }
-                } catch (error) {
-                    console.error('RequireAdmin: Error fetching user data:', error);
+            if (currentUser && (!userData || userData.isAdmin === undefined)) {
+                const result = await fetchUserAdminStatus(currentUser.uid);
+
+                if (result.isAdmin) {
+                    console.log(`RequireAdmin: User is admin (source: ${result.source})`);
+                    setFullUserData(result.userData);
+                } else {
+                    console.log('RequireAdmin: User is not admin or not found');
+                    setFullUserData({
+                        uid: currentUser.uid,
+                        email: currentUser.email,
+                        isAdmin: false
+                    });
                 }
             }
         };
@@ -44,6 +109,8 @@ export default function RequireAdmin({ children }) {
             currentUser: currentUser?.email,
             userData: effectiveUserData,
             isAdmin: effectiveUserData?.isAdmin,
+            isStaffUser: effectiveUserData?.isStaffUser,
+            source: effectiveUserData?.isStaffUser ? 'adminUsers' : 'users',
             isLoginOpen
         });
 
@@ -62,7 +129,7 @@ export default function RequireAdmin({ children }) {
         if (!loading && currentUser && effectiveUserData && effectiveUserData.isAdmin === false) {
             console.log('RequireAdmin: User is not admin');
             setAuthError('Admin access required');
-            closeLogin(); // Make sure modal is closed
+            closeLogin();
         }
 
         // If user is admin, close login modal
@@ -265,7 +332,7 @@ export default function RequireAdmin({ children }) {
         );
     }
 
-    // User is admin, render children
+    // User is admin, render children with enhanced user data
     console.log('RequireAdmin: Rendering admin content');
     return React.Children.map(children, child =>
         React.cloneElement(child, {

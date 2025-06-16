@@ -1,12 +1,12 @@
 .admin-approve-adverts-page {
-       display: flex;
-       min-height: 100vh;
-       background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
-       position: relative;
-       width: 100%;
-       overflow-x: hidden;
-       box-sizing: border-box;
-   }
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
 
 .admin-approve-adverts-page *,
 .admin-approve-adverts-page *::before,

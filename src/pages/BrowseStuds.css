@@ -98,7 +98,7 @@ body.browse-studs-view .browse-studs-filter-block.checkbox-group {
     flex-direction: column !important;
     gap: 0.5rem !important;
     padding-top: 0.5rem !important;
-    color: #fff; !important;
+    color: #333 !important; /* FIXED: Changed from #fff to #333 */
 }
 
 .browse-studs-wrapper .browse-studs-filter-block.checkbox-group label,
@@ -200,20 +200,22 @@ body.browse-studs-view .browse-studs-remove-btn {
     cursor: pointer !important;
 }
 
-/* ─── Mobile Toolbar ─── */
+/* ─── Mobile Toolbar - FIXED VERSION ─── */
 .browse-studs-wrapper .browse-studs-mobile-toolbar,
 body.browse-studs-view .browse-studs-mobile-toolbar {
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
-    background: white !important;
-    border-bottom: 1px solid #eee !important;
-    position: relative !important;
+    background: transparent !important; /* FIXED: No white background */
+    border: none !important; /* FIXED: No border */
+    position: relative !important; /* FIXED: Not fixed position */
     z-index: 2 !important;
     width: 100% !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
     margin: 0;
+    padding: 0 !important; /* FIXED: No padding */
+    box-shadow: none !important; /* FIXED: No shadow */
 }
 
 .browse-studs-wrapper .browse-studs-mobile-toolbar button,
@@ -375,6 +377,15 @@ body.browse-studs-view .browse-studs-card-description {
     white-space: pre-wrap !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* limits to 4 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 6em; /* just in case line clamp fails, fallback height */
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 10px;
 }
 
 .browse-studs-wrapper .browse-studs-card-divider,
@@ -418,6 +429,38 @@ body.browse-studs-view .browse-studs-card-fee-pill {
     font-size: 1.25rem !important;
     white-space: nowrap !important;
     z-index: 1 !important;
+}
+
+/* Distance pill styling */
+.browse-studs-distance-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fce8e6; /* light pinkish-red */
+    color: #b83c56;            /* your brand accent red */
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+/* Licensed breeder pill styling */
+.browse-studs-pill.licensed-breeder {
+    background-color: #fbbf24;
+    color: #78350f;
+    font-weight: 600;
+    padding-left: 8px;
+}
+
+.browse-studs-pill.licensed-breeder::before {
+    content: "★";
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+/* Rescue organization pill styling */
+.browse-studs-pill.rescue-org {
+    background-color: #1e3a8a;
+    color: white;
 }
 
 /* Card Footer */
@@ -577,6 +620,17 @@ body.browse-studs-view .reset-btn:hover {
     background: #962e45 !important;
 }
 
+/* Checkboxes */
+.browse-studs-wrapper input[type="checkbox"],
+body.browse-studs-view input[type="checkbox"] {
+    accent-color: #256845 !important;  /* consistent green */
+    background-color: #fff !important; /* ensures white background when not checked */
+    border: 2px solid #256845 !important;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
 /* Responsive Design */
 .browse-studs-wrapper .mobile-only,
 body.browse-studs-view .mobile-only {
@@ -617,65 +671,6 @@ body.browse-studs-view .desktop-only {
     body.browse-studs-view .browse-studs-card-image {
         height: 120px !important;
     }
-}
-.browse-studs-wrapper input[type="checkbox"],
-body.browse-studs-view input[type="checkbox"] {
-    accent-color: #256845 !important;  /* consistent green */
-    background-color: #fff !important; /* ensures white background when not checked */
-    border: 2px solid #256845 !important;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-/* Add these styles to your BrowseStuds.css file */
-
-/* Mobile toolbar styling enhancements */
-.browse-studs-mobile-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #ffffff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.filter-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.625rem 1.25rem;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.filter-btn:hover {
-    background-color: #3a80d2;
-}
-
-.filter-btn svg {
-    margin-right: 0.25rem;
-}
-
-/* Making sure our mobile components only show on mobile */
-@media (min-width: 768px) {
-    .mobile-only {
-        display: none;
-    }
-}
-
-@media (max-width: 767px) {
-    .desktop-only {
-        display: none;
-    }
 
     /* Improved card layout for mobile */
     .browse-studs-card {
@@ -702,103 +697,15 @@ body.browse-studs-view input[type="checkbox"] {
         height: 36px;
     }
 }
-.browse-studs-distance-pill {
-    display: inline-flex;
-    align-items: center;
-    background-color: #fce8e6; /* light pinkish-red */
-    color: #b83c56;            /* your brand accent red */
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 12px;
-}
-.browse-studs-card-description {
-    display: -webkit-box;
-    -webkit-line-clamp: 4; /* limits to 4 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 6em; /* just in case line clamp fails, fallback height */
-    font-size: 14px;
-    line-height: 1.5;
-    margin-top: 10px;
-}
-/* Add this CSS to your BrowseStuds.css file */
-.browse-studs-pill.licensed-breeder {
-    background-color: #fbbf24;
-    color: #78350f;
-    font-weight: 600;
-    padding-left: 8px;
+/* Explicitly enforce white backgrounds on mobile rendering chain */
+.browse-studs-wrapper,
+body.browse-studs-view,
+.browse-studs-wrapper .browse-studs-card,
+.browse-studs-wrapper .browse-studs-card-image,
+.browse-studs-wrapper .browse-studs-card-img {
+    background-color: #ffffff !important;
 }
 
-.browse-studs-pill.licensed-breeder::before {
-    content: "★";
-    margin-right: 6px;
-    font-size: 14px;
-}
-/* Fix for the mobile toolbar white background */
-
-.browse-studs-mobile-toolbar {
-    background: transparent; /* Remove white background */
-    border: none; /* Remove any border */
-    box-shadow: none; /* Remove any shadow */
-    padding: 0; /* Remove padding if needed */
-}
-
-/* Alternative: if you want to keep some structure but remove the white rectangle */
-.browse-studs-mobile-toolbar.minimal {
-    background-color: transparent;
-    border: none;
-}
-
-/* If the mobile-only class is adding the background */
-.mobile-only.browse-studs-mobile-toolbar {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Make sure the button inside doesn't have a white background either */
-.browse-studs-mobile-toolbar .filter-btn {
-    background: transparent;
-    border: none;
-    color: #1f2937;
-    cursor: pointer;
-}
-/* Position the mobile toolbar in top right corner */
-
-.browse-studs-mobile-toolbar {
-    position: fixed;
-    z-index: 100;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-}
-
-
-
-
-
-.browse-studs-mobile-toolbar.fab-style .filter-btn:hover {
-    background: #163f29;
-}
-
-/* Hide the text in FAB style, only show icon */
-.browse-studs-mobile-toolbar.fab-style .filter-btn svg {
-    margin: 0;
-    width: 24px;
-    height: 24px;
-}
-
-/* Hide text in FAB style */
-.browse-studs-mobile-toolbar.fab-style .filter-btn::after {
-    content: none;
-}
-.browse-studs-pill.rescue-org {
-    background-color: #1e3a8a;
-    color: white;
-}
 
 /* Subtle No Results Section */
 .browse-studs-no-results {
@@ -870,5 +777,24 @@ body.browse-studs-view input[type="checkbox"] {
 .browse-studs-reset-btn:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+/* Apply a solid background to all image containers and the images themselves */
+.advert-card,
+.advert-image-container,
+.advert-image,
+.browse-studs-card,
+.browse-studs-card-image,
+.browse-studs-card-img,
+.favourites-card,
+.favourites-card-img {
+    background-color: #ffffff !important;
+}
+.advert-image-container {
+    background-color: #f6f6f6; /* Light grey */
+}
+.advert-card,
+.advert-image-container,
+.advert-image {
+    background-color: lime !important;
 }
 

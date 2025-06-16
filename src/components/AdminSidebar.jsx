@@ -10,13 +10,15 @@ import {
     BarChart3,
     CheckSquare,
     Users,
+    Edit,
     Star,
     Globe,
     LogOut,
     User,
     Search,
     Shield,
-    MessageSquare
+    MessageSquare,
+    Edit3
 } from 'lucide-react';
 import './AdminSidebar.css';
 
@@ -237,6 +239,31 @@ export default function AdminSidebar() {
                             <NotificationBadge count={notificationCounts.supportTickets} />
                         </Link>
 
+                        <Link
+                            to="/blog-admin"
+                            className={`admin-sidebar-link ${isActive('/blog-admin') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <Edit3 className="admin-sidebar-icon" size={18} strokeWidth={2} />
+                            <span>Blog Management</span>
+                        </Link>
+                        <Link
+                            to="/admin/staff-management"
+                            className={`admin-sidebar-link ${isActive('/admin/staff-management') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <Edit className="admin-sidebar-icon" size={18} strokeWidth={2} />
+                            <span>Staff Management</span>
+                        </Link>
+                        <Link
+                            to="/admin/sms-marketing"
+                            className={`admin-sidebar-link ${isActive('/admin/sms-marketing') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                        >
+                            <MessageSquare className="admin-sidebar-icon" size={18} strokeWidth={2} />
+                            <span>SMS Marketing</span>
+                        </Link>
+
                         <a
                             href="/"
                             target="_blank"
@@ -247,6 +274,7 @@ export default function AdminSidebar() {
                             <Globe className="admin-sidebar-icon" size={18} strokeWidth={2} />
                             <span>Visit Website</span>
                         </a>
+
                     </nav>
                 </div>
 
@@ -257,14 +285,11 @@ export default function AdminSidebar() {
                                 <img src={userData.avatar || "https://placehold.co/50x50"} alt="Admin Avatar" />
                             </div>
                             <div className="admin-sidebar-user-info">
-                                <Link
-                                    to={`/admin/user/${userData.uid}`}
-                                    onClick={closeSidebar}
-                                    className="admin-sidebar-username"
-                                >
+                                {/* ✅ FIXED: Non-clickable username display */}
+                                <div className="admin-sidebar-username">
                                     <span className="admin-sidebar-name">{userData.firstName} {userData.lastName}</span>
                                     <User className="admin-sidebar-profile-icon" size={16} strokeWidth={2} />
-                                </Link>
+                                </div>
 
                                 <Link to="/logout" className="admin-sidebar-logout" onClick={closeSidebar}>
                                     <LogOut className="admin-sidebar-logout-icon" size={16} strokeWidth={2} />

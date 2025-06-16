@@ -1,0 +1,518 @@
+/* SMS Admin Panel Styles */
+
+.sms-admin-main-content {
+    margin-left: 0;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+@media (min-width: 1024px) {
+    .sms-admin-main-content {
+        margin-left: 250px;
+    }
+}
+
+.sms-admin-panel {
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    min-height: 100vh;
+}
+
+/* Mobile responsiveness - add padding for hamburger menu */
+@media (max-width: 1023px) {
+    .sms-admin-panel {
+        padding-top: 0.5rem;
+    }
+
+    .sms-admin-title {
+        padding-left: 3rem; /* Make room for the hamburger button */
+    }
+}
+
+.sms-admin-container {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+}
+
+.sms-admin-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sms-admin-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.sms-admin-title-icon {
+    color: #2563eb;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.sms-admin-subtitle {
+    color: #6b7280;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.sms-admin-balance {
+    color: #059669;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+.sms-admin-send-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.sms-admin-send-btn:disabled:hover {
+    background-color: #9ca3af;
+}
+
+.sms-admin-spinning {
+    animation: spin 1s linear infinite;
+}
+
+.sms-admin-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .sms-admin-content {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.sms-admin-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sms-admin-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sms-admin-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.sms-admin-filter-select {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+.sms-admin-filter-select:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.sms-admin-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.sms-admin-loading-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.sms-admin-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: #dc2626;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+}
+
+.sms-admin-error-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.sms-admin-no-customers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 0.5rem;
+}
+
+.sms-admin-no-customers-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.sms-admin-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.sms-admin-section-icon {
+    color: #16a34a;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.sms-admin-select-all-btn {
+    font-size: 0.875rem;
+    color: #2563eb;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: color 0.2s ease;
+}
+
+.sms-admin-select-all-btn:hover {
+    color: #1d4ed8;
+    background-color: #eff6ff;
+}
+
+.sms-admin-customer-list {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.sms-admin-customer-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+.sms-admin-customer-item:last-child {
+    border-bottom: none;
+}
+
+.sms-admin-customer-item:hover {
+    background-color: #f9fafb;
+}
+
+.sms-admin-checkbox {
+    margin-right: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    color: #2563eb;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.sms-admin-checkbox:focus {
+    ring: 2px;
+    ring-color: #2563eb;
+    ring-offset: 2px;
+}
+
+.sms-admin-customer-info {
+    flex: 1;
+}
+
+.sms-admin-customer-name {
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.sms-admin-customer-phone {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.sms-admin-customer-activity {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.sms-admin-status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sms-admin-status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.sms-admin-status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.sms-admin-status-badge.sent {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.sms-admin-status-badge.scheduled {
+    background-color: #fed7aa;
+    color: #ea580c;
+}
+
+.sms-admin-status-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.sms-admin-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sms-admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .sms-admin-form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.sms-admin-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.sms-admin-select,
+.sms-admin-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.sms-admin-select:focus,
+.sms-admin-input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.sms-admin-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.sms-admin-textarea:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.sms-admin-char-count {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.sms-admin-send-btn {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.sms-admin-send-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.sms-admin-send-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.sms-admin-history-list {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.sms-admin-history-item {
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+.sms-admin-history-item:last-child {
+    border-bottom: none;
+}
+
+.sms-admin-history-item:hover {
+    background-color: #f9fafb;
+}
+
+.sms-admin-history-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sms-admin-history-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sms-admin-history-customer {
+    font-weight: 500;
+    color: #111827;
+}
+
+.sms-admin-history-phone {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.sms-admin-history-message {
+    font-size: 0.875rem;
+    color: #374151;
+    margin: 0;
+}
+
+.sms-admin-history-timestamp {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sms-admin-panel {
+        padding: 1rem;
+    }
+
+    .sms-admin-header {
+        padding: 1rem;
+    }
+
+    .sms-admin-content {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .sms-admin-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .sms-admin-customer-item {
+        padding: 0.5rem;
+    }
+
+    .sms-admin-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .sms-admin-history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+
+/* Focus and accessibility improvements */
+.sms-admin-checkbox:focus,
+.sms-admin-select:focus,
+.sms-admin-input:focus,
+.sms-admin-textarea:focus,
+.sms-admin-send-btn:focus,
+.sms-admin-select-all-btn:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Loading states */
+.sms-admin-send-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.sms-admin-send-btn:disabled:hover {
+    background-color: #9ca3af;
+}

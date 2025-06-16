@@ -734,8 +734,7 @@
 
 /* Duplicate Alert Banner */
 .mu-admin-page .mu-duplicate-alert-banner {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: #e3f2fd;    border: 1px solid #ffeaa7;
     border-radius: 8px;
     padding: 12px 20px;
     margin-bottom: 20px;
@@ -1086,6 +1085,9 @@
     .mu-admin-page .mu-duplicate-alert-banner {
         flex-direction: column;
         text-align: center;
+        background: #e3f2fd;
+        background: rgba(255, 243, 205, 0.3); /* More subtle */
+
     }
 
     .mu-admin-page .mu-view-duplicates-btn {

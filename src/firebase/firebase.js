@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, RecaptchaVerifier } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions"; // ADD THIS LINE
 
 const firebaseConfig = {
     apiKey: "AIzaSyA6C7sHBGwWc538wAKgARcAHROpGhgIXd0",
@@ -17,6 +18,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app); // ADD THIS LINE
 
 // Setup RecaptchaVerifier for phone auth
 export const setupRecaptcha = (containerId) => {

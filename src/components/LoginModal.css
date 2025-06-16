@@ -149,12 +149,12 @@
 
 .login-input {
 
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 1rem;
-        box-sizing: border-box;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
 
     transition: border-color 0.2s, box-shadow 0.2s;
     background-color: #f8fafc;

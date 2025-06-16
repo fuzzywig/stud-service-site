@@ -1,0 +1,1408 @@
+/* src/components/AdminStaffManagement.css */
+
+/* Layout */
+.staff-management-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
+.staff-management-main {
+    flex: 1;
+    margin-left: 260px;
+    padding: 2rem;
+    max-width: calc(100vw - 260px);
+}
+
+@media (max-width: 1024px) {
+    .staff-management-main {
+        margin-left: 0;
+        max-width: 100vw;
+        padding: 1rem;
+        padding-top: 4rem;
+    }
+}
+
+/* Header */
+.staff-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.staff-management-title-section {
+    flex: 1;
+}
+
+.staff-management-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.staff-management-subtitle {
+    color: #6b7280;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.staff-management-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.staff-management-add-btn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .staff-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .staff-management-title {
+        font-size: 1.5rem;
+    }
+
+    .staff-management-add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Controls */
+.staff-management-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.staff-management-search {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.staff-management-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.staff-management-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: all 0.2s;
+    color: #1f2937;
+}
+
+.staff-management-search-input::placeholder {
+    color: #9ca3af;
+}
+
+.staff-management-search-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    color: #1f2937;
+}
+
+.staff-management-stats {
+    color: #6b7280;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.staff-management-count {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .staff-management-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .staff-management-search {
+        max-width: none;
+    }
+
+    .staff-management-stats {
+        text-align: center;
+    }
+}
+
+/* Content */
+.staff-management-content {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Loading */
+.staff-management-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: #6b7280;
+}
+
+.staff-management-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #2563eb;
+    border-radius: 50%;
+    animation: staff-management-spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes staff-management-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.staff-management-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.staff-management-empty-icon {
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.staff-management-empty h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.staff-management-empty p {
+    color: #6b7280;
+    margin: 0 0 2rem 0;
+    max-width: 400px;
+}
+
+.staff-management-empty-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-management-empty-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Grid */
+.staff-management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .staff-management-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+}
+
+/* Cards */
+.staff-management-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.staff-management-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.staff-management-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.staff-management-avatar {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e5e7eb;
+}
+
+.staff-management-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.staff-management-status {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.staff-management-status.active {
+    background-color: #10b981;
+}
+
+.staff-management-status.inactive {
+    background-color: #ef4444;
+}
+
+.staff-management-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.staff-management-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-management-action-btn:hover {
+    background-color: #f9fafb;
+}
+
+.staff-management-action-btn.view {
+    color: #2563eb;
+}
+
+.staff-management-action-btn.view:hover {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+}
+
+.staff-management-action-btn.edit {
+    color: #059669;
+}
+
+.staff-management-action-btn.edit:hover {
+    background-color: #ecfdf5;
+    border-color: #059669;
+}
+
+.staff-management-action-btn.delete {
+    color: #dc2626;
+}
+
+.staff-management-action-btn.delete:hover {
+    background-color: #fef2f2;
+    border-color: #dc2626;
+}
+
+.staff-management-card-body {
+    /* Card body styles */
+}
+
+.staff-management-card-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.staff-management-card-job {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0 0 1rem 0;
+}
+
+.staff-management-card-role {
+    margin-bottom: 1rem;
+}
+
+.staff-management-role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.staff-management-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.staff-management-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.staff-management-info-item svg {
+    flex-shrink: 0;
+    color: #9ca3af;
+}
+
+.staff-management-uid {
+    font-family: monospace;
+    font-size: 0.75rem;
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* Modal */
+.staff-management-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.staff-management-modal {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-management-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-management-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.staff-management-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: #6b7280;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-management-modal-close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.staff-management-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.staff-management-form-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.staff-management-form-section {
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.staff-management-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-management-section-title svg {
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.staff-management-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+.staff-management-form-row .staff-management-form-group {
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .staff-management-form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .staff-management-form-row .staff-management-form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+.staff-management-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.staff-management-form-group label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Input and Form Controls */
+.staff-management-input,
+.staff-management-textarea,
+.staff-management-select,
+.staff-management-form-group input,
+.staff-management-form-group select,
+.staff-management-form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background-color: white;
+    width: 100%;
+    color: #1f2937;
+    font-weight: 400;
+    font-family: inherit;
+}
+
+.staff-management-input::placeholder,
+.staff-management-textarea::placeholder,
+.staff-management-form-group input::placeholder,
+.staff-management-form-group textarea::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.staff-management-input:focus,
+.staff-management-textarea:focus,
+.staff-management-select:focus,
+.staff-management-form-group input:focus,
+.staff-management-form-group select:focus,
+.staff-management-form-group textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    color: #1f2937;
+}
+
+.staff-management-input:disabled,
+.staff-management-textarea:disabled,
+.staff-management-select:disabled,
+.staff-management-form-group input:disabled,
+.staff-management-form-group select:disabled,
+.staff-management-form-group textarea:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.staff-management-input-error,
+.staff-management-select-error {
+    border-color: #dc2626;
+}
+
+.staff-management-input-readonly {
+    background-color: #f9fafb !important;
+    color: #6b7280 !important;
+    cursor: not-allowed;
+}
+
+.staff-management-textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.staff-management-select {
+    cursor: pointer;
+}
+
+.staff-management-select option {
+    color: #1f2937;
+    background: white;
+    padding: 0.5rem;
+}
+
+.staff-management-uid-input {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.8125rem;
+}
+
+.staff-management-error {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* Address Section */
+.staff-management-optional {
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+}
+
+/* Permissions Grid */
+.staff-management-permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.staff-management-permission-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.staff-management-permission-item:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.staff-management-permission-item input[type="checkbox"] {
+    margin: 0;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.staff-management-permission-item span {
+    flex: 1;
+    line-height: 1.4;
+    margin-left: 12px; /* Add space to the left of the text instead */
+}
+
+/* Checkbox Styling */
+.staff-management-checkbox,
+.staff-management-permission-item input[type="checkbox"],
+.staff-management-status-checkbox input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    margin: 0;
+    flex-shrink: 0;
+    vertical-align: middle;
+    top: 0;
+}
+
+.staff-management-checkbox:hover,
+.staff-management-permission-item input[type="checkbox"]:hover,
+.staff-management-status-checkbox input[type="checkbox"]:hover {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.staff-management-checkbox:checked,
+.staff-management-permission-item input[type="checkbox"]:checked,
+.staff-management-status-checkbox input[type="checkbox"]:checked {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.staff-management-checkbox:checked::after,
+.staff-management-permission-item input[type="checkbox"]:checked::after,
+.staff-management-status-checkbox input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 6px;
+    height: 10px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    border-width: 0 2px 2px 0;
+}
+
+/* View Mode - Blue Checkboxes with Blue Ticks */
+.staff-management-modal[data-mode="view"] .staff-management-checkbox,
+.staff-management-modal[data-mode="view"] .staff-management-permission-item input[type="checkbox"],
+.staff-management-modal[data-mode="view"] .staff-management-status-checkbox input[type="checkbox"] {
+    cursor: default;
+    background: white;
+    border-color: #d1d5db;
+}
+
+.staff-management-modal[data-mode="view"] .staff-management-checkbox:checked,
+.staff-management-modal[data-mode="view"] .staff-management-permission-item input[type="checkbox"]:checked,
+.staff-management-modal[data-mode="view"] .staff-management-status-checkbox input[type="checkbox"]:checked {
+    background: #eff6ff;
+    border-color: #2563eb;
+}
+
+.staff-management-modal[data-mode="view"] .staff-management-checkbox:checked::after,
+.staff-management-modal[data-mode="view"] .staff-management-permission-item input[type="checkbox"]:checked::after,
+.staff-management-modal[data-mode="view"] .staff-management-status-checkbox input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 6px;
+    height: 10px;
+    border: 2px solid #2563eb;
+    border-top: none;
+    border-left: none;
+    border-width: 0 2px 2px 0;
+}
+
+.staff-management-checkbox:disabled,
+.staff-management-permission-item input[type="checkbox"]:disabled,
+.staff-management-status-checkbox input[type="checkbox"]:disabled {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.staff-management-checkbox:focus,
+.staff-management-permission-item input[type="checkbox"]:focus,
+.staff-management-status-checkbox input[type="checkbox"]:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Status Section */
+.staff-management-status-section {
+    margin-top: 1rem;
+}
+
+.staff-management-status-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.75rem 0;
+}
+
+.staff-management-status-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-management-status-checkbox:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.staff-management-checkbox-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.staff-management-checkbox-text {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.875rem;
+}
+
+.staff-management-checkbox-description {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* Avatar Upload Section */
+.staff-management-avatar-upload {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: #fafbfc;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.staff-management-avatar-upload:hover {
+    border-color: #2563eb;
+    background: #f0f9ff;
+}
+
+.staff-management-avatar-upload.has-image {
+    border-style: solid;
+    border-color: #e5e7eb;
+    background: white;
+}
+
+.staff-management-avatar-upload.uploading {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.staff-management-avatar-upload.error {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+.staff-management-avatar-upload.drag-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+    transform: scale(1.02);
+}
+
+.staff-management-avatar-main {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.staff-management-avatar-preview {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e5e7eb;
+    background: #f3f4f6;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.staff-management-avatar-preview.has-image {
+    border-color: #2563eb;
+}
+
+.staff-management-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.staff-management-avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+.staff-management-avatar-placeholder svg {
+    width: 24px;
+    height: 24px;
+    color: #d1d5db;
+}
+
+.staff-management-avatar-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.staff-management-avatar-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.staff-management-avatar-description {
+    color: #6b7280;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.staff-management-avatar-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.staff-management-file-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.staff-management-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.staff-management-upload-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.staff-management-upload-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.staff-management-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.staff-management-remove-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.staff-management-remove-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.staff-management-avatar-specs {
+    padding: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+}
+
+.staff-management-avatar-specs-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.staff-management-avatar-specs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.staff-management-avatar-specs-item {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.staff-management-avatar-specs-item svg {
+    width: 12px;
+    height: 12px;
+    color: #10b981;
+}
+
+.staff-management-upload-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    border-radius: 12px;
+}
+
+.staff-management-upload-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: staff-management-spin 1s linear infinite;
+}
+
+.staff-management-upload-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Modal Footer */
+.staff-management-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.staff-management-btn-primary,
+.staff-management-btn-secondary,
+.staff-management-btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.staff-management-btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.staff-management-btn-primary:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.staff-management-btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.staff-management-btn-secondary {
+    background-color: white;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.staff-management-btn-secondary:hover {
+    background-color: #f9fafb;
+}
+
+.staff-management-btn-danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+.staff-management-btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.staff-management-btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: staff-management-spin 1s linear infinite;
+}
+
+/* Confirmation Modal */
+.staff-management-confirm-modal {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+.staff-management-confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-management-confirm-icon {
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+
+.staff-management-confirm-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.staff-management-confirm-body {
+    padding: 1.5rem;
+}
+
+.staff-management-confirm-body p {
+    color: #374151;
+    margin: 0 0 1rem 0;
+}
+
+.staff-management-confirm-warning {
+    color: #dc2626;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.staff-management-confirm-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .staff-management-modal {
+        margin: 0;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .staff-management-modal-footer {
+        flex-direction: column;
+    }
+
+    .staff-management-btn-primary,
+    .staff-management-btn-secondary,
+    .staff-management-btn-danger {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .staff-management-avatar-main {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .staff-management-avatar-preview {
+        width: 64px;
+        height: 64px;
+    }
+
+    .staff-management-avatar-controls {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .staff-management-upload-btn,
+    .staff-management-remove-btn {
+        flex: 1;
+        justify-content: center;
+        min-width: 120px;
+    }
+
+    .staff-management-avatar-specs-list {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* View Mode Adjustments */
+.staff-management-modal[data-mode="view"] .staff-management-avatar-upload {
+    border-style: solid;
+    border-color: #e5e7eb;
+    background: #f9fafb;
+    padding: 1rem;
+}
+
+.staff-management-modal[data-mode="view"] .staff-management-avatar-controls {
+    display: none;
+}
+
+/* Focus Management for Accessibility */
+.staff-management-modal input:focus,
+.staff-management-modal select:focus,
+.staff-management-modal textarea:focus,
+.staff-management-modal button:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Smooth Transitions */
+* {
+    transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.staff-management-password-requirements {
+    margin-top: 8px;
+}
+
+.staff-management-password-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+}
+
+.staff-management-password-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.staff-management-password-checklist li.valid {
+    color: #10b981;
+}
+
+.staff-management-password-checklist li svg {
+    opacity: 0.3;
+}
+
+.staff-management-password-checklist li.valid svg {
+    opacity: 1;
+}
+
+.staff-management-success {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #10b981;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.staff-management-password-input-container {
+    position: relative;
+}
+
+.staff-management-password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.staff-management-password-toggle:hover {
+    color: #374151;
+}
+/* Password Requirements Box */
+.staff-management-password-requirements {
+    margin-top: 12px;
+    margin-bottom: 20px;
+}
+
+.staff-management-password-requirements-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.staff-management-password-requirements-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.staff-management-password-requirements-header svg {
+    color: #64748b;
+}
+
+.staff-management-password-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.staff-management-password-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    color: #64748b;
+    font-size: 12px;
+    transition: color 0.2s ease;
+}
+
+.staff-management-password-checklist li svg {
+    opacity: 0.3;
+    color: #94a3b8;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.staff-management-password-checklist li.valid {
+    color: #059669;
+    font-weight: 500;
+}
+
+.staff-management-password-checklist li.valid svg {
+    opacity: 1;
+    color: #10b981;
+}
+
+/* Dark mode version if you need it */
+.dark .staff-management-password-requirements-box {
+    background: #1e293b;
+    border-color: #334155;
+    margin-bottom: 20px;
+
+    .dark .staff-management-password-requirements-header {
+        color: #cbd5e1;
+    }
+
+    .dark .staff-management-password-checklist li {
+        color: #94a3b8;
+    }
+
+    .dark,
+    .staff-management-password-checklist li.valid {
+        color: #34d399;
+    }
+}

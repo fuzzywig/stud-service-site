@@ -1,17 +1,4 @@
 /* src/components/RecentAdverts.css */
-:root {
-    --recent-studs-primary: #256845;
-    --recent-studs-secondary: #b83c56;
-    --recent-studs-accent: #ffde59;
-    --recent-studs-text-dark: #333;
-    --recent-studs-text-light: #777;
-    --recent-studs-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
-    --recent-studs-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
-    --recent-studs-transition-fast: 0.2s ease;
-    --recent-studs-transition-medium: 0.3s ease;
-    --recent-studs-border-radius: 12px;
-    --recent-studs-divider-color: #f0f0f0;
-}
 
 .recent-studs-section {
     padding: 2rem 1.5rem;
@@ -28,7 +15,7 @@
     font-weight: 800;
     text-align: center;
     margin-bottom: 3rem;
-    color: var(--recent-studs-primary);
+    color: #256845;
     position: relative;
     padding-bottom: 1rem;
 }
@@ -41,7 +28,7 @@
     transform: translateX(-50%);
     width: 80px;
     height: 4px;
-    background-color: var(--recent-studs-primary);
+    background-color: #256845;
     border-radius: 4px;
 }
 
@@ -77,10 +64,10 @@
 /* Card styling */
 .recent-studs-card {
     position: relative;
-    border-radius: var(--recent-studs-border-radius);
-    box-shadow: var(--recent-studs-shadow);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    transition: transform var(--recent-studs-transition-medium), box-shadow var(--recent-studs-transition-medium);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-color: white;
     display: flex;
     flex-direction: column;
@@ -89,7 +76,7 @@
 
 .recent-studs-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--recent-studs-shadow-hover);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Card header */
@@ -105,7 +92,7 @@
 }
 
 .recent-studs-price {
-    background-color: var(--recent-studs-primary);
+    background-color: #256845;
     color: white;
     font-weight: 700;
     font-size: 1rem;
@@ -127,7 +114,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all var(--recent-studs-transition-fast);
+    transition: all 0.2s ease;
     color: #ccc;
     font-size: 1.1rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -140,7 +127,7 @@
 }
 
 .recent-studs-favorite.active {
-    color: var(--recent-studs-secondary);
+    color: #b83c56;
     background-color: white;
 }
 
@@ -150,7 +137,7 @@
     height: 220px;
     overflow: hidden;
     display: block;
-    background-color: #f8f8f8; /* Light background to handle transparent images */
+    background-color: #ffffff; /* Pure white background to handle transparent images */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,7 +147,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: transform var(--recent-studs-transition-medium);
+    transition: transform 0.3s ease;
     padding: 10px; /* Add padding to prevent image touching edges */
 }
 
@@ -179,7 +166,7 @@
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity var(--recent-studs-transition-fast);
+    transition: opacity 0.2s ease;
 }
 
 .recent-studs-overlay span {
@@ -197,7 +184,7 @@
 /* Intent styling - pill shape in details section */
 .recent-studs-intent {
     display: inline-block;
-    background-color: var(--recent-studs-secondary);
+    background-color: #b83c56;
     color: white;
     font-size: 0.8rem;
     font-weight: 600;
@@ -219,7 +206,7 @@
 .recent-studs-card-title {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--recent-studs-primary);
+    color: #256845;
     margin: 0;
     line-height: 1.3;
     min-height: 1.3em;
@@ -240,7 +227,7 @@
 /* Details divider styling - now fixed above details */
 .recent-studs-details-divider {
     height: 1px;
-    background-color: var(--recent-studs-divider-color);
+    background-color: #f0f0f0;
     margin-bottom: 1rem;
     width: 100%;
 }
@@ -257,13 +244,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--recent-studs-text-light);
+    color: #777;
     font-size: 0.95rem;
     color: #2d3436;
 }
 
 .recent-studs-detail-item svg {
-    color: var(--recent-studs-primary);
+    color: #256845;
     width: 16px;
 }
 
@@ -273,7 +260,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 1rem;
-    border-top: 1px solid var(--recent-studs-divider-color);
+    border-top: 1px solid #f0f0f0;
     gap: 8px;
 }
 
@@ -330,7 +317,7 @@
     align-items: center;
     gap: 4px;
     padding: 5px 10px;
-    background-color: var(--recent-studs-primary);
+    background-color: #256845;
     color: white;
     border-radius: 4px;
     font-weight: 600;
@@ -349,7 +336,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    color: var(--recent-studs-text-light);
+    color: #777;
     font-size: 0.9rem;
     background-color: #f5f5f5;
     padding: 5px 10px;
@@ -365,7 +352,7 @@
 
 .recent-studs-more-text {
     font-size: 1.1rem;
-    color: var(--recent-studs-text-dark);
+    color: #333;
     margin-bottom: 1rem;
 }
 
@@ -383,7 +370,7 @@
 
 .recent-studs-more-button:hover {
     text-decoration: none;
-    color: #888888  ;
+    color: #888888;
 }
 
 /* Mobile adjustments */

@@ -299,20 +299,43 @@ function Hero() {
 
                 {/* RIGHT: Headline Text */}
                 <div className="hero-text">
-                    <h1>Discover, Buy & Sell Pets, Stud Services & Supplies</h1>
+                    <h1>Puppies and Kittens for Sale UK – Trusted Pet Marketplace</h1>
                     <p>
-                        Your one-stop marketplace for finding a new pet, offering stud services,
-                        or browsing quality accessories—tailored to you and local to your postcode.
+                        Join the UK’s trusted pet marketplace for puppies and kittens. Connect with local breeders nationwide on our secure platform. Find your new furry family member with ease.
                     </p>
                     <div className="hero-highlights">
-                        <span className="hero-highlight-pill">
-                            <i className="fa-solid fa-magnifying-glass"></i>
-                            Easy Search
-                        </span>
-                        <span className="hero-highlight-pill">
-                            <i className="fa-solid fa-location-dot"></i>
-                            Local Matches
-                        </span>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-dog"></i>
+                            Puppies
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-cat"></i>
+                            Kittens
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-shield-dog"></i>
+                            Stud Services
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-tags"></i>
+                            Pets for Sale
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-dog"></i>
+                            French Bulldogs
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-dog"></i>
+                            Labradors
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-cat"></i>
+                            Maine Coons
+                        </div>
+                        <div className="hero-highlight-pill">
+                            <i className="fas fa-cat"></i>
+                            British Shorthairs
+                        </div>
                     </div>
                 </div>
             </div>

@@ -116,6 +116,9 @@ function SimilarStuds({ breedOrType, intent, currentAdvertId }) {
 
     if (!similarAds.length) return null;
 
+    // Debug - this should show up if component is rendering
+    console.log('🎯 SimilarStuds component rendering with', similarAds.length, 'ads, intent:', intent);
+
     return (
         <section className="similar-studs-section">
             <div className="similar-studs-container">
@@ -126,6 +129,12 @@ function SimilarStuds({ breedOrType, intent, currentAdvertId }) {
                     {similarAds.map(ad => {
                         const breedLabel = ad.breedOrType || ad.breed || "Unknown Breed";
                         const title = ad.title || ad.name || "Unnamed";
+
+                        // Check if intent is sale to hide rating
+                        const isSaleIntent = (ad.intent === "sale") || (intent === "sale");
+
+                        // Debug for this specific ad
+                        console.log('🔍 F1B Toy Cavapoo - ad.intent:', ad.intent, 'component intent:', intent, 'isSaleIntent:', isSaleIntent);
 
                         // Location info
                         const user = usersMap[ad.ownerId] || {};
@@ -185,22 +194,28 @@ function SimilarStuds({ breedOrType, intent, currentAdvertId }) {
                                     </div>
 
                                     <div className="similar-studs-card-footer">
-                                        <div className="similar-studs-rating">
-                                            <FontAwesomeIcon icon={faStar} className="similar-studs-star-icon" />
-                                            <span className="similar-studs-rating-value">
-                                                {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
-                                            </span>
-                                        </div>
+                                        {/* Only show rating if intent is not sale */}
+                                        {!isSaleIntent && (
+                                            <div className="similar-studs-rating">
+                                                <FontAwesomeIcon icon={faStar} className="similar-studs-star-icon" />
+                                                <span className="similar-studs-rating-value">
+                                                    {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
+                                                </span>
+                                            </div>
+                                        )}
 
                                         <div className="similar-studs-views">
                                             <FontAwesomeIcon icon={faEye} />
                                             <span>{ad.views ?? 0}</span>
                                         </div>
 
-                                        <div className="similar-studs-reviews">
-                                            <span>{rating.reviewCount}</span>
-                                            <span> {rating.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
-                                        </div>
+                                        {/* Only show reviews if intent is not sale */}
+                                        {!isSaleIntent && (
+                                            <div className="similar-studs-reviews">
+                                                <span>{rating.reviewCount}</span>
+                                                <span> {rating.reviewCount === 1 ? 'Review' : 'Reviews'}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
