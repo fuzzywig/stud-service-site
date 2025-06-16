@@ -137,7 +137,7 @@
     height: 220px;
     overflow: hidden;
     display: block;
-    background-color: #ffffff; /* Pure white background to handle transparent images */
+    background-color: #e8e8e8; /* Pure white background to handle transparent images */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -148,7 +148,7 @@
     height: 100%;
     object-fit: contain;
     transition: transform 0.3s ease;
-    padding: 10px; /* Add padding to prevent image touching edges */
+    padding: 0px; /* Add padding to prevent image touching edges */
 }
 
 .recent-studs-card:hover .recent-studs-image {
