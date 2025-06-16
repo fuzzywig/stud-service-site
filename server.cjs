@@ -6,7 +6,7 @@ const https = require('https');
 const API_KEY = 'pP8O9JNud0upxRnM9Fbs3w45793';
 
 // → Port where this combined server will listen
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 6500;
 
 const app = express();
 
