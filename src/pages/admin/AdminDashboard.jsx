@@ -1,10 +1,11 @@
 // src/pages/admin/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy, limit, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { db, auth } from '../../firebase/firebase'; // Added auth import
+import { httpsCallable } from 'firebase/functions';
+import { db, auth, functions } from '../../firebase/firebase'; // Added functions import
 import AdminSidebar from '../../components/AdminSidebar';
 import { Link } from 'react-router-dom';
-import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes, FaSync, FaPause, FaPlay, FaCog } from 'react-icons/fa';
+import { FaChartLine,  FaAd, FaCalendarAlt, FaCalendarWeek, FaUsers, FaClipboardCheck, FaExclamationTriangle, FaStar, FaEye, FaCheck, FaTimes, FaSync, FaPause, FaPlay, FaCog, FaMap, FaExternalLinkAlt } from 'react-icons/fa';
 import './AdminDashboard.css';
 
 // Email functions copied from ApproveAdverts
@@ -62,6 +63,11 @@ export default function AdminDashboard() {
     const [recentAds, setRecentAds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Sitemap state
+    const [sitemapStatus, setSitemapStatus] = useState(null);
+    const [sitemapLoading, setSitemapLoading] = useState(false);
+    const [lastSitemapGeneration, setLastSitemapGeneration] = useState(null);
+
     // Auto-refresh state
     const [lastRefresh, setLastRefresh] = useState(null);
     const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
@@ -72,6 +78,36 @@ export default function AdminDashboard() {
     // Rejection modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [rejectionTarget, setRejectionTarget] = useState(null);
+
+    // Sitemap functions
+    const getSitemapStatus = async () => {
+        try {
+            const getSitemapStatusFn = httpsCallable(functions, 'getSitemapStatus');
+            const result = await getSitemapStatusFn();
+            setSitemapStatus(result.data);
+        } catch (error) {
+            console.error('Error getting sitemap status:', error);
+            setSitemapStatus({ exists: false, error: error.message });
+        }
+    };
+
+    const generateSitemap = async () => {
+        setSitemapLoading(true);
+        try {
+            const generateSitemapFn = httpsCallable(functions, 'generateSitemapManual');
+            const result = await generateSitemapFn();
+
+            setLastSitemapGeneration(result.data);
+            await getSitemapStatus(); // Refresh status
+
+            alert(`✅ Sitemap generated successfully!\n📊 ${result.data.routeCount} URLs\n🔗 ${result.data.url}`);
+        } catch (error) {
+            console.error('Error generating sitemap:', error);
+            alert(`❌ Error: ${error.message}`);
+        } finally {
+            setSitemapLoading(false);
+        }
+    };
 
     // Simple Settings Modal
     const SettingsModal = ({ isOpen, onClose }) => {
@@ -350,6 +386,7 @@ export default function AdminDashboard() {
 
         // Initial fetch
         fetchStats();
+        getSitemapStatus(); // Load sitemap status
     }, []);
 
     // Auto-refresh interval effect
@@ -729,6 +766,157 @@ export default function AdminDashboard() {
                                     <h3 className="stat-title">New Ads Weekly</h3>
                                     <p className="stat-value">{stats.newAdsWeekly}</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Sitemap Management Section */}
+                        <div className="dashboard-section">
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <FaMap className="section-icon" />
+                                    Sitemap Management
+                                </h2>
+                            </div>
+
+                            <div style={{
+                                backgroundColor: '#f8f9fa',
+                                padding: '1.5rem',
+                                borderRadius: '8px',
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                                gap: '1.5rem'
+                            }}>
+                                {/* Current Status */}
+                                <div>
+                                    <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Current Status</h3>
+                                    {sitemapStatus ? (
+                                        sitemapStatus.exists ? (
+                                            <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #dee2e6' }}>
+                                                <p style={{ margin: '0 0 0.5rem 0' }}>
+                                                    <strong>URLs:</strong> {sitemapStatus.routeCount}
+                                                </p>
+                                                <p style={{ margin: '0 0 0.5rem 0' }}>
+                                                    <strong>Last Updated:</strong> {new Date(sitemapStatus.lastUpdated).toLocaleString()}
+                                                </p>
+                                                <p style={{ margin: '0 0 0.5rem 0' }}>
+                                                    <strong>Generated By:</strong> {sitemapStatus.generatedBy}
+                                                </p>
+                                                <p style={{ margin: '0' }}>
+                                                    <a
+                                                        href={sitemapStatus.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ color: '#007bff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                    >
+                                                        View Sitemap <FaExternalLinkAlt style={{ fontSize: '12px' }} />
+                                                    </a>
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ backgroundColor: '#fff3cd', padding: '1rem', borderRadius: '6px', border: '1px solid #ffeaa7' }}>
+                                                <p style={{ margin: '0', color: '#856404' }}>
+                                                    {sitemapStatus.error ? `Error: ${sitemapStatus.error}` : 'No sitemap generated yet'}
+                                                </p>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #dee2e6' }}>
+                                            <p style={{ margin: '0', color: '#6c757d' }}>Loading status...</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Manual Generation */}
+                                <div>
+                                    <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Manual Generation</h3>
+                                    <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #dee2e6' }}>
+                                        <button
+                                            onClick={generateSitemap}
+                                            disabled={sitemapLoading}
+                                            style={{
+                                                padding: '0.75rem 1.5rem',
+                                                backgroundColor: sitemapLoading ? '#6c757d' : '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: sitemapLoading ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                width: '100%',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <FaSync style={{
+                                                animation: sitemapLoading ? 'spin 1s linear infinite' : 'none'
+                                            }} />
+                                            {sitemapLoading ? 'Generating...' : 'Generate Sitemap Now'}
+                                        </button>
+                                        <p style={{
+                                            margin: '0.75rem 0 0 0',
+                                            fontSize: '12px',
+                                            color: '#6c757d',
+                                            lineHeight: '1.4'
+                                        }}>
+                                            This will fetch the latest content and generate a fresh sitemap.
+                                        </p>
+                                    </div>
+
+                                    {/* Automatic Schedule Info */}
+                                    <div style={{
+                                        backgroundColor: '#e3f2fd',
+                                        padding: '1rem',
+                                        borderRadius: '6px',
+                                        border: '1px solid #bbdefb',
+                                        marginTop: '1rem'
+                                    }}>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#1565c0', fontSize: '14px' }}>
+                                            📅 Automatic Updates
+                                        </h4>
+                                        <p style={{
+                                            margin: '0',
+                                            fontSize: '12px',
+                                            color: '#1976d2',
+                                            lineHeight: '1.4'
+                                        }}>
+                                            The sitemap automatically regenerates daily at 6:00 AM UTC to stay current.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Last Manual Generation Result */}
+                                {lastSitemapGeneration && (
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <h3 style={{ margin: '0 0 1rem 0', color: '#333' }}>Last Manual Generation</h3>
+                                        <div style={{
+                                            backgroundColor: '#d4edda',
+                                            padding: '1rem',
+                                            borderRadius: '6px',
+                                            border: '1px solid #c3e6cb'
+                                        }}>
+                                            <p style={{ margin: '0 0 0.5rem 0', color: '#155724' }}>
+                                                <strong>✅ Success!</strong>
+                                            </p>
+                                            <p style={{ margin: '0 0 0.5rem 0', color: '#155724' }}>
+                                                <strong>URLs Generated:</strong> {lastSitemapGeneration.routeCount}
+                                            </p>
+                                            <p style={{ margin: '0 0 0.5rem 0', color: '#155724' }}>
+                                                <strong>Generated At:</strong> {new Date(lastSitemapGeneration.generatedAt).toLocaleString()}
+                                            </p>
+                                            <p style={{ margin: '0', color: '#155724' }}>
+                                                <a
+                                                    href={lastSitemapGeneration.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ color: '#155724', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                >
+                                                    View Generated Sitemap <FaExternalLinkAlt style={{ fontSize: '12px' }} />
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

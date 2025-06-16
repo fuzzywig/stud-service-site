@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://mypetconnect.co.uk/sitemap.xml
+
+# Optional: Block admin or private areas (uncomment if needed)
+# Disallow: /admin
+# Disallow: /dashboard
+# Disallow: /*.json$

@@ -607,6 +607,229 @@ exports.deleteOldExpiredAdverts = onSchedule("every 24 hours", async () => {
     console.log(`Deleted ${deletedCount} expired adverts`);
 });
 
+
+
+// 🗺️ SITEMAP GENERATION FUNCTIONS
+
+const SITEMAP_DOMAIN = 'https://mypetconnect.co.uk';
+
+// Static routes configuration
+const staticRoutes = [
+    { path: '/', changefreq: 'daily', priority: 1.0 },
+    { path: '/browse', changefreq: 'daily', priority: 0.9 },
+    { path: '/top-studs', changefreq: 'weekly', priority: 0.8 },
+    { path: '/about', changefreq: 'monthly', priority: 0.7 },
+    { path: '/new-advert', changefreq: 'monthly', priority: 0.8 },
+    { path: '/dog-rescue', changefreq: 'weekly', priority: 0.7 },
+    { path: '/register', changefreq: 'monthly', priority: 0.6 },
+    { path: '/breeding-guide', changefreq: 'monthly', priority: 0.8 },
+    { path: '/help', changefreq: 'monthly', priority: 0.6 },
+    { path: '/blog', changefreq: 'weekly', priority: 0.8 },
+    { path: '/privacy-policy', changefreq: 'yearly', priority: 0.3 },
+    { path: '/terms-of-service', changefreq: 'yearly', priority: 0.3 },
+    { path: '/cookie-policy', changefreq: 'yearly', priority: 0.3 },
+];
+
+// Generate sitemap XML content
+async function generateSitemapContent() {
+    try {
+        console.log('🚀 Generating sitemap content...');
+
+        // Fetch approved adverts from allListings collection
+        const advertsSnapshot = await db.collection('allListings')
+            .where('approved', '==', true)
+            .get();
+
+        const advertRoutes = advertsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                path: `/advert-details/${doc.id}`,
+                changefreq: 'weekly',
+                priority: 0.6,
+                lastmod: data.updatedAt?.toDate?.()?.toISOString?.()?.split('T')[0] ||
+                    data.createdAt?.toDate?.()?.toISOString?.()?.split('T')[0] ||
+                    new Date().toISOString().split('T')[0]
+            };
+        });
+
+        // Fetch published blog posts
+        const blogSnapshot = await db.collection('blogPosts')
+            .where('status', '==', 'published')
+            .get();
+
+        const blogRoutes = blogSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                path: `/blog/${data.slug || doc.id}`,
+                changefreq: 'monthly',
+                priority: 0.7,
+                lastmod: data.updatedAt?.toDate?.()?.toISOString?.()?.split('T')[0] ||
+                    data.publishedAt?.toDate?.()?.toISOString?.()?.split('T')[0] ||
+                    new Date().toISOString().split('T')[0]
+            };
+        });
+
+        // Combine all routes
+        const allRoutes = [...staticRoutes, ...advertRoutes, ...blogRoutes];
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allRoutes.map(route => `  <url>
+    <loc>${SITEMAP_DOMAIN}${route.path}</loc>
+    <lastmod>${route.lastmod || currentDate}</lastmod>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+        console.log(`✅ Generated sitemap with ${allRoutes.length} URLs`);
+        console.log(`   📄 Static: ${staticRoutes.length}, 🔗 Adverts: ${advertRoutes.length}, 📝 Blog: ${blogRoutes.length}`);
+
+        return sitemap;
+
+    } catch (error) {
+        console.error('❌ Error generating sitemap:', error);
+        throw error;
+    }
+}
+
+// Upload sitemap to Firebase Storage
+async function uploadSitemap(sitemapContent) {
+    try {
+        const file = storage.file('sitemap.xml');
+
+        await file.save(sitemapContent, {
+            metadata: {
+                contentType: 'application/xml',
+                cacheControl: 'public, max-age=300',
+            },
+            public: true
+        });
+
+        await file.makePublic();
+
+        const publicUrl = `https://storage.googleapis.com/${storage.name}/sitemap.xml`;
+        console.log(`🌐 Sitemap uploaded to: ${publicUrl}`);
+
+        return publicUrl;
+    } catch (error) {
+        console.error('❌ Error uploading sitemap:', error);
+        throw error;
+    }
+}
+
+// Store sitemap metadata for tracking
+async function updateSitemapMetadata(url, routeCount) {
+    try {
+        await db.collection('sitemapMetadata').doc('current').set({
+            url: url,
+            routeCount: routeCount,
+            lastUpdated: Timestamp.now(),
+            generatedBy: 'cloud-function'
+        });
+
+        console.log('📊 Sitemap metadata updated');
+    } catch (error) {
+        console.error('❌ Error updating metadata:', error);
+    }
+}
+
+// 🕐 Daily scheduled sitemap generation
+exports.generateDailySitemap = onSchedule("0 6 * * *", async () => {
+    try {
+        console.log('🌅 Starting daily sitemap generation...');
+
+        const sitemapContent = await generateSitemapContent();
+        const sitemapUrl = await uploadSitemap(sitemapContent);
+
+        const routeCount = (sitemapContent.match(/<url>/g) || []).length;
+        await updateSitemapMetadata(sitemapUrl, routeCount);
+
+        console.log('🎉 Daily sitemap generation completed successfully!');
+        console.log(`📊 Generated ${routeCount} URLs`);
+        console.log(`🔗 Available at: ${sitemapUrl}`);
+
+    } catch (error) {
+        console.error('💥 Daily sitemap generation failed:', error);
+        throw error;
+    }
+});
+
+// 🔧 Manual sitemap generation (callable function for admin)
+exports.generateSitemapManual = onCall(async (request) => {
+    try {
+        if (!request.auth) {
+            throw new Error('Authentication required');
+        }
+
+        const adminStatus = await isAdmin(request.auth.uid);
+        if (!adminStatus) {
+            throw new Error('Admin access required');
+        }
+
+        console.log('🔧 Manual sitemap generation triggered by admin:', request.auth.uid);
+
+        const sitemapContent = await generateSitemapContent();
+        const sitemapUrl = await uploadSitemap(sitemapContent);
+
+        const routeCount = (sitemapContent.match(/<url>/g) || []).length;
+        await updateSitemapMetadata(sitemapUrl, routeCount);
+
+        return {
+            success: true,
+            message: 'Sitemap generated successfully',
+            url: sitemapUrl,
+            routeCount: routeCount,
+            generatedAt: new Date().toISOString()
+        };
+
+    } catch (error) {
+        console.error('❌ Manual sitemap generation failed:', error);
+        throw new Error(`Sitemap generation failed: ${error.message}`);
+    }
+});
+
+// 📊 Get sitemap status (callable function)
+exports.getSitemapStatus = onCall(async (request) => {
+    try {
+        if (!request.auth) {
+            throw new Error('Authentication required');
+        }
+
+        const adminStatus = await isAdmin(request.auth.uid);
+        if (!adminStatus) {
+            throw new Error('Admin access required');
+        }
+
+        const metadataDoc = await db.collection('sitemapMetadata').doc('current').get();
+
+        if (!metadataDoc.exists) {
+            return {
+                exists: false,
+                message: 'No sitemap generated yet'
+            };
+        }
+
+        const metadata = metadataDoc.data();
+
+        return {
+            exists: true,
+            url: metadata.url,
+            routeCount: metadata.routeCount,
+            lastUpdated: metadata.lastUpdated.toDate().toISOString(),
+            generatedBy: metadata.generatedBy
+        };
+
+    } catch (error) {
+        console.error('❌ Error getting sitemap status:', error);
+        throw new Error(`Failed to get sitemap status: ${error.message}`);
+    }
+});
+
+
+
+
 // 📧 Send expiring advert notifications (7 days before expiry) (EXISTING)
 exports.sendExpiringAdvertEmails = onSchedule("0 9 * * *", async () => {
     try {
@@ -729,6 +952,10 @@ exports.sendExpiringAdvertEmails = onSchedule("0 9 * * *", async () => {
         }
 
         console.log(`✅ Expiring adverts check complete: ${emailsSent} emails sent, ${errorsCount} errors`);
+
+
+
+
 
     } catch (error) {
         console.error('❌ Error in sendExpiringAdvertEmails:', error);
