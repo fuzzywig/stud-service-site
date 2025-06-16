@@ -8,8 +8,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    copyPublicDir: true, // Explicitly ensure public directory is copied
   },
   publicDir: 'public',
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif'], // Ensure images are included
   server: {
     // bind to all network interfaces
     host: "0.0.0.0",
