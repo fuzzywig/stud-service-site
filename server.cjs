@@ -6,7 +6,7 @@ const https = require('https');
 const API_KEY = 'pP8O9JNud0upxRnM9Fbs3w45793';
 
 // → Port where this combined server will listen
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 
@@ -15,20 +15,22 @@ app.set('trust proxy', true);
 app.use((req, res, next) => {
     const host = req.headers.host;
 
-    // Redirect www to non-www first
-    if (host && host.startsWith('www.')) {
-        const newHost = host.replace(/^www\./, '');
-        return res.redirect(301, `https://${newHost}${req.originalUrl}`);
-    }
+    // Only apply redirects in production (not localhost)
+    if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
+        // Redirect www to non-www first
+        if (host && host.startsWith('www.')) {
+            const newHost = host.replace(/^www\./, '');
+            return res.redirect(301, `https://${newHost}${req.originalUrl}`);
+        }
 
-    // Then redirect http to https
-    if (req.protocol === 'http') {
-        return res.redirect(301, `https://${host}${req.originalUrl}`);
+        // Then redirect http to https
+        if (req.protocol === 'http') {
+            return res.redirect(301, `https://${host}${req.originalUrl}`);
+        }
     }
 
     next();
 });
-
 
 // 1) Serve the Vite/React build statically from ./dist
 app.use(express.static(path.join(__dirname, 'dist')));
