@@ -5,6 +5,7 @@ import { db } from '../firebase/firebase';
 import { Search, Calendar, Clock, User, Tag, Filter, Heart, Share2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import BlogSidebar from './BlogSidebar';
 import { createSlug } from '../utils/blogUtils';
+import SEO from "../components/SEO";
 import './Blog.css';
 
 export default function Blog() {
@@ -336,374 +337,380 @@ export default function Blog() {
     );
 
     return (
-        <div className="bloglisting-container">
-            <div className="bloglisting-layout">
-                <main className="bloglisting-main">
-                    <header className="bloglisting-header">
-                        <h1 className="bloglisting-heading">Our Latest Blog Posts</h1>
-                        <p className="bloglisting-subtitle">
-                            Discover insights, tips, and stories from our experts
-                        </p>
-                    </header>
+        <>
+            <SEO
+                title="Pet Breeding Blog & Expert Tips"
+                description="Expert insights on pet breeding, care tips, stud selection guides, and advice from experienced breeders. Your trusted resource for responsible breeding practices and pet care."
+            />
+            <div className="bloglisting-container">
+                <div className="bloglisting-layout">
+                    <main className="bloglisting-main">
+                        <header className="bloglisting-header">
+                            <h1 className="bloglisting-heading">Our Latest Blog Posts</h1>
+                            <p className="bloglisting-subtitle">
+                                Discover insights, tips, and stories from our experts
+                            </p>
+                        </header>
 
-                    <div className="bloglisting-controls">
-                        <div className="bloglisting-search-wrapper">
-                            <Search className="bloglisting-search-icon" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Search posts..."
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="bloglisting-search-input"
-                            />
-                        </div>
-
-                        {/* Mobile Filter Toggle */}
-                        <button
-                            className="bloglisting-filter-toggle"
-                            onClick={() => setFiltersExpanded(!filtersExpanded)}
-                            aria-label="Toggle filters"
-                        >
-                            <Filter size={16} />
-                            <span>Filters</span>
-                            {filtersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-
-                        <div className={`bloglisting-filters-wrapper ${filtersExpanded ? 'bloglisting-expanded' : ''}`}>
-                            <div className="bloglisting-filter-group">
-                                <Filter className="bloglisting-filter-icon" size={16} />
-                                <select
-                                    value={selectedCategory}
+                        <div className="bloglisting-controls">
+                            <div className="bloglisting-search-wrapper">
+                                <Search className="bloglisting-search-icon" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Search posts..."
+                                    value={searchTerm}
                                     onChange={(e) => {
-                                        setSelectedCategory(e.target.value);
+                                        setSearchTerm(e.target.value);
                                         setCurrentPage(1);
                                     }}
-                                    className="bloglisting-filter-select"
-                                >
-                                    <option value="">All Categories</option>
-                                    {allCategories.map(category => (
-                                        <option key={category} value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
+                                    className="bloglisting-search-input"
+                                />
                             </div>
 
-                            <div className="bloglisting-filter-group">
-                                <Tag className="bloglisting-filter-icon" size={16} />
-                                <select
-                                    value={selectedTag}
-                                    onChange={(e) => {
-                                        setSelectedTag(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="bloglisting-filter-select"
-                                >
-                                    <option value="">All Tags</option>
-                                    {allTags.map(tag => (
-                                        <option key={tag} value={tag}>
-                                            {tag}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {/* Mobile Filter Toggle */}
+                            <button
+                                className="bloglisting-filter-toggle"
+                                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                                aria-label="Toggle filters"
+                            >
+                                <Filter size={16} />
+                                <span>Filters</span>
+                                {filtersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
 
-                            <div className="bloglisting-filter-group">
-                                <select
-                                    value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value)}
-                                    className="bloglisting-filter-select"
-                                >
-                                    <option value="newest">Newest First</option>
-                                    <option value="oldest">Oldest First</option>
-                                    <option value="views">Most Viewed</option>
-                                </select>
-                            </div>
+                            <div className={`bloglisting-filters-wrapper ${filtersExpanded ? 'bloglisting-expanded' : ''}`}>
+                                <div className="bloglisting-filter-group">
+                                    <Filter className="bloglisting-filter-icon" size={16} />
+                                    <select
+                                        value={selectedCategory}
+                                        onChange={(e) => {
+                                            setSelectedCategory(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        className="bloglisting-filter-select"
+                                    >
+                                        <option value="">All Categories</option>
+                                        {allCategories.map(category => (
+                                            <option key={category} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                            {(selectedCategory || selectedTag || searchTerm) && (
-                                <button onClick={resetFilters} className="bloglisting-reset-filters-btn">
-                                    Clear Filters
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                                <div className="bloglisting-filter-group">
+                                    <Tag className="bloglisting-filter-icon" size={16} />
+                                    <select
+                                        value={selectedTag}
+                                        onChange={(e) => {
+                                            setSelectedTag(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        className="bloglisting-filter-select"
+                                    >
+                                        <option value="">All Tags</option>
+                                        {allTags.map(tag => (
+                                            <option key={tag} value={tag}>
+                                                {tag}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                    {!loading && (
-                        <div className="bloglisting-results-summary">
-                            {filteredPosts.length === 0 ? (
-                                <div className="bloglisting-no-results">
-                                    <p>No posts found matching your criteria.</p>
+                                <div className="bloglisting-filter-group">
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                        className="bloglisting-filter-select"
+                                    >
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="views">Most Viewed</option>
+                                    </select>
+                                </div>
+
+                                {(selectedCategory || selectedTag || searchTerm) && (
                                     <button onClick={resetFilters} className="bloglisting-reset-filters-btn">
-                                        Show All Posts
+                                        Clear Filters
                                     </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {!loading && (
+                            <div className="bloglisting-results-summary">
+                                {filteredPosts.length === 0 ? (
+                                    <div className="bloglisting-no-results">
+                                        <p>No posts found matching your criteria.</p>
+                                        <button onClick={resetFilters} className="bloglisting-reset-filters-btn">
+                                            Show All Posts
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p>
+                                        Showing {currentPosts.length} of {filteredPosts.length} posts
+                                        {(selectedCategory || selectedTag || searchTerm) && ' (filtered)'}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="bloglisting-posts-container">
+                            {loading ? (
+                                Array.from({ length: 6 }).map((_, index) => (
+                                    <PostSkeleton key={index} />
+                                ))
+                            ) : currentPosts.length === 0 ? (
+                                <div className="bloglisting-no-posts">
+                                    <p>No posts to display.</p>
                                 </div>
                             ) : (
-                                <p>
-                                    Showing {currentPosts.length} of {filteredPosts.length} posts
-                                    {(selectedCategory || selectedTag || searchTerm) && ' (filtered)'}
-                                </p>
+                                <>
+                                    {/* Featured Post - Most Recent */}
+                                    {currentPosts.length > 0 && (
+                                        <div className="bloglisting-featured-post">
+                                            {(() => {
+                                                const post = currentPosts[0];
+                                                const postImage = post.image && !post.image.includes('via.placeholder.com')
+                                                    ? post.image
+                                                    : `https://placehold.co/1200x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
+
+                                                const displayCategories = post.categories && Array.isArray(post.categories) && post.categories.length > 0
+                                                    ? post.categories
+                                                    : post.category ? [post.category] : [];
+
+                                                return (
+                                                    <div className="bloglisting-featured-card">
+                                                        <Link
+                                                            to={`/blog/${post.slug || post.id}`}
+                                                            className="bloglisting-featured-link"
+                                                            onClick={() => handlePostClick(post.id)}
+                                                        >
+                                                            <div className="bloglisting-featured-image-wrapper">
+                                                                <img
+                                                                    src={postImage}
+                                                                    alt={post.title || 'Featured blog post'}
+                                                                    className="bloglisting-featured-image"
+                                                                    onError={(e) => {
+                                                                        e.target.src = `https://placehold.co/1200x400?text=${encodeURIComponent('Featured Post')}`;
+                                                                    }}
+                                                                />
+                                                                {displayCategories.length > 0 && (
+                                                                    <span className="bloglisting-featured-category-badge">
+                                                                        {displayCategories[0]}
+                                                                    </span>
+                                                                )}
+                                                                <div className="bloglisting-featured-overlay">
+                                                                    <span className="bloglisting-featured-label">Latest Article</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bloglisting-featured-content">
+                                                                <h2 className="bloglisting-featured-title">{post.title || 'Untitled Post'}</h2>
+
+                                                                <p className="bloglisting-featured-excerpt">
+                                                                    {truncateExcerpt(post.excerpt, 200)}
+                                                                    {post.excerpt && post.excerpt.length > 200 && (
+                                                                        <span className="bloglisting-read-more"> Read more...</span>
+                                                                    )}
+                                                                </p>
+
+                                                                {displayCategories.length > 0 && (
+                                                                    <div className="bloglisting-featured-tag-list">
+                                                                        {displayCategories.slice(0, 4).map((category, index) => (
+                                                                            <span key={`${post.id}-featured-category-${index}`} className="bloglisting-featured-tag-badge">
+                                                                                {category}
+                                                                            </span>
+                                                                        ))}
+                                                                        {displayCategories.length > 4 && (
+                                                                            <span className="bloglisting-featured-tag-badge bloglisting-more">+{displayCategories.length - 4}</span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="bloglisting-featured-meta">
+                                                                    <div className="bloglisting-featured-author-info">
+                                                                        <div className="bloglisting-featured-author-avatar">
+                                                                            {post.displayInitials}
+                                                                        </div>
+                                                                        <span className="bloglisting-featured-author-name">{post.displayAuthor}</span>
+                                                                    </div>
+
+                                                                    <div className="bloglisting-featured-post-details">
+                                                                        <span className="bloglisting-featured-post-date">
+                                                                            <Calendar size={16} />
+                                                                            {formatDate(post.date)}
+                                                                        </span>
+                                                                        <span className="bloglisting-featured-read-time">
+                                                                            <Clock size={16} />
+                                                                            {post.readTime || '5 min read'}
+                                                                        </span>
+                                                                        <span className="bloglisting-featured-view-count">
+                                                                            <Eye size={16} />
+                                                                            {post.views || 0} views
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </Link>
+
+                                                        <div className="bloglisting-featured-actions">
+                                                            <button
+                                                                onClick={(e) => handleShare(post, e)}
+                                                                className="bloglisting-featured-action-btn bloglisting-featured-share-btn"
+                                                                title="Share this post"
+                                                            >
+                                                                <Share2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+
+                                    {/* Regular Posts Grid - 2 columns */}
+                                    {currentPosts.length > 1 && (
+                                        <div className="bloglisting-grid">
+                                            {currentPosts.slice(1).map((post) => {
+                                                const postImage = post.image && !post.image.includes('via.placeholder.com')
+                                                    ? post.image
+                                                    : `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
+
+                                                const displayCategories = post.categories && Array.isArray(post.categories) && post.categories.length > 0
+                                                    ? post.categories
+                                                    : post.category ? [post.category] : [];
+
+                                                return (
+                                                    <div key={post.id} className="bloglisting-card">
+                                                        <Link
+                                                            to={`/blog/${post.slug || post.id}`}
+                                                            className="bloglisting-card-link"
+                                                            onClick={() => handlePostClick(post.id)}
+                                                        >
+                                                            <div className="bloglisting-image-wrapper">
+                                                                <img
+                                                                    src={postImage}
+                                                                    alt={post.title || 'Blog post image'}
+                                                                    className="bloglisting-image"
+                                                                    onError={(e) => {
+                                                                        e.target.src = `https://placehold.co/800x400?text=${encodeURIComponent('Blog Post')}`;
+                                                                    }}
+                                                                />
+                                                                {displayCategories.length > 0 && (
+                                                                    <span className="bloglisting-category-badge">{displayCategories[0]}</span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="bloglisting-content">
+                                                                <h2 className="bloglisting-title">{post.title || 'Untitled Post'}</h2>
+
+                                                                <p className="bloglisting-excerpt">
+                                                                    {truncateExcerpt(post.excerpt)}
+                                                                    {post.excerpt && post.excerpt.length > 150 && (
+                                                                        <span className="bloglisting-read-more"> Read more...</span>
+                                                                    )}
+                                                                </p>
+
+                                                                {displayCategories.length > 0 && (
+                                                                    <div className="bloglisting-tag-list">
+                                                                        {displayCategories.slice(0, 3).map((category, index) => (
+                                                                            <span key={`${post.id}-category-${index}`} className="bloglisting-tag-badge">
+                                                                                {category}
+                                                                            </span>
+                                                                        ))}
+                                                                        {displayCategories.length > 3 && (
+                                                                            <span className="bloglisting-tag-badge bloglisting-more">+{displayCategories.length - 3}</span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                                                    <div className="bloglisting-tag-list">
+                                                                        {post.tags.slice(0, 3).map((tag, index) => (
+                                                                            <span key={`${post.id}-tag-${index}`} className="bloglisting-tag-badge">
+                                                                                {tag}
+                                                                            </span>
+                                                                        ))}
+                                                                        {post.tags.length > 3 && (
+                                                                            <span className="bloglisting-tag-badge bloglisting-more">+{post.tags.length - 3}</span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="bloglisting-meta">
+                                                                    <div className="bloglisting-author-info">
+                                                                        <div className="bloglisting-author-avatar">
+                                                                            {post.displayInitials}
+                                                                        </div>
+                                                                        <span className="bloglisting-author-name">{post.displayAuthor}</span>
+                                                                    </div>
+
+                                                                    <div className="bloglisting-post-details">
+                                                                        <span className="bloglisting-post-date">
+                                                                            <Calendar size={14} />
+                                                                            {formatDate(post.date)}
+                                                                        </span>
+                                                                        <span className="bloglisting-read-time">
+                                                                            <Clock size={14} />
+                                                                            {post.readTime || '5 min read'}
+                                                                        </span>
+                                                                        <span className="bloglisting-view-count">
+                                                                            <Eye size={14} />
+                                                                            {post.views || 0} views
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </Link>
+
+                                                        <div className="bloglisting-actions">
+                                                            <button
+                                                                onClick={(e) => handleShare(post, e)}
+                                                                className="bloglisting-action-btn bloglisting-share-btn"
+                                                                title="Share this post"
+                                                            >
+                                                                <Share2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
-                    )}
 
-                    <div className="bloglisting-posts-container">
-                        {loading ? (
-                            Array.from({ length: 6 }).map((_, index) => (
-                                <PostSkeleton key={index} />
-                            ))
-                        ) : currentPosts.length === 0 ? (
-                            <div className="bloglisting-no-posts">
-                                <p>No posts to display.</p>
+                        {!loading && filteredPosts.length > postsPerPage && (
+                            <div className="bloglisting-pagination">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="bloglisting-pagination-btn"
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="bloglisting-pagination-info">
+                                    Page {currentPage} of {totalPages}
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="bloglisting-pagination-btn"
+                                >
+                                    Next
+                                </button>
                             </div>
-                        ) : (
-                            <>
-                                {/* Featured Post - Most Recent */}
-                                {currentPosts.length > 0 && (
-                                    <div className="bloglisting-featured-post">
-                                        {(() => {
-                                            const post = currentPosts[0];
-                                            const postImage = post.image && !post.image.includes('via.placeholder.com')
-                                                ? post.image
-                                                : `https://placehold.co/1200x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
-
-                                            const displayCategories = post.categories && Array.isArray(post.categories) && post.categories.length > 0
-                                                ? post.categories
-                                                : post.category ? [post.category] : [];
-
-                                            return (
-                                                <div className="bloglisting-featured-card">
-                                                    <Link
-                                                        to={`/blog/${post.slug || post.id}`}
-                                                        className="bloglisting-featured-link"
-                                                        onClick={() => handlePostClick(post.id)}
-                                                    >
-                                                        <div className="bloglisting-featured-image-wrapper">
-                                                            <img
-                                                                src={postImage}
-                                                                alt={post.title || 'Featured blog post'}
-                                                                className="bloglisting-featured-image"
-                                                                onError={(e) => {
-                                                                    e.target.src = `https://placehold.co/1200x400?text=${encodeURIComponent('Featured Post')}`;
-                                                                }}
-                                                            />
-                                                            {displayCategories.length > 0 && (
-                                                                <span className="bloglisting-featured-category-badge">
-                                                                    {displayCategories[0]}
-                                                                </span>
-                                                            )}
-                                                            <div className="bloglisting-featured-overlay">
-                                                                <span className="bloglisting-featured-label">Latest Article</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="bloglisting-featured-content">
-                                                            <h2 className="bloglisting-featured-title">{post.title || 'Untitled Post'}</h2>
-
-                                                            <p className="bloglisting-featured-excerpt">
-                                                                {truncateExcerpt(post.excerpt, 200)}
-                                                                {post.excerpt && post.excerpt.length > 200 && (
-                                                                    <span className="bloglisting-read-more"> Read more...</span>
-                                                                )}
-                                                            </p>
-
-                                                            {displayCategories.length > 0 && (
-                                                                <div className="bloglisting-featured-tag-list">
-                                                                    {displayCategories.slice(0, 4).map((category, index) => (
-                                                                        <span key={`${post.id}-featured-category-${index}`} className="bloglisting-featured-tag-badge">
-                                                                            {category}
-                                                                        </span>
-                                                                    ))}
-                                                                    {displayCategories.length > 4 && (
-                                                                        <span className="bloglisting-featured-tag-badge bloglisting-more">+{displayCategories.length - 4}</span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="bloglisting-featured-meta">
-                                                                <div className="bloglisting-featured-author-info">
-                                                                    <div className="bloglisting-featured-author-avatar">
-                                                                        {post.displayInitials}
-                                                                    </div>
-                                                                    <span className="bloglisting-featured-author-name">{post.displayAuthor}</span>
-                                                                </div>
-
-                                                                <div className="bloglisting-featured-post-details">
-                                                                    <span className="bloglisting-featured-post-date">
-                                                                        <Calendar size={16} />
-                                                                        {formatDate(post.date)}
-                                                                    </span>
-                                                                    <span className="bloglisting-featured-read-time">
-                                                                        <Clock size={16} />
-                                                                        {post.readTime || '5 min read'}
-                                                                    </span>
-                                                                    <span className="bloglisting-featured-view-count">
-                                                                        <Eye size={16} />
-                                                                        {post.views || 0} views
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </Link>
-
-                                                    <div className="bloglisting-featured-actions">
-                                                        <button
-                                                            onClick={(e) => handleShare(post, e)}
-                                                            className="bloglisting-featured-action-btn bloglisting-featured-share-btn"
-                                                            title="Share this post"
-                                                        >
-                                                            <Share2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })()}
-                                    </div>
-                                )}
-
-                                {/* Regular Posts Grid - 2 columns */}
-                                {currentPosts.length > 1 && (
-                                    <div className="bloglisting-grid">
-                                        {currentPosts.slice(1).map((post) => {
-                                            const postImage = post.image && !post.image.includes('via.placeholder.com')
-                                                ? post.image
-                                                : `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
-
-                                            const displayCategories = post.categories && Array.isArray(post.categories) && post.categories.length > 0
-                                                ? post.categories
-                                                : post.category ? [post.category] : [];
-
-                                            return (
-                                                <div key={post.id} className="bloglisting-card">
-                                                    <Link
-                                                        to={`/blog/${post.slug || post.id}`}
-                                                        className="bloglisting-card-link"
-                                                        onClick={() => handlePostClick(post.id)}
-                                                    >
-                                                        <div className="bloglisting-image-wrapper">
-                                                            <img
-                                                                src={postImage}
-                                                                alt={post.title || 'Blog post image'}
-                                                                className="bloglisting-image"
-                                                                onError={(e) => {
-                                                                    e.target.src = `https://placehold.co/800x400?text=${encodeURIComponent('Blog Post')}`;
-                                                                }}
-                                                            />
-                                                            {displayCategories.length > 0 && (
-                                                                <span className="bloglisting-category-badge">{displayCategories[0]}</span>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="bloglisting-content">
-                                                            <h2 className="bloglisting-title">{post.title || 'Untitled Post'}</h2>
-
-                                                            <p className="bloglisting-excerpt">
-                                                                {truncateExcerpt(post.excerpt)}
-                                                                {post.excerpt && post.excerpt.length > 150 && (
-                                                                    <span className="bloglisting-read-more"> Read more...</span>
-                                                                )}
-                                                            </p>
-
-                                                            {displayCategories.length > 0 && (
-                                                                <div className="bloglisting-tag-list">
-                                                                    {displayCategories.slice(0, 3).map((category, index) => (
-                                                                        <span key={`${post.id}-category-${index}`} className="bloglisting-tag-badge">
-                                                                            {category}
-                                                                        </span>
-                                                                    ))}
-                                                                    {displayCategories.length > 3 && (
-                                                                        <span className="bloglisting-tag-badge bloglisting-more">+{displayCategories.length - 3}</span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
-                                                            {Array.isArray(post.tags) && post.tags.length > 0 && (
-                                                                <div className="bloglisting-tag-list">
-                                                                    {post.tags.slice(0, 3).map((tag, index) => (
-                                                                        <span key={`${post.id}-tag-${index}`} className="bloglisting-tag-badge">
-                                                                            {tag}
-                                                                        </span>
-                                                                    ))}
-                                                                    {post.tags.length > 3 && (
-                                                                        <span className="bloglisting-tag-badge bloglisting-more">+{post.tags.length - 3}</span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="bloglisting-meta">
-                                                                <div className="bloglisting-author-info">
-                                                                    <div className="bloglisting-author-avatar">
-                                                                        {post.displayInitials}
-                                                                    </div>
-                                                                    <span className="bloglisting-author-name">{post.displayAuthor}</span>
-                                                                </div>
-
-                                                                <div className="bloglisting-post-details">
-                                                                    <span className="bloglisting-post-date">
-                                                                        <Calendar size={14} />
-                                                                        {formatDate(post.date)}
-                                                                    </span>
-                                                                    <span className="bloglisting-read-time">
-                                                                        <Clock size={14} />
-                                                                        {post.readTime || '5 min read'}
-                                                                    </span>
-                                                                    <span className="bloglisting-view-count">
-                                                                        <Eye size={14} />
-                                                                        {post.views || 0} views
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </Link>
-
-                                                    <div className="bloglisting-actions">
-                                                        <button
-                                                            onClick={(e) => handleShare(post, e)}
-                                                            className="bloglisting-action-btn bloglisting-share-btn"
-                                                            title="Share this post"
-                                                        >
-                                                            <Share2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </>
                         )}
-                    </div>
+                    </main>
 
-                    {!loading && filteredPosts.length > postsPerPage && (
-                        <div className="bloglisting-pagination">
-                            <button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                disabled={currentPage === 1}
-                                className="bloglisting-pagination-btn"
-                            >
-                                Previous
-                            </button>
-
-                            <div className="bloglisting-pagination-info">
-                                Page {currentPage} of {totalPages}
-                            </div>
-
-                            <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                disabled={currentPage === totalPages}
-                                className="bloglisting-pagination-btn"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    )}
-                </main>
-
-                {/* Sidebar */}
-                <BlogSidebar onSearch={handleSidebarSearch} />
+                    {/* Sidebar */}
+                    <BlogSidebar onSearch={handleSidebarSearch} />
+                </div>
             </div>
-        </div>
+        </>
     );
 }

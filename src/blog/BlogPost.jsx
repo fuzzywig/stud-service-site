@@ -5,6 +5,7 @@ import { db, auth } from '../firebase/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Calendar, Clock, Tag, Heart, Share2, Eye, ArrowLeft, Facebook, Twitter, Mail } from 'lucide-react';
 import BlogSidebar from './BlogSidebar';
+import SEO from "../components/SEO";
 import "./BlogPost.css";
 import "./BlogSidebar.css";
 
@@ -22,6 +23,61 @@ export default function BlogPost() {
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
+
+    // Dynamic SEO function
+    const getSEOData = () => {
+        if (!post) {
+            return {
+                title: "Blog Post | My Pet Connect",
+                description: "Read the latest insights, tips, and stories about pet breeding, care, and connecting with fellow pet enthusiasts on My Pet Connect."
+            };
+        }
+
+        // Create title using the article title
+        const seoTitle = `${post.title} | My Pet Connect Blog`;
+
+        // Create description from excerpt or content
+        let description = '';
+
+        if (post.excerpt) {
+            // Use excerpt if available
+            description = post.excerpt;
+        } else if (post.content) {
+            // Extract plain text from content and truncate
+            const plainText = post.content
+                .replace(/<[^>]*>/g, '') // Remove HTML tags
+                .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
+                .replace(/\*(.*?)\*/g, '$1') // Remove markdown italic
+                .replace(/## (.*?)(?=\n|$)/g, '$1') // Remove markdown headers
+                .replace(/### (.*?)(?=\n|$)/g, '$1')
+                .replace(/\n+/g, ' ') // Replace newlines with spaces
+                .trim();
+
+            // Truncate to around 155 characters for optimal SEO
+            description = plainText.length > 155
+                ? plainText.substring(0, 152) + '...'
+                : plainText;
+        }
+
+        // Fallback description if no content available
+        if (!description.trim()) {
+            description = `Read "${post.title}" on My Pet Connect blog. Discover insights, tips, and stories about pet breeding, care, and connecting with fellow pet enthusiasts.`;
+        }
+
+        // Ensure description doesn't exceed 160 characters (SEO best practice)
+        if (description.length > 160) {
+            description = description.substring(0, 157) + '...';
+        }
+
+        return {
+            title: seoTitle,
+            description: description
+        };
+    };
+
+    // Get the dynamic SEO data
+    const { title: seoTitle, description: seoDescription } = getSEOData();
+
     // Guest-compatible view tracking function
     const trackView = async (postId) => {
         try {
@@ -589,39 +645,51 @@ export default function BlogPost() {
 
     if (loading) {
         return (
-            <div className="blogpost-container">
-                <div className="blogpost-layout">
-                    <main className="blogpost-main">
-                        <div className="blogpost-skeleton">
-                            <div className="blogpost-skeleton-image"></div>
-                            <div className="blogpost-skeleton-title"></div>
-                            <div className="blogpost-skeleton-meta"></div>
-                            <div className="blogpost-skeleton-content"></div>
-                        </div>
-                    </main>
-                    <BlogSidebar />
+            <>
+                <SEO
+                    title={seoTitle}
+                    description={seoDescription}
+                />
+                <div className="blogpost-container">
+                    <div className="blogpost-layout">
+                        <main className="blogpost-main">
+                            <div className="blogpost-skeleton">
+                                <div className="blogpost-skeleton-image"></div>
+                                <div className="blogpost-skeleton-title"></div>
+                                <div className="blogpost-skeleton-meta"></div>
+                                <div className="blogpost-skeleton-content"></div>
+                            </div>
+                        </main>
+                        <BlogSidebar />
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 
     if (!post) {
         return (
-            <div className="blogpost-container">
-                <div className="blogpost-layout">
-                    <main className="blogpost-main">
-                        <div className="blogpost-not-found">
-                            <h2>Post not found</h2>
-                            <p>The blog post you're looking for doesn't exist or has been removed.</p>
-                            <Link to="/blog" className="blogpost-back-link">
-                                <ArrowLeft size={16} />
-                                Back to Blog
-                            </Link>
-                        </div>
-                    </main>
-                    <BlogSidebar />
+            <>
+                <SEO
+                    title="Post Not Found | My Pet Connect Blog"
+                    description="The blog post you're looking for doesn't exist or has been removed. Browse our latest pet care tips and breeding insights."
+                />
+                <div className="blogpost-container">
+                    <div className="blogpost-layout">
+                        <main className="blogpost-main">
+                            <div className="blogpost-not-found">
+                                <h2>Post not found</h2>
+                                <p>The blog post you're looking for doesn't exist or has been removed.</p>
+                                <Link to="/blog" className="blogpost-back-link">
+                                    <ArrowLeft size={16} />
+                                    Back to Blog
+                                </Link>
+                            </div>
+                        </main>
+                        <BlogSidebar />
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -643,241 +711,247 @@ export default function BlogPost() {
     };
 
     return (
-        <div className="blogpost-container">
-            <div className="blogpost-layout">
-                <main className="blogpost-main">
-                    <article className="blogpost-article">
-                        <header className="blogpost-header">
-                            <h1 className="blogpost-title">{post.title}</h1>
+        <>
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+            />
+            <div className="blogpost-container">
+                <div className="blogpost-layout">
+                    <main className="blogpost-main">
+                        <article className="blogpost-article">
+                            <header className="blogpost-header">
+                                <h1 className="blogpost-title">{post.title}</h1>
 
-                            <div className="blogpost-meta-detailed">
-                                <div className="blogpost-author-section">
-                                    <div className="blogpost-author-avatar">
-                                        {(() => {
-                                            if (post.isAdminPost) {
-                                                // Use company name initials if available, otherwise default to "MPC"
-                                                const companyName = post.companyName || 'MyPetConnect';
-                                                return companyName.split(' ').map(word => word[0]).join('').toUpperCase();
-                                            } else if (post.author && ['Admin', 'Administrator', 'MyPetConnect', 'Staff', 'Gavin Oxley-Bryan', 'Info'].includes(post.author)) {
-                                                return 'MPC'; // Default for legacy admin names
-                                            } else {
-                                                return post.author?.split(' ').map(name => name[0]).join('').toUpperCase() || 'A';
-                                            }
-                                        })()}
-                                    </div>
-                                    <div className="blogpost-author-info">
-                                        <span className="blogpost-author-name">
-                                            {getDisplayAuthor()}
-                                        </span>
-                                        <div className="blogpost-details">
-                                            <span className="blogpost-date">
-                                                <Calendar size={14} />
-                                                {formatDate(post.date)}
+                                <div className="blogpost-meta-detailed">
+                                    <div className="blogpost-author-section">
+                                        <div className="blogpost-author-avatar">
+                                            {(() => {
+                                                if (post.isAdminPost) {
+                                                    // Use company name initials if available, otherwise default to "MPC"
+                                                    const companyName = post.companyName || 'MyPetConnect';
+                                                    return companyName.split(' ').map(word => word[0]).join('').toUpperCase();
+                                                } else if (post.author && ['Admin', 'Administrator', 'MyPetConnect', 'Staff', 'Gavin Oxley-Bryan', 'Info'].includes(post.author)) {
+                                                    return 'MPC'; // Default for legacy admin names
+                                                } else {
+                                                    return post.author?.split(' ').map(name => name[0]).join('').toUpperCase() || 'A';
+                                                }
+                                            })()}
+                                        </div>
+                                        <div className="blogpost-author-info">
+                                            <span className="blogpost-author-name">
+                                                {getDisplayAuthor()}
                                             </span>
-                                            <span className="blogpost-read-time">
-                                                <Clock size={14} />
-                                                {post.readTime || '5 min read'}
-                                            </span>
-                                            <span className="blogpost-view-count">
-                                                <Eye size={14} />
-                                                {post.views || 0} views
-                                            </span>
+                                            <div className="blogpost-details">
+                                                <span className="blogpost-date">
+                                                    <Calendar size={14} />
+                                                    {formatDate(post.date)}
+                                                </span>
+                                                <span className="blogpost-read-time">
+                                                    <Clock size={14} />
+                                                    {post.readTime || '5 min read'}
+                                                </span>
+                                                <span className="blogpost-view-count">
+                                                    <Eye size={14} />
+                                                    {post.views || 0} views
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="blogpost-social-share">
-                                    <button onClick={() => handleShare('facebook')} className="blogpost-share-btn blogpost-facebook">
-                                        <Facebook size={16} />
-                                    </button>
-                                    <button onClick={() => handleShare('twitter')} className="blogpost-share-btn blogpost-twitter">
-                                        <Twitter size={16} />
-                                    </button>
-                                    <button onClick={() => handleShare('email')} className="blogpost-share-btn blogpost-email">
-                                        <Mail size={16} />
-                                    </button>
-                                    <button onClick={() => handleShare('native')} className="blogpost-share-btn blogpost-native">
-                                        <Share2 size={16} />
-                                    </button>
-                                    <button
-                                        onClick={handleLike}
-                                        className={`blogpost-like-btn ${hasLiked ? 'blogpost-liked' : ''}`}
-                                        disabled={hasLiked}
-                                        title={hasLiked ? 'You already liked this post' : 'Like this post'}
-                                    >
-                                        <Heart size={16} fill={hasLiked ? 'currentColor' : 'none'} />
-                                        {likeCount > 0 && <span className="blogpost-like-count">{likeCount}</span>}
-                                        {hasLiked ? 'Liked' : 'Like'}
-                                    </button>
-                                </div>
-                            </div>
-                        </header>
-
-                        {post.image && (
-                            <div className="blogpost-image-wrapper">
-                                <img
-                                    src={post.image.includes('via.placeholder.com')
-                                        ? `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`
-                                        : post.image
-                                    }
-                                    alt={post.title}
-                                    className="blogpost-featured-image"
-                                    onError={(e) => {
-                                        console.log('Image failed to load:', e.target.src);
-                                        e.target.src = `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
-                                    }}
-                                />
-                            </div>
-                        )}
-
-                        <section className="blogpost-content-section">
-                            <div
-                                className="blogpost-content"
-                                dangerouslySetInnerHTML={{ __html: post.content || formatContent(post.content) }}
-                            />
-                        </section>
-
-                        {Array.isArray(post.categories) && post.categories.length > 0 && (
-                            <div className="blogpost-categories">
-                                <Tag size={16} />
-                                <span className="blogpost-categories-label">Categories:</span>
-                                {post.categories.map((category, index) => (
-                                    <Link
-                                        key={`blogpost-category-${index}-${category}`}
-                                        to={`/blog/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
-                                        className="blogpost-category-tag"
-                                    >
-                                        {category}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-
-                        {Array.isArray(post.tags) && post.tags.length > 0 && (
-                            <div className="blogpost-tags">
-                                <Tag size={16} />
-                                <span className="blogpost-tags-label">Tags:</span>
-                                {post.tags.map((tag, index) => (
-                                    <span key={`blogpost-tag-${index}-${tag}`} className="blogpost-tag">
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
-                        {relatedPosts.length > 0 && (
-                            <section className="blogpost-related-posts">
-                                <h3>Related Articles</h3>
-                                <div className="blogpost-related-grid">
-                                    {relatedPosts.map(relatedPost => (
-                                        <Link
-                                            key={`blogpost-related-${relatedPost.id}`}
-                                            to={`/blog/${relatedPost.slug || relatedPost.id}`}
-                                            className="blogpost-related-card"
-                                        >
-                                            <img
-                                                src={relatedPost.image && !relatedPost.image.includes('via.placeholder.com')
-                                                    ? relatedPost.image
-                                                    : `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`
-                                                }
-                                                alt={relatedPost.title}
-                                                className="blogpost-related-image"
-                                                onError={(e) => {
-                                                    e.target.src = `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`;
-                                                }}
-                                            />
-                                            <div className="blogpost-related-content">
-                                                <h4>{relatedPost.title}</h4>
-                                                <p>{relatedPost.excerpt?.substring(0, 100)}...</p>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        <section className="blogpost-comments-section">
-                            <h3>Comments ({comments.length})</h3>
-
-                            {user ? (
-                                <div className="blogpost-comment-form">
-                                    <h4>Leave a Comment</h4>
-                                    {userProfile && (
-                                        <p className="blogpost-commenting-as">
-                                            Commenting as: <strong>
-                                            {userProfile.isAdmin ? (userProfile.company || 'MyPetConnect') : `${userProfile.firstName} ${userProfile.lastName}`}
-                                        </strong>
-                                        </p>
-                                    )}
-                                    <form onSubmit={handleCommentSubmit}>
-                                        <textarea
-                                            placeholder="Your comment"
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            rows={4}
-                                            className="blogpost-comment-textarea"
-                                            required
-                                            disabled={commentSubmitting}
-                                        />
-                                        <button
-                                            type="submit"
-                                            className="blogpost-comment-submit"
-                                            disabled={!newComment.trim() || commentSubmitting}
-                                        >
-                                            {commentSubmitting ? 'Posting...' : 'Post Comment'}
+                                    <div className="blogpost-social-share">
+                                        <button onClick={() => handleShare('facebook')} className="blogpost-share-btn blogpost-facebook">
+                                            <Facebook size={16} />
                                         </button>
-                                    </form>
+                                        <button onClick={() => handleShare('twitter')} className="blogpost-share-btn blogpost-twitter">
+                                            <Twitter size={16} />
+                                        </button>
+                                        <button onClick={() => handleShare('email')} className="blogpost-share-btn blogpost-email">
+                                            <Mail size={16} />
+                                        </button>
+                                        <button onClick={() => handleShare('native')} className="blogpost-share-btn blogpost-native">
+                                            <Share2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={handleLike}
+                                            className={`blogpost-like-btn ${hasLiked ? 'blogpost-liked' : ''}`}
+                                            disabled={hasLiked}
+                                            title={hasLiked ? 'You already liked this post' : 'Like this post'}
+                                        >
+                                            <Heart size={16} fill={hasLiked ? 'currentColor' : 'none'} />
+                                            {likeCount > 0 && <span className="blogpost-like-count">{likeCount}</span>}
+                                            {hasLiked ? 'Liked' : 'Like'}
+                                        </button>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="blogpost-login-prompt">
-                                    <p>Please <Link to="/login">log in</Link> to leave a comment.</p>
+                            </header>
+
+                            {post.image && (
+                                <div className="blogpost-image-wrapper">
+                                    <img
+                                        src={post.image.includes('via.placeholder.com')
+                                            ? `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`
+                                            : post.image
+                                        }
+                                        alt={post.title}
+                                        className="blogpost-featured-image"
+                                        onError={(e) => {
+                                            console.log('Image failed to load:', e.target.src);
+                                            e.target.src = `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`;
+                                        }}
+                                    />
                                 </div>
                             )}
 
-                            <div className="blogpost-comments-list">
-                                {commentsLoading ? (
-                                    <div className="blogpost-comments-loading">
-                                        <p>Loading comments...</p>
-                                        <p style={{fontSize: '0.8rem', color: '#999'}}>
-                                            Check console for debug info
-                                        </p>
-                                    </div>
-                                ) : comments.length === 0 ? (
-                                    <p className="blogpost-no-comments">No comments yet. Be the first to comment!</p>
-                                ) : (
-                                    comments.map(comment => (
-                                        <div key={`blogpost-comment-${comment.id}`} className={`blogpost-comment ${comment.isAdminComment ? 'blogpost-admin-comment' : ''}`}>
-                                            <div className="blogpost-comment-header">
-                                                <strong className="blogpost-comment-author">
-                                                    {comment.displayName || comment.name}
-                                                    {comment.isAdminComment && (
-                                                        <span className="blogpost-admin-badge">Team</span>
-                                                    )}
-                                                </strong>
-                                                <span className="blogpost-comment-date">
-                                                    {comment.createdAt instanceof Date
-                                                        ? comment.createdAt.toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })
-                                                        : 'Just now'
-                                                    }
-                                                </span>
-                                            </div>
-                                            <p className="blogpost-comment-text">{comment.comment}</p>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </section>
-                    </article>
-                </main>
+                            <section className="blogpost-content-section">
+                                <div
+                                    className="blogpost-content"
+                                    dangerouslySetInnerHTML={{ __html: post.content || formatContent(post.content) }}
+                                />
+                            </section>
 
-                <BlogSidebar currentPostId={post?.id} />
+                            {Array.isArray(post.categories) && post.categories.length > 0 && (
+                                <div className="blogpost-categories">
+                                    <Tag size={16} />
+                                    <span className="blogpost-categories-label">Categories:</span>
+                                    {post.categories.map((category, index) => (
+                                        <Link
+                                            key={`blogpost-category-${index}-${category}`}
+                                            to={`/blog/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                                            className="blogpost-category-tag"
+                                        >
+                                            {category}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+
+                            {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                <div className="blogpost-tags">
+                                    <Tag size={16} />
+                                    <span className="blogpost-tags-label">Tags:</span>
+                                    {post.tags.map((tag, index) => (
+                                        <span key={`blogpost-tag-${index}-${tag}`} className="blogpost-tag">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {relatedPosts.length > 0 && (
+                                <section className="blogpost-related-posts">
+                                    <h3>Related Articles</h3>
+                                    <div className="blogpost-related-grid">
+                                        {relatedPosts.map(relatedPost => (
+                                            <Link
+                                                key={`blogpost-related-${relatedPost.id}`}
+                                                to={`/blog/${relatedPost.slug || relatedPost.id}`}
+                                                className="blogpost-related-card"
+                                            >
+                                                <img
+                                                    src={relatedPost.image && !relatedPost.image.includes('via.placeholder.com')
+                                                        ? relatedPost.image
+                                                        : `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`
+                                                    }
+                                                    alt={relatedPost.title}
+                                                    className="blogpost-related-image"
+                                                    onError={(e) => {
+                                                        e.target.src = `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`;
+                                                    }}
+                                                />
+                                                <div className="blogpost-related-content">
+                                                    <h4>{relatedPost.title}</h4>
+                                                    <p>{relatedPost.excerpt?.substring(0, 100)}...</p>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            <section className="blogpost-comments-section">
+                                <h3>Comments ({comments.length})</h3>
+
+                                {user ? (
+                                    <div className="blogpost-comment-form">
+                                        <h4>Leave a Comment</h4>
+                                        {userProfile && (
+                                            <p className="blogpost-commenting-as">
+                                                Commenting as: <strong>
+                                                {userProfile.isAdmin ? (userProfile.company || 'MyPetConnect') : `${userProfile.firstName} ${userProfile.lastName}`}
+                                            </strong>
+                                            </p>
+                                        )}
+                                        <form onSubmit={handleCommentSubmit}>
+                                            <textarea
+                                                placeholder="Your comment"
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                rows={4}
+                                                className="blogpost-comment-textarea"
+                                                required
+                                                disabled={commentSubmitting}
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="blogpost-comment-submit"
+                                                disabled={!newComment.trim() || commentSubmitting}
+                                            >
+                                                {commentSubmitting ? 'Posting...' : 'Post Comment'}
+                                            </button>
+                                        </form>
+                                    </div>
+                                ) : (
+                                    <div className="blogpost-login-prompt">
+                                        <p>Please <Link to="/login">log in</Link> to leave a comment.</p>
+                                    </div>
+                                )}
+
+                                <div className="blogpost-comments-list">
+                                    {commentsLoading ? (
+                                        <div className="blogpost-comments-loading">
+                                            <p>Loading comments...</p>
+                                            <p style={{fontSize: '0.8rem', color: '#999'}}>
+                                                Check console for debug info
+                                            </p>
+                                        </div>
+                                    ) : comments.length === 0 ? (
+                                        <p className="blogpost-no-comments">No comments yet. Be the first to comment!</p>
+                                    ) : (
+                                        comments.map(comment => (
+                                            <div key={`blogpost-comment-${comment.id}`} className={`blogpost-comment ${comment.isAdminComment ? 'blogpost-admin-comment' : ''}`}>
+                                                <div className="blogpost-comment-header">
+                                                    <strong className="blogpost-comment-author">
+                                                        {comment.displayName || comment.name}
+                                                        {comment.isAdminComment && (
+                                                            <span className="blogpost-admin-badge">Team</span>
+                                                        )}
+                                                    </strong>
+                                                    <span className="blogpost-comment-date">
+                                                        {comment.createdAt instanceof Date
+                                                            ? comment.createdAt.toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })
+                                                            : 'Just now'
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <p className="blogpost-comment-text">{comment.comment}</p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </section>
+                        </article>
+                    </main>
+
+                    <BlogSidebar currentPostId={post?.id} />
+                </div>
             </div>
-        </div>
+        </>
     );
 }

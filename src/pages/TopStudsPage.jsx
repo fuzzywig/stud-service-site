@@ -62,6 +62,81 @@ export default function TopStudsPage() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const auth = getAuth();
 
+    // Dynamic SEO function - MOVED INSIDE COMPONENT
+    const getSEOData = () => {
+        // Check if any filters are active
+        const hasFilters = activeCategory || selectedBreed !== 'all';
+
+        if (!hasFilters || (activeCategory === 'dogs' && selectedBreed === 'all')) {
+            // Default title when showing all dogs or no filters
+            return {
+                title: "Elite Stud Dogs & Cats – Top 1% Performers | My Pet Connect",
+                description: "Explore the Elite Hall of Fame on My Pet Connect: the top 1% of stud dogs and cats, ranked by performance, ratings, and reviews. Discover proven sires with exceptional genetics and join the leaders in breeding excellence."
+            };
+        }
+
+        // Build dynamic title based on filters
+        const titleParts = [];
+
+        // Add "Elite" first
+        titleParts.push("Elite");
+
+        // Add breed if selected
+        if (selectedBreed !== 'all') {
+            titleParts.push(selectedBreed);
+        }
+
+        // Add category
+        if (activeCategory === 'dogs') {
+            titleParts.push("Stud Dogs");
+        } else if (activeCategory === 'cats') {
+            titleParts.push("Stud Cats");
+        }
+
+        // Add descriptor
+        titleParts.push("– Top Performers");
+
+        const dynamicTitle = titleParts.join(" ");
+
+        // Build dynamic description
+        let description = "Discover the elite ";
+
+        if (selectedBreed !== 'all') {
+            description += `${selectedBreed.toLowerCase()} `;
+        }
+
+        if (activeCategory === 'dogs') {
+            description += "stud dogs ";
+        } else {
+            description += "stud cats ";
+        }
+
+        description += "ranking in the top 1% for performance, ratings, and breeding success. ";
+
+        // Add specific details based on selection
+        if (selectedBreed !== 'all') {
+            description += `These ${selectedBreed.toLowerCase()} studs have proven genetics, exceptional temperament, and outstanding breeding records. `;
+        }
+
+        // Add result context
+        const currentCount = activeCategory === 'dogs' ? filteredDogStuds.length : filteredCatStuds.length;
+        if (currentCount > 0) {
+            description += `View ${currentCount} elite performer${currentCount === 1 ? '' : 's'} `;
+            if (selectedBreed !== 'all') {
+                description += `in the ${selectedBreed} category. `;
+            } else {
+                description += `in our ${activeCategory} category. `;
+            }
+        }
+
+        description += "Connect with top breeders and proven bloodlines.";
+
+        return { title: dynamicTitle, description };
+    };
+
+    // Get the dynamic SEO data
+    const { title: seoTitle, description: seoDescription } = getSEOData();
+
     // Track auth state
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, u => setUser(u));
@@ -247,7 +322,6 @@ export default function TopStudsPage() {
         }
     };
 
-
     const getRankIcon = (rank) => {
         if (rank === 1) return { icon: faCrown, class: "rank-gold" };
         if (rank === 2) return { icon: faTrophy, class: "rank-silver" };
@@ -331,8 +405,8 @@ export default function TopStudsPage() {
     return (
         <>
             <SEO
-                title="Elite Stud Dogs & Cats – Top 1% Performers | My Pet Connect"
-                description="Explore the Elite Hall of Fame on My Pet Connect: the top 1% of stud dogs and cats, ranked by performance, ratings, and reviews. Discover proven sires with exceptional genetics and join the leaders in breeding excellence."
+                title={seoTitle}
+                description={seoDescription}
             />
             <div className="elite-studs-page">
                 {/* Animated background elements */}
@@ -504,7 +578,7 @@ export default function TopStudsPage() {
                                         <span>1st</span>
                                     </div>
                                     <Link to={`/advert-details/${currentStuds[0].id}`} className="elite-podium-image">
-                                        <img src={currentStuds[0].images?.[0] || "https://placehold.co/400x300"} alt={currentStuds[0].name} />
+                                        <img src={getMainImageUrl(currentStuds[0])} alt={currentStuds[0].name} />
                                         <div className="elite-podium-overlay">
                                             <span>View Profile</span>
                                         </div>
@@ -613,7 +687,8 @@ export default function TopStudsPage() {
 
                                         {/* Image */}
                                         <Link to={`/advert-details/${stud.id}`} className="elite-card-image">
-                                            <img src={getMainImageUrl(stud)} alt={title} />                                           <div className="elite-card-overlay">
+                                            <img src={getMainImageUrl(stud)} alt={title} />
+                                            <div className="elite-card-overlay">
                                                 <div className="elite-overlay-content">
                                                     <FontAwesomeIcon icon={faPaw} className="elite-overlay-icon" />
                                                     <span>View Elite Profile</span>

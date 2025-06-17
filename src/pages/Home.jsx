@@ -1,50 +1,49 @@
 import React, { useEffect } from "react";
+import { Helmet } from 'react-helmet-async';
 import Hero from "../components/Hero";
-import Recommended from "../components/Recommended"; // ✅ Import this
+import Recommended from "../components/Recommended";
 import CTASection from "../components/CTASection";
 import PopularBreeds from "../components/PopularBreeds.jsx";
-
 import RecentAdverts from "../components/RecentAdverts";
-import RecentBlogPosts from '../components/RecentBlogPosts'; // ✅ Fixed path
+import RecentBlogPosts from '../components/RecentBlogPosts';
 import NewsletterSignup from '../components/NewsletterSignup';
 import SEO from '../components/SEO';
 
 function Home() {
-        return (
-            <>
-                    <SEO
-                        title="Home – Find Local Stud Dogs & Pets for Sale"
-                        description="Connect with local pet owners to find stud dogs, puppies, cats, kittens, and rabbits in your area."
-                    />
+    return (
+        <>
 
-                    <Hero />
 
-                    {/* Dogs */}
-                    <RecentAdverts category="dogs" intent="sale" title="Recent Adverts In Puppies For Sale" limitCount={8} />
-                    <RecentAdverts category="dogs" intent="stud" title="Recent Adverts In Dogs For Stud" limitCount={8} />
-                    <RecentAdverts category="dogs" intent="rescue" title="Dogs Available for Adoption" limitCount={8} />
+            <SEO
+                title="Post a Pet Listing | Puppies, Kittens & Stud Dogs UK"
+                description="Create your free pet listing today. List puppies, kittens or stud dogs for sale. Connect with trusted UK pet lovers. Easy, secure, and breeder-friendly."
+            />
 
-                    {/* Cats */}
-                    <RecentAdverts category="cats" intent="stud" title="Recent Adverts In Cats For Stud" limitCount={8} />
-                    <RecentAdverts category="cats" intent="sale" title="Recent Adverts In Kittens For Sale" limitCount={8} />
-                    <RecentAdverts category="cats" intent="rescue" title="Cats Available for Adoption" limitCount={8} />
+            <Hero />
 
-                    {/* Rabbits */}
-                    <RecentAdverts category="rabbits" intent="sale" title="Recent Adverts In Rabbits For Sale" limitCount={8} />
-                    <RecentAdverts category="rabbits" intent="rescue" title="Rabbits Available for Adoption" limitCount={8} />
+            {/* Dogs */}
+            <RecentAdverts category="dogs" intent="sale" title="Recent Adverts In Puppies For Sale" limitCount={8} />
+            <RecentAdverts category="dogs" intent="stud" title="Recent Adverts In Dogs For Stud" limitCount={8} />
+            <RecentAdverts category="dogs" intent="rescue" title="Dogs Available for Adoption" limitCount={8} />
 
-                    {/* All Rescues Section - Optional: Show all rescue animals in one section */}
-                    <RecentAdverts intent="rescue" title="All Animals Available for Adoption" limitCount={12} />
+            {/* Cats */}
+            <RecentAdverts category="cats" intent="stud" title="Recent Adverts In Cats For Stud" limitCount={8} />
+            <RecentAdverts category="cats" intent="sale" title="Recent Adverts In Kittens For Sale" limitCount={8} />
+            <RecentAdverts category="cats" intent="rescue" title="Cats Available for Adoption" limitCount={8} />
 
-                    {/* Add the blog section above CTA */}
-                <PopularBreeds />
+            {/* Rabbits */}
+            <RecentAdverts category="rabbits" intent="sale" title="Recent Adverts In Rabbits For Sale" limitCount={8} />
+            <RecentAdverts category="rabbits" intent="rescue" title="Rabbits Available for Adoption" limitCount={8} />
 
-                <RecentBlogPosts />
-                <NewsletterSignup />
-                    <CTASection />
+            {/* All Rescues Section */}
+            <RecentAdverts intent="rescue" title="All Animals Available for Adoption" limitCount={12} />
 
-            </>
-        );
+            <PopularBreeds />
+            <RecentBlogPosts />
+            <NewsletterSignup />
+            <CTASection />
+        </>
+    );
 }
 
 export default Home;

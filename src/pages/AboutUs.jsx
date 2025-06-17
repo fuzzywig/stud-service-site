@@ -52,10 +52,10 @@ const AboutUs = () => {
         <>
 
     <Helmet>
-        <title>About Us | My Pet Connect</title>
+        <title>About My Pet Connect | Trusted Stud Advertising UK</title>
         <meta
             name="description"
-            content="Learn about My Pet Connect—our mission, story, and commitment to transparency in stud advertising. Connecting responsible breeders and handlers across the UK."
+            content="UK’s trusted pet advertising platform. Founded by a stud professional to promote transparency, health testing, and responsible breeding across the UK."
         />
         <meta name="robots" content="index,follow" />
     </Helmet>

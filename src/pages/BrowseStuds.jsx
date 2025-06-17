@@ -95,75 +95,138 @@ export default function BrowseStuds() {
     }, [categoryParam, breedParam, intentParam, radiusParam, postcodeParam]);
 
     // Dynamic SEO generation function
+    // Enhanced Dynamic SEO generation function
     const getSEOData = () => {
-        const parts = [];
+        // Check if any filters are active
+        const hasFilters = selectedBreed || selectedColour || selectedCategory !== "all" ||
+            selectedIntent || maxFee || searchPostcode || selectedAgeRange ||
+            selectedBreederType || selectedGender || filters.kc ||
+            filters.healthTested || filters.healthChecked || filters.proven ||
+            selectedGoodWithCats || selectedGoodWithDogs || selectedGoodWithChildren ||
+            selectedEnergyLevel || filters.fosteringAvailable || searchKeywords;
 
-        // Add breed to title if selected
+        // If no filters, use the default title
+        if (!hasFilters) {
+            return {
+                title: "Stud Dogs & Cats | Puppies & Kittens for Sale UK | Pet Breeding & Listings | My Pet Connect",
+                description: "Find stud dogs, cats, puppies and kittens for sale across the UK. Connect with licensed breeders, hobby breeders, and rescue organizations. Professional pet breeding services and adoption listings."
+            };
+        }
+
+        // If filters are set, use: "Breed for Intent in Location"
+        const titleParts = [];
+
+        // Add colour first if selected
+        if (selectedColour) {
+            titleParts.push(selectedColour);
+        }
+
+        // Add breed if selected
         if (selectedBreed) {
-            parts.push(selectedBreed);
+            titleParts.push(selectedBreed);
+
+            // For sales, add Puppies/Kittens after breed name
+            if (selectedIntent === "sale") {
+                if (selectedCategory === "dogs") {
+                    titleParts.push("Puppies");
+                } else if (selectedCategory === "cats") {
+                    titleParts.push("Kittens");
+                }
+            }
+        } else if (selectedCategory && selectedCategory !== "all") {
+            // If no specific breed but category is selected
+            const categoryLabels = {
+                dogs: selectedIntent === "sale" ? "Puppies" : "Dogs",
+                cats: selectedIntent === "sale" ? "Kittens" : "Cats",
+                rabbits: "Rabbits",
+                rodents: "Rodents",
+                horses: "Horses",
+                livestock: "Livestock",
+                birds: "Birds",
+                reptiles: "Reptiles",
+                fish: "Fish",
+                inverts: "Invertebrates"
+            };
+            titleParts.push(categoryLabels[selectedCategory] || selectedCategory);
         }
 
-        // Add category to title if not "all"
-        if (selectedCategory && selectedCategory !== "all") {
-            const categoryLabel = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
-            parts.push(categoryLabel);
+        // Add intent
+        if (selectedIntent) {
+            const intentLabels = {
+                stud: "for Stud",
+                rescue: "for Adoption",
+                sale: "for Sale"
+            };
+            titleParts.push(intentLabels[selectedIntent]);
         }
 
-        // Map intent to a label
-        const intentLabel =
-            selectedIntent === "stud" ? "Stud Services" :
-                selectedIntent === "rescue" ? "Adoptions" :
-                    selectedIntent === "sale" ? "For Sale" :
-                        "Listings";
-
-        parts.push(intentLabel);
+        // Add location
+        if (searchPostcode) {
+            titleParts.push("in", searchPostcode);
+        } else {
+            titleParts.push("in UK");
+        }
 
         // Build the title
-        let pageTitle = parts.length > 1 ? parts.join(" — ") : intentLabel;
-        pageTitle += " | My Pet Connect";
+        let pageTitle = titleParts.join(" ") + " | My Pet Connect";
 
-        // Build the description
-        let description = `Browse ${intentLabel.toLowerCase()}`;
-        if (selectedBreed) description += ` of ${selectedBreed}`;
-        if (selectedCategory && selectedCategory !== "all") description += ` in ${selectedCategory}`;
-        if (searchPostcode) description += ` near ${searchPostcode}`;
-        if (searchRadius && searchPostcode) description += ` within ${searchRadius} miles`;
-        description += " on My Pet Connect.";
+        // Build description
+        let description = "Browse ";
 
-        // Add filter context to description
-        const activeFilters = [];
-        if (maxFee) activeFilters.push(`under £${maxFee}`);
-        if (selectedColour) activeFilters.push(`${selectedColour} colour`);
-        if (selectedAgeRange) activeFilters.push(`${selectedAgeRange.toLowerCase()}`);
-        if (filters.kc) activeFilters.push("KC registered");
-        if (filters.healthTested) activeFilters.push("health tested");
-        if (selectedBreederType) {
-            if (selectedBreederType === 'rescue') {
-                activeFilters.push("rescue organizations");
-            } else {
-                activeFilters.push(`${selectedBreederType} breeders`);
+        if (selectedColour) description += `${selectedColour.toLowerCase()} `;
+        if (selectedBreed) description += `${selectedBreed.toLowerCase()} `;
+
+        if (selectedCategory === "dogs") {
+            description += selectedIntent === "sale" ? "puppies " : "dogs ";
+        } else if (selectedCategory === "cats") {
+            description += selectedIntent === "sale" ? "kittens " : "cats ";
+        } else if (selectedCategory !== "all") {
+            description += `${selectedCategory.toLowerCase()} `;
+        } else {
+            description += "pets ";
+        }
+
+        if (selectedIntent === "sale") {
+            description += "for sale ";
+        } else if (selectedIntent === "stud") {
+            description += "stud services ";
+        } else if (selectedIntent === "rescue") {
+            description += "for adoption ";
+        }
+
+        if (searchPostcode) {
+            description += `near ${searchPostcode}`;
+            if (searchRadius && searchRadius !== 50) {
+                description += ` within ${searchRadius} miles`;
             }
-        }
-        if (selectedGender && selectedIntent === "sale") {
-            activeFilters.push(`${selectedGender} gender`);
-        }
-
-        // Add rescue-specific filters
-        if (selectedIntent === "rescue") {
-            if (selectedGoodWithCats) activeFilters.push(`good with cats: ${selectedGoodWithCats}`);
-            if (selectedGoodWithDogs) activeFilters.push(`good with dogs: ${selectedGoodWithDogs}`);
-            if (selectedGoodWithChildren) activeFilters.push(`good with children: ${selectedGoodWithChildren}`);
-            if (selectedEnergyLevel) activeFilters.push(`${selectedEnergyLevel} energy`);
-            if (filters.fosteringAvailable) activeFilters.push("fostering available");
+        } else {
+            description += "across the UK";
         }
 
-        if (activeFilters.length > 0) {
-            description += ` Filtered by: ${activeFilters.join(", ")}.`;
+        description += ".";
+
+        // Add key filter details
+        const filterDetails = [];
+        if (maxFee) {
+            const priceLabel = selectedIntent === 'rescue' ? 'fees' : 'prices';
+            filterDetails.push(`${priceLabel} under £${maxFee}`);
+        }
+        if (filters.kc) filterDetails.push("KC registered");
+        if (filters.healthTested) filterDetails.push("health tested");
+        if (selectedBreederType === 'licensed') filterDetails.push("licensed breeders");
+        if (selectedBreederType === 'rescue') filterDetails.push("rescue organizations");
+
+        if (filterDetails.length > 0) {
+            description += ` Filter by: ${filterDetails.join(", ")}.`;
         }
 
-        // Add results count if we have filtered results
-        if (filteredAds.length > 0 && filteredAds.length !== ads.length) {
-            description += ` ${filteredAds.length} results found.`;
+        // Add CTA based on intent
+        if (selectedIntent === "sale") {
+            description += " Find your perfect companion today.";
+        } else if (selectedIntent === "stud") {
+            description += " Professional breeding services available.";
+        } else if (selectedIntent === "rescue") {
+            description += " Give a rescued pet a loving home.";
         }
 
         return { title: pageTitle, description };

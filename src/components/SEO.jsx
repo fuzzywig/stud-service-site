@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
  */
 export default function SEO({ title, description, lang = 'en' }) {
     const siteName = 'My Pet Connect';
-    const fullTitle = `${title} | ${siteName}`;
+    const fullTitle = `${title} `;
 
     return (
         <Helmet htmlAttributes={{ lang }}>

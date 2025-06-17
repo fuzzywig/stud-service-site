@@ -129,7 +129,6 @@ function AdvertDetails() {
     const { openLogin } = useLoginModal();
     const navigate = useNavigate();
     const currentUser = auth.currentUser;
-
     console.log("🔍 Advert ID:", id);
 
     const [advert, setAdvert] = useState(null);
@@ -173,24 +172,121 @@ function AdvertDetails() {
         yesterday: 0,
         last7Days: 0,
         last30Days: 0
-    });    const getSEOData = useCallback(() => {
+    });
+
+    // MOVE getSEOData FUNCTION HERE - BEFORE IT'S USED
+    const getSEOData = useCallback(() => {
         if (!advert) {
             return {
-                title: "Pet Advert | My Pet Connect",
+                title: "Pet Advert",
                 description: "View this pet advert on My Pet Connect"
             };
         }
 
-        const breedLabel = advert.breedOrType || advert.breed || "Pet";
-        const title = `${advert.title || advert.name || breedLabel} — ${breedLabel} in ${ownerLocation || advert.location || "UK"}`;
+        const breed = advert.breedOrType || advert.breed || "Pet";
+        const colour = advert.dogColor || advert.catColor || advert.otherColor || "";
+        const intent = advert.intent;
 
-        // Keep descriptions under ~160 characters
-        const description = advert.description && advert.description.length > 160
-            ? advert.description.slice(0, 157) + '…'
-            : advert.description || `${breedLabel} available in ${ownerLocation || "UK"}`;
+        // Use "Puppies" or "Kittens" for sale listings
+        let keywordType;
+        if (intent === 'sale' && (advert.category === 'dog' || advert.category === 'dogs')) keywordType = "Puppies";
+        else if (intent === 'sale' && (advert.category === 'cat' || advert.category === 'cats')) keywordType = "Kittens";
+        else keywordType = breed;
 
-        return { title, description };
+        const intentLabel = intent === 'sale' ? "for Sale"
+            : intent === 'stud' ? "for Stud"
+                : intent === 'rescue' ? "for Adoption"
+                    : "Listing";
+
+        // Parse location from ownerLocation (which comes from owner's city and postcode)
+        // ownerLocation is set in the useEffect from: `${city || ""}${city && postcode ? ", " : ""}${postcode || ""}`
+        let locationText = "UK";
+
+        if (ownerLocation && typeof ownerLocation === 'string' && ownerLocation.trim() !== "") {
+            const locationParts = ownerLocation.split(',').map(part => part.trim());
+            const city = locationParts[0] || "";
+            const postcode = locationParts[1] || "";
+            locationText = [city, postcode].filter(Boolean).join(', ');
+        } else if (advert.postcode) {
+            // Fallback to advert postcode if owner location not available
+            locationText = advert.postcode;
+        }
+
+        // Build dynamic title: "Colour Breed Puppies/Kittens for Sale" or "Colour Breed for Stud"
+        const titleParts = [];
+
+        // Add colour first if available
+        if (colour) {
+            titleParts.push(colour);
+        }
+
+        // Add breed name
+        titleParts.push(breed);
+
+        // Add Puppies/Kittens for sale listings, then intent
+        if (intent === 'sale' && (advert.category === 'dog' || advert.category === 'dogs')) {
+            titleParts.push("Puppies", intentLabel);
+        } else if (intent === 'sale' && (advert.category === 'cat' || advert.category === 'cats')) {
+            titleParts.push("Kittens", intentLabel);
+        } else {
+            titleParts.push(intentLabel);
+        }
+
+        // Add location
+        titleParts.push("in", locationText);
+
+        const dynamicTitle = titleParts.join(' ');
+
+        // Trim to ~60 characters max for SEO
+        const trimmedTitle = dynamicTitle.length > 60 ? dynamicTitle.slice(0, 57) + '…' : dynamicTitle;
+
+        // Create dynamic description based on intent and available data
+        let dynamicDescription;
+
+        if (intent === 'sale') {
+            // For sales: mention key details like age, health status, location
+            const agePart = advert.dob ? ` Born ${formatDate(advert.dob)}.` : '';
+            const healthPart = advert.healthChecked || advert.vaccinated || advert.microchipped ? ' Health checked.' : '';
+            const kcPart = advert.kcRegistered ? ' KC registered.' : '';
+            const readyPart = advert.availableDate ? ` Ready ${formatDate(advert.availableDate)}.` : '';
+
+            dynamicDescription = `${colour ? colour + ' ' : ''}${breed} ${advert.category === 'dogs' || advert.category === 'dog' ? 'puppies' : advert.category === 'cats' || advert.category === 'cat' ? 'kittens' : 'pets'} for sale in ${locationText}.${agePart}${healthPart}${kcPart}${readyPart} Contact breeder for more details.`;
+
+        } else if (intent === 'stud') {
+            // For stud: mention proven status, health tests, KC registration
+            const provenPart = advert.proven ? ' Proven stud.' : '';
+            const kcPart = advert.kcRegistered ? ' KC registered.' : '';
+            const healthTestsAvailable = Array.isArray(advert.healthTests) && advert.healthTests.length > 0;
+            const healthTestsPart = healthTestsAvailable ? ` ${advert.healthTests.length} health tests clear.` : '';
+            const mobilePart = advert.mobileService ? ' Mobile service available.' : '';
+
+            dynamicDescription = `${colour ? colour + ' ' : ''}${breed} stud dog available in ${locationText}.${provenPart}${kcPart}${healthTestsPart}${mobilePart} Professional breeding service.`;
+
+        } else if (intent === 'rescue') {
+            // For rescue: mention temperament, good with other pets/children
+            const goodWithPart = [];
+            if (advert.goodWithDogs === 'yes') goodWithPart.push('dogs');
+            if (advert.goodWithCats === 'yes') goodWithPart.push('cats');
+            if (advert.goodWithChildren === 'yes') goodWithPart.push('children');
+
+            const temperamentPart = goodWithPart.length > 0 ? ` Good with ${goodWithPart.join(', ')}.` : '';
+            const energyPart = advert.energyLevel ? ` ${advert.energyLevel.charAt(0).toUpperCase() + advert.energyLevel.slice(1)} energy level.` : '';
+
+            dynamicDescription = `${colour ? colour + ' ' : ''}${breed} looking for a loving home in ${locationText}.${temperamentPart}${energyPart} Contact rescue organization for adoption details.`;
+
+        } else {
+            // Fallback for other intents
+            dynamicDescription = `${colour ? colour + ' ' : ''}${breed} ${intentLabel.toLowerCase()} in ${locationText}. Contact owner for more information.`;
+        }
+
+        // Always use dynamic description for SEO
+        const finalDescription = dynamicDescription.length > 160 ? dynamicDescription.slice(0, 157) + '…' : dynamicDescription;
+
+        return { title: trimmedTitle, description: finalDescription };
     }, [advert, ownerLocation]);
+
+    // NOW you can safely call getSEOData
+    const { title, description } = getSEOData();
 
     const handleMessageOwner = useCallback(() => {
         if (!currentUser || !advert?.ownerId) {
@@ -846,7 +942,11 @@ function AdvertDetails() {
     // Early returns for loading and not found states
     if (loading) return (
         <>
-            <SEO title="Loading Pet Advert" description="Loading pet advert details..." />
+            <SEO
+                title={`${title} | My Pet Connect`}
+                description={description}
+            />
+
             <div className="loading-container">
                 <div className="loading-spinner"></div>
                 <p>Loading advert...</p>
@@ -856,7 +956,11 @@ function AdvertDetails() {
 
     if (!advert) return (
         <>
-            <SEO title="Pet Advert Not Found" description="The requested pet advert could not be found." />
+            <SEO
+                title={title}
+                description={description}
+            />
+
             <div className="not-found-container">
                 <div className="not-found-icon">🐾</div>
                 <p>Advert not found.</p>
@@ -1773,8 +1877,8 @@ function AdvertDetails() {
                                                         <div className="similar-studs-rating">
                                                             <FontAwesomeIcon icon={solidStar} className="similar-studs-star-icon" />
                                                             <span className="similar-studs-rating-value">
-                {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
-            </span>
+                                                                {rating.avgRating ? rating.avgRating.toFixed(1) : "0.0"}
+                                                            </span>
                                                         </div>
                                                     )}
 
@@ -2021,8 +2125,6 @@ function AdvertDetails() {
             )}
 
         </>
-
-
     );
 }
 

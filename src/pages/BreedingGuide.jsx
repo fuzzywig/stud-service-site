@@ -299,14 +299,14 @@ export default function BreedingGuide() {
 
     return (
 <>
-        <Helmet>
-            <title>Breeding Guide & Best Practices | My Pet Connect</title>
-            <meta
-                name="description"
-                content="Learn responsible breeding techniques, health testing protocols, and tips for raising healthy litters in our comprehensive Breeding Guide."
-            />
-            <meta name="robots" content="noindex,follow" />
-        </Helmet>
+    <Helmet>
+        <title>Dog Breeding Guide UK | Stud Dogs, Puppies for Sale & Responsible Breeding</title>
+        <meta
+            name="description"
+            content="Learn how to breed dogs ethically with our UK-focused breeding guide. Covers stud dogs, pregnancy care, puppy rehoming, and best practices for breeders."
+        />
+        <meta name="keywords" content="dog breeding UK, stud dogs, dogs for stud, puppies for sale, breeding dogs, rehoming puppies, breeding guide, dog pregnancy care, KC registered, dog heat cycle, responsible dog breeding" />
+    </Helmet>
 
 
         <div className="breeding-guide">
