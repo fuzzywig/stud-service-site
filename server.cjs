@@ -21,8 +21,12 @@ try {
 const API_KEY = process.env.GETADDRESS_API_KEY;
 
 if (!API_KEY) {
-    console.error('❌ GETADDRESS_API_KEY environment variable is required');
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+        console.error('❌ GETADDRESS_API_KEY environment variable is required in production');
+        process.exit(1);
+    } else {
+        console.log('⚠️  GETADDRESS_API_KEY not set (development mode - postcode lookup disabled)');
+    }
 }
 
 // → Port where this combined server will listen

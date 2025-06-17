@@ -197,7 +197,7 @@ function App() {
     // Cookie consent effect with GA4 initialization
     React.useEffect(() => {
         const consent = localStorage.getItem('cookieConsent');
-        setShowBanner(!consent);
+        setShowCookieBanner(!consent);
 
         // Add GA4 initialization if consent already exists
         if (consent === 'accepted') {
