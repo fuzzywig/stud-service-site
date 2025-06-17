@@ -37,7 +37,8 @@ import { db } from "../firebase/firebase";
 import { useNotifications } from "../context/NotificationContext";
 
 
-function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(false);
+function Navbar({ onLoginClick }) {
+    const [menuOpen, setMenuOpen] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const location = useLocation(); // Get current location from react-router
@@ -46,14 +47,12 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
     const [userLoaded, setUserLoaded] = useState(false);
-    // NEW: sidebar “chips” state
-    const [topBreeds, setTopBreeds]     = useState([]);
+    // NEW: sidebar "chips" state
+    const [topBreeds, setTopBreeds] = useState([]);
     const [topCategories, setTopCategories] = useState([]);
     const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
     const { newAdvertsCount, hasNewFollowingAdverts } = useNotifications();
     const listingsRef = collection(db, "allListings");
-
-
 
     // after: const [topBreeds, setTopBreeds] = useState([]);
     useEffect(() => {
@@ -88,8 +87,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
         loadTopBreeds().catch(console.error);
     }, []);
 
-
-
     useEffect(() => {
         setActiveItem(location.pathname);
     }, [location]);
@@ -107,24 +104,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
         };
     }, []);
 
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setShowDropdown(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
-
-
-
-
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
@@ -134,43 +113,67 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
         return () => unsubscribe();
     }, []);
 
+    // ✅ FIXED: Enhanced unread messages detection with mobile optimization
     useEffect(() => {
-        if (!currentUser) return;
+        if (!currentUser) {
+            setHasUnreadMessages(false);
+            return;
+        }
+
+        console.log('🔄 Setting up navbar unread listener for user:', currentUser.uid);
 
         const q = query(
             collection(db, "conversations"),
             where("users", "array-contains", currentUser.uid)
         );
 
-        const unsubscribe = onSnapshot(q, snapshot => {
+        const unsubscribe = onSnapshot(q, (snapshot) => {
             let hasUnread = false;
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const msg = data.lastMessage;
 
-                if (
-                    msg &&
-                    msg.senderId !== currentUser.uid &&
-                    (!msg.readBy || !msg.readBy.includes(currentUser.uid))
-                ) {
-                    hasUnread = true;
+                // ✅ FIXED: Check if there's a last message from someone else
+                if (data.lastMessageSenderId &&
+                    data.lastMessageSenderId !== currentUser.uid) {
+
+                    // ✅ CRITICAL: Compare lastUpdated timestamp with user's read timestamp
+                    const userReadTimestamp = data.readBy && data.readBy[currentUser.uid];
+                    const lastMessageTimestamp = data.lastUpdated;
+
+                    if (!userReadTimestamp) {
+                        // User has never read this conversation
+                        hasUnread = true;
+                        console.log('📧 Unread conversation (never read):', doc.id);
+                    } else if (lastMessageTimestamp && lastMessageTimestamp.toDate() > userReadTimestamp.toDate()) {
+                        // New message arrived after user's last read time
+                        hasUnread = true;
+                        console.log('📧 Unread conversation (new message):', doc.id, {
+                            lastMessageTime: lastMessageTimestamp.toDate(),
+                            userLastRead: userReadTimestamp.toDate(),
+                            timeDiff: lastMessageTimestamp.toDate() - userReadTimestamp.toDate()
+                        });
+                    }
                 }
             });
 
+            console.log('📧 Navbar unread check result:', {
+                hasUnread,
+                totalConversations: snapshot.size,
+                timestamp: new Date().toISOString(),
+                isMobile: window.innerWidth <= 768
+            });
             setHasUnreadMessages(hasUnread);
+        }, (error) => {
+            console.error('❌ Error in navbar unread listener:', error);
+            setHasUnreadMessages(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            console.log('🔄 Cleaning up navbar unread listener');
+            unsubscribe();
+        };
     }, [currentUser]);
-
-
-
-
-    // NEW: load sidebar chips data
-
-
-
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -181,9 +184,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                     if (userSnap.exists()) {
                         setUserProfile(userSnap.data());
                         console.log("User profile data:", userSnap.data());
-
                     }
-
                 } catch (error) {
                     console.error("Error fetching user profile:", error);
                 }
@@ -197,6 +198,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
         console.log("Menu toggled, was:", menuOpen);
         setMenuOpen(!menuOpen);
     };
+
     const toggleDropdown = () => {
         setShowDropdown(prev => !prev);
     };
@@ -204,6 +206,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
     const closeMenu = () => {
         setMenuOpen(false);
     };
+
     const handleMenuItemClick = (path) => {
         setActiveItem(path);
         closeMenu();
@@ -211,7 +214,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
 
     // Determine if a path is active
     const isActive = (path) => activeItem === path;
-
 
     const handleNewAdvertClick = async () => {
         if (!userLoaded) return;
@@ -327,10 +329,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                             <Link to="/messages" className={`icon-link ${hasUnreadMessages ? "has-notification" : ""}`}>
                                 <FaComments />
                             </Link>
-
                         )}
-
-
 
                         <div className="dropdown-wrapper" ref={dropdownRef}>
                             <button
@@ -369,8 +368,8 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                                 <span>Following Feed</span>
                                                 {newAdvertsCount > 0 && (
                                                     <span className="dropdown-notification-badge">
-            {newAdvertsCount > 99 ? '99+' : newAdvertsCount}
-        </span>
+                                                        {newAdvertsCount > 99 ? '99+' : newAdvertsCount}
+                                                    </span>
                                                 )}
                                             </Link>
 
@@ -450,10 +449,7 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                 </div>
                             )}
                         </div>
-
                     </div>
-
-
                 </div>
             </nav>
 
@@ -500,14 +496,12 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                 )}
                             </div>
 
-
                             <div className="profile-info">
                                 <p className="profile-name">
                                     {userProfile?.firstName
                                         ? `${userProfile.firstName}${userProfile.lastName ? " " + userProfile.lastName.charAt(0) + "." : ""}`
                                         : "User"}
                                 </p>
-
 
                                 <p className="profile-status">
                                     <span className="status-dot"></span>
@@ -542,7 +536,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                 </Link>
                             </div>
                         </div>
-
                     )}
                 </div>
 
@@ -550,7 +543,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                 <div className="sidebar-categories">
                     <h3>Popular Categories</h3>
                     <div className="category-chips">
-
                         {/* Top 3 Breeds */}
                         {topBreeds.map(({ breed, category }) => (
                             <Link
@@ -564,8 +556,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                         ))}
                     </div>
                 </div>
-
-
 
                 {/* Main navigation menu - FIXED VERSION */}
                 <div className="sidebar-nav-frontend">
@@ -665,7 +655,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                             </Link>
                         </li>
 
-
                         {/* User-specific links */}
                         {currentUser && (
                             <>
@@ -679,6 +668,9 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                     <Link to="/messages" onClick={() => handleMenuItemClick('/messages')}>
                                         <FaComments className="menu-icon" />
                                         <span>Messages</span>
+                                        {hasUnreadMessages && (
+                                            <span className="menu-notification-dot"></span>
+                                        )}
                                     </Link>
                                 </li>
                                 <li className="menu-item">
@@ -698,14 +690,12 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                                     </Link>
                                 </li>
 
-
                                 <li className="menu-item">
                                     <Link to="/Favourites" onClick={() => handleMenuItemClick('/Favourites')}>
                                         <FaHeart className="menu-icon" />
                                         <span>Favourites</span>
                                     </Link>
                                 </li>
-
                             </>
                         )}
 
@@ -739,8 +729,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                             </>
                         )}
 
-
-
                         {/* Help - always visible */}
                         <li className="menu-item">
                             <Link to="/help" onClick={() => handleMenuItemClick('/help')}>
@@ -772,7 +760,6 @@ function Navbar({ onLoginClick }) {    const [menuOpen, setMenuOpen] = useState(
                             <FaSignOutAlt />
                             <span>Logout</span>
                         </Link>
-
                     </div>
                 )}
             </div>

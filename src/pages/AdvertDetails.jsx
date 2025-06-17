@@ -58,6 +58,127 @@ import AdvertUpdates from "../components/AdvertUpdates";
 import "../components/AdvertUpdates.css";
 import { useLoginModal } from "../context/LoginContext";
 
+// Dynamic Alt Text Generator Function
+const generateDynamicAltText = (advert, imageIndex, imageType = 'gallery', ownerLocation = '') => {
+    if (!advert) return 'Pet image';
+
+    const petName = advert.name || advert.title || '';
+    const breed = advert.breedOrType || advert.breed || '';
+    const category = advert.category || '';
+    const intent = advert.intent || '';
+    const color = advert.dogColor || advert.catColor || advert.otherColor || '';
+    const isWithMother = advert.litterWithMotherIndex === imageIndex;
+
+    const location = ownerLocation ?
+        ownerLocation.split(',')[0].trim() :
+        (advert.postcode || advert.city || '');
+
+    const descriptiveWords = {
+        beautiful: ['beautiful', 'gorgeous', 'stunning', 'magnificent', 'striking'],
+        adorable: ['adorable', 'cute', 'charming', 'lovely', 'sweet'],
+        healthy: ['healthy', 'robust', 'thriving', 'vibrant', 'strong']
+    };
+
+    const canonicalUrl = `https://mypetconnect.co.uk${location.pathname}${location.search}`;
+
+    const intentDescriptors = {
+        sale: ['for sale', 'available', 'seeking new home', 'ready for adoption'],
+        stud: ['stud dog', 'breeding male', 'stud service'],
+        rescue: ['rescue pet', 'needs home', 'available for adoption', 'seeking family']
+    };
+
+    const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+
+    // Calculate age category - only add if meaningful
+    let ageCategory = '';
+    if (advert.dob) {
+        const birth = new Date(advert.dob);
+        const now = new Date();
+        const diffDays = Math.floor((now - birth) / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 365) {
+            if (category === 'dog') {
+                ageCategory = 'puppy';
+            } else if (category === 'cat') {
+                ageCategory = 'kitten';
+            }
+            // Don't add "young" for other categories - just skip age descriptor
+        }
+    }
+
+    const components = [];
+
+    // Add descriptive adjective
+    if (color) {
+        components.push(color);
+    } else {
+        components.push(getRandomItem(descriptiveWords.beautiful));
+    }
+
+    // Add breed
+    if (breed) {
+        components.push(breed);
+    }
+
+    // Add age category only if it's meaningful (puppy/kitten)
+    if (ageCategory) {
+        components.push(ageCategory);
+    } else if (category && !ageCategory) {
+        // Only add category if we don't have a specific age category
+        components.push(category);
+    }
+
+    // Add name if short enough
+    if (petName && petName.length < 15) {
+        components.push(`named ${petName}`);
+    }
+
+    // Add intent - use the actual intent, not random
+    if (intent && intentDescriptors[intent]) {
+        components.push(intentDescriptors[intent][0]); // Use first descriptor to match intent consistently
+    }
+
+    // Add special context
+    if (isWithMother) {
+        components.push('with mother');
+    }
+
+    // Add location
+    if (location && location.length < 20) {
+        components.push(`in ${location}`);
+    }
+
+    // Add image context
+    const imageContexts = ['photo', 'image', 'picture', 'view'];
+    switch (imageType) {
+        case 'main':
+            components.push(`- main ${getRandomItem(imageContexts)}`);
+            break;
+        case 'thumbnail':
+            components.push(`- thumbnail ${imageIndex + 1}`);
+            break;
+        case 'modal':
+            components.push('- full size view');
+            break;
+        case 'similar':
+            components.push('- listing photo');
+            break;
+        default:
+            components.push(`- ${getRandomItem(imageContexts)} ${imageIndex + 1}`);
+    }
+
+    let altText = components.join(' ').trim();
+
+    // Truncate if too long
+    if (altText.length > 125) {
+        const truncated = altText.substring(0, 122);
+        const lastSpace = truncated.lastIndexOf(' ');
+        altText = truncated.substring(0, lastSpace) + '...';
+    }
+
+    return altText.charAt(0).toUpperCase() + altText.slice(1);
+};
+
 // Helper function to format member since date
 function formatMemberSince(timestamp) {
     if (!timestamp) return null;
@@ -543,20 +664,20 @@ function AdvertDetails() {
         });
     };
 
-// Function to close gallery modal
+    // Function to close gallery modal
     const closeGalleryModal = () => {
         console.log('Closing gallery modal');
         setShowGalleryModal(false);
         document.body.classList.remove('gallery-modal-open');
     };
 
-// Update your main image click handler
+    // Update your main image click handler
     const handleMainImageClick = () => {
         console.log('Main image clicked, opening gallery at index:', currentIndex);
         openGalleryModal(currentIndex);
     };
 
-// Update your thumbnail click handlers
+    // Update your thumbnail click handlers
     const handleThumbnailClick = (img, idx) => {
         console.log('Thumbnail clicked:', idx);
         setSelectedImage(img);
@@ -564,7 +685,7 @@ function AdvertDetails() {
         openGalleryModal(idx);
     };
 
-// Navigation functions for modal
+    // Navigation functions for modal
     const modalPrevImage = (e) => {
         if (e) e.stopPropagation();
         if (modalImageIndex > 0) {
@@ -602,7 +723,6 @@ function AdvertDetails() {
             return () => document.removeEventListener('keydown', handleKeyDown);
         }
     }, [showGalleryModal, modalImageIndex, advert?.images?.length]);
-
 
     // Check if advert is favorited
     useEffect(() => {
@@ -894,9 +1014,8 @@ function AdvertDetails() {
                     const ownerData = ownerSnap.data();
 
                     // Prepare email data
-                    // Prepare email data
                     const emailOwnerData = {
-                        uid: advert.ownerId,  // 👈 Add this line
+                        uid: advert.ownerId,
                         email: ownerData.email,
                         firstName: ownerData.firstName || 'Pet Owner'
                     };
@@ -946,7 +1065,6 @@ function AdvertDetails() {
                 title={`${title} | My Pet Connect`}
                 description={description}
             />
-
             <div className="loading-container">
                 <div className="loading-spinner"></div>
                 <p>Loading advert...</p>
@@ -960,7 +1078,6 @@ function AdvertDetails() {
                 title={title}
                 description={description}
             />
-
             <div className="not-found-container">
                 <div className="not-found-icon">🐾</div>
                 <p>Advert not found.</p>
@@ -1050,7 +1167,7 @@ function AdvertDetails() {
 
     return (
         <>
-            <SEO title={seoTitle} description={seoDescription} />
+            <SEO title={seoTitle} description={seoDescription}  />
             <div className="stud-details-container">
                 <div className="stud-details-layout">
                     {/* LEFT COLUMN */}
@@ -1102,7 +1219,7 @@ function AdvertDetails() {
                             </nav>
                         </div>
 
-                        {/* Updated Gallery Section with Litter with Mother indicators */}
+                        {/* Updated Gallery Section with Dynamic Alt Tags */}
                         <div className="gallery-section">
                             <div
                                 className="main-image-container"
@@ -1112,7 +1229,11 @@ function AdvertDetails() {
                                 onClick={() => openGalleryModal(currentIndex)}
                                 style={{ cursor: 'pointer' }}
                             >
-                                <img src={selectedImage} alt={`${advert.name}`} className="main-image" />
+                                <img
+                                    src={selectedImage}
+                                    alt={generateDynamicAltText(advert, currentIndex, 'main', ownerLocation)}
+                                    className="main-image"
+                                />
 
                                 {/* Click to enlarge overlay */}
                                 <div className="click-to-enlarge-overlay">
@@ -1132,7 +1253,7 @@ function AdvertDetails() {
                                         <button
                                             className={`nav-arrow prev ${currentIndex === 0 ? 'disabled' : ''}`}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Prevent opening modal
+                                                e.stopPropagation();
                                                 handlePrevImage();
                                             }}
                                             disabled={currentIndex === 0}
@@ -1142,7 +1263,7 @@ function AdvertDetails() {
                                         <button
                                             className={`nav-arrow next ${currentIndex === advert.images.length - 1 ? 'disabled' : ''}`}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Prevent opening modal
+                                                e.stopPropagation();
                                                 handleNextImage();
                                             }}
                                             disabled={currentIndex === advert.images.length - 1}
@@ -1170,7 +1291,10 @@ function AdvertDetails() {
                                         }}
                                         style={{ cursor: 'pointer' }}
                                     >
-                                        <img src={img} alt={`${advert.name} - view ${idx + 1}`} />
+                                        <img
+                                            src={img}
+                                            alt={generateDynamicAltText(advert, idx, 'thumbnail', ownerLocation)}
+                                        />
 
                                         {/* Litter with Mother indicator on thumbnail */}
                                         {advert.litterWithMotherIndex === idx && (
@@ -1270,9 +1394,16 @@ function AdvertDetails() {
                                     <div className="owner-header">
                                         <div className="owner-avatar">
                                             {ownerAvatar ? (
-                                                <img src={ownerAvatar} alt={ownerName} />
+                                                <img
+                                                    src={ownerAvatar}
+                                                    alt={`${ownerName} - ${ownerBreederType === 'rescue' ? 'rescue organization' : 'pet breeder'} profile picture`}
+                                                />
                                             ) : (
-                                                <div className="owner-avatar-placeholder">
+                                                <div
+                                                    className="owner-avatar-placeholder"
+                                                    role="img"
+                                                    aria-label={`${ownerName} - profile picture placeholder`}
+                                                >
                                                     <FontAwesomeIcon icon={faUser} />
                                                 </div>
                                             )}
@@ -1844,7 +1975,7 @@ function AdvertDetails() {
                                             <Link to={`/advert-details/${ad.id}`} className="similar-studs-image-container">
                                                 <img
                                                     src={mainImage}
-                                                    alt={title}
+                                                    alt={generateDynamicAltText(ad, 0, 'similar', areaLabel)}
                                                     className="similar-studs-image"
                                                 />
                                                 <div className="similar-studs-overlay">
@@ -2076,7 +2207,7 @@ function AdvertDetails() {
                             {advert.images[modalImageIndex] && (
                                 <img
                                     src={advert.images[modalImageIndex]}
-                                    alt={`${advert.name || 'Pet'} - Full size view ${modalImageIndex + 1}`}
+                                    alt={generateDynamicAltText(advert, modalImageIndex, 'modal', ownerLocation)}
                                     className="gallery-modal-image"
                                     onLoad={() => console.log('Modal image loaded')}
                                     onError={(e) => {

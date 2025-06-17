@@ -54,6 +54,7 @@ const BlogSidebar = ({ currentPostId = null, onSearch = null }) => {
                         date: data.date || data.createdAt?.toDate().toLocaleDateString('en-GB') || 'No date',
                         readTime: data.readTime || '5 min read',
                         image: data.image,
+                        imageAlt: data.imageAlt || '', // ADDED: Include imageAlt from database
                         excerpt: data.excerpt,
                         categories: data.categories || [],
                         views: data.views || Math.floor(Math.random() * 1000) + 100, // Use actual views or random for demo
@@ -281,7 +282,7 @@ const BlogSidebar = ({ currentPostId = null, onSearch = null }) => {
                                 <div className="blogsidebar-popular-post-image">
                                     <img
                                         src={post.image || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=80&h=60&fit=crop`}
-                                        alt={post.title}
+                                        alt={post.imageAlt || post.title || 'Popular blog post thumbnail'} // FIXED: Use imageAlt from database first
                                         onError={(e) => {
                                             e.target.src = `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=80&h=60&fit=crop`;
                                         }}

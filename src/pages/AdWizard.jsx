@@ -346,8 +346,7 @@ export default function AdWizard({ mode }) {
 
     // Auto-calculate availableDate when dob changes (for cats and dogs)
     useEffect(() => {
-        if ((category === "dogs" || category === "cats") && formData.dob && !formData.availableDate) {
-            console.log('🔄 useEffect: Auto-calculating availableDate from dob:', formData.dob);
+        if ((category === "dogs" || category === "cats" || category === "rabbits") && formData.dob && !formData.availableDate) {            console.log('🔄 useEffect: Auto-calculating availableDate from dob:', formData.dob);
             const calculatedDate = calculateReadyToLeaveDate(formData.dob);
             console.log('🔄 useEffect: Calculated date:', calculatedDate);
 
@@ -663,8 +662,7 @@ export default function AdWizard({ mode }) {
             case "date": {
                 const isDateOfBirth = fieldName === "dob";
                 const isAvailableDate = fieldName === "availableDate";
-                const isAutoCalculated = isAvailableDate && (category === "dogs" || category === "cats");
-
+                const isAutoCalculated = isAvailableDate && (category === "dogs" || category === "cats" || category === "rabbits");
                 // Format date for display in text field
                 const formatDateForDisplay = (dateString) => {
                     if (!dateString) return "";

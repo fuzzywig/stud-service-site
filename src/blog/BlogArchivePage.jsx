@@ -32,6 +32,8 @@ const BlogArchivePage = () => {
 
     // Function to process posts for admin detection and company display
     const processPostForDisplay = async (postData, docId) => {
+        console.log('🔍 Processing archive post:', docId, 'imageAlt from DB:', postData.imageAlt);
+
         let isAdminPost = false;
         let displayAuthor = postData.author || 'Anonymous';
         let companyName = null;
@@ -96,7 +98,7 @@ const BlogArchivePage = () => {
             displayAuthor = companyName || 'MyPetConnect';
         }
 
-        return {
+        const processedPost = {
             id: docId,
             title: postData.title || 'Untitled',
             excerpt: postData.excerpt || 'No excerpt available',
@@ -111,10 +113,14 @@ const BlogArchivePage = () => {
             }) || 'No date',
             readTime: postData.readTime || '5 min read',
             image: postData.image,
+            imageAlt: postData.imageAlt || '', // ADDED: Include imageAlt from database
             categories: postData.categories || [],
             slug: postData.slug || docId,
             createdAt: postData.createdAt?.toDate() || new Date()
         };
+
+        console.log('✅ Processed archive post:', docId, 'final imageAlt:', processedPost.imageAlt);
+        return processedPost;
     };
 
     useEffect(() => {
@@ -264,7 +270,7 @@ const BlogArchivePage = () => {
                                 <div style={{ flexShrink: 0 }}>
                                     <img
                                         src={post.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150&h=150&fit=crop&auto=format'}
-                                        alt={post.title}
+                                        alt={post.imageAlt || post.title || 'Blog archive post image'} // FIXED: Use imageAlt from database first, then title as fallback
                                         style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px' }}
                                     />
                                 </div>

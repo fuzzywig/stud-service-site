@@ -4,6 +4,78 @@ import { collection, query, orderBy, limit, getDocs, doc, getDoc, where } from '
 import { db } from '../firebase/firebase';
 import './RecentBlogPosts.css';
 
+// Dynamic Alt Text Generator Function for Blog Posts
+const generateBlogAltText = (blogPost, imageType = 'blog') => {
+    if (!blogPost) return 'Blog post image';
+
+    const title = blogPost.title || '';
+    const category = blogPost.category || '';
+    const author = blogPost.author || '';
+    const isAdminPost = blogPost.isAdminPost || false;
+
+    const imageDescriptors = {
+        'Pet Care': ['pet care illustration', 'pet wellness photo', 'pet health image', 'pet care demonstration'],
+        'Training': ['dog training photo', 'pet training demonstration', 'training session image', 'behavioral guidance illustration'],
+        'Health': ['pet health illustration', 'veterinary care image', 'pet medical photo', 'health check demonstration'],
+        'Nutrition': ['pet food image', 'nutrition guide photo', 'feeding demonstration', 'pet diet illustration'],
+        'General': ['pet lifestyle photo', 'pet article image', 'pet care illustration', 'pet owner photo'],
+        'News': ['pet industry photo', 'news illustration', 'pet community image', 'industry update photo'],
+        'Tips': ['pet tips illustration', 'helpful guide image', 'pet advice photo', 'practical demonstration']
+    };
+
+    const visualDescriptors = {
+        expert: ['showing professional techniques', 'demonstrating best practices', 'featuring expert advice', 'illustrating proven methods'],
+        general: ['showing helpful tips', 'featuring practical advice', 'demonstrating techniques', 'illustrating guidance']
+    };
+
+    const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+
+    const components = [];
+
+    // Start with image type description
+    if (category && imageDescriptors[category]) {
+        components.push(getRandomItem(imageDescriptors[category]));
+    } else {
+        components.push('pet article image');
+    }
+
+    // Add visual context
+    if (isAdminPost) {
+        components.push(getRandomItem(visualDescriptors.expert));
+    } else {
+        components.push(getRandomItem(visualDescriptors.general));
+    }
+
+    // Add topic context if title is short and descriptive
+    if (title && title.length < 40) {
+        // Extract key topic words from title
+        const topicWords = title.toLowerCase()
+            .replace(/how to|guide to|tips for|best|top/g, '')
+            .trim();
+        if (topicWords.length > 5) {
+            components.push(`for ${topicWords}`);
+        }
+    } else if (category && category !== 'General') {
+        components.push(`for ${category.toLowerCase()}`);
+    }
+
+    // Add source credibility for admin posts
+    if (isAdminPost && author) {
+        components.push(`by ${author}`);
+    }
+
+    let altText = components.join(' ').trim();
+
+    // Truncate if too long
+    if (altText.length > 125) {
+        const truncated = altText.substring(0, 122);
+        const lastSpace = truncated.lastIndexOf(' ');
+        altText = truncated.substring(0, lastSpace) + '...';
+    }
+
+    return altText.charAt(0).toUpperCase() + altText.slice(1);
+};
+
 const RecentBlogPosts = () => {
     const [blogPosts, setBlogPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -288,7 +360,7 @@ const RecentBlogPosts = () => {
                             <div className="blog-card__image-container">
                                 <img
                                     src={post.image}
-                                    alt={post.title}
+                                    alt={generateBlogAltText(post, 'blog')}
                                     className="blog-card__image"
                                 />
                                 <div className="blog-card__category">

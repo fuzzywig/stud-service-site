@@ -24,6 +24,15 @@ import {
 // Import modernized styles
 import "./AdWizard.css"; // Using same styles as AdWizard
 
+// Define optional checkboxes - all rescue checkboxes should be optional
+const RESCUE_OPTIONAL_CHECKBOXES = [
+    'vaccinated',
+    'microchipped',
+    'fosteringAvailable',
+    'withMother'
+    // Add any other checkbox field names that should be optional
+];
+
 export default function AdWizardRescue({ mode }) {
     const { adId } = useParams();
     const [step, setStep] = useState(1);
@@ -95,7 +104,7 @@ export default function AdWizardRescue({ mode }) {
         },
         goodWithDogs: {
             type: "select",
-            label: "Good with Other Dogs",
+            label: "Good with Dogs",
             options: [
                 { value: "yes", label: "Yes" },
                 { value: "no", label: "No" },
@@ -312,11 +321,16 @@ export default function AdWizardRescue({ mode }) {
         const errors = {};
 
         // Get all fields that should be validated for current category
-        const fieldsToValidate = formFields.filter(f => f !== "breed");
+        const fieldsToValidate = formFields.filter(f => f !== "breed" && f !== "withMother");
 
         fieldsToValidate.forEach(fieldName => {
             const config = allFieldConfigurations[fieldName];
             if (!config) return;
+
+            // Skip validation for optional checkboxes
+            if (config.type === 'checkbox' && RESCUE_OPTIONAL_CHECKBOXES.includes(fieldName)) {
+                return; // Skip validation - makes them optional
+            }
 
             const isRequired = config.required === true;
             const value = formData[fieldName];
@@ -326,7 +340,7 @@ export default function AdWizardRescue({ mode }) {
                 if (!value || (typeof value === 'string' && value.trim() === '')) {
                     errors[fieldName] = `${config.label} is required`;
                 }
-                // Special validation for checkboxes that are required
+                // Special validation for checkboxes that are required (but not the optional ones)
                 else if (config.type === 'checkbox' && !value) {
                     errors[fieldName] = `${config.label} must be selected`;
                 }
@@ -390,7 +404,9 @@ export default function AdWizardRescue({ mode }) {
         const config = allFieldConfigurations[fieldName];
         if (!config) return null;
 
-        const isRequired = config.required === true;
+        // Override required status for optional checkboxes
+        const isRequired = config.required === true && !(config.type === 'checkbox' && RESCUE_OPTIONAL_CHECKBOXES.includes(fieldName));
+
         const hasError = fieldErrors?.[fieldName];
         const hasValue = formData[fieldName] && formData[fieldName].toString().trim() !== '';
 
@@ -832,7 +848,7 @@ export default function AdWizardRescue({ mode }) {
                         What type of animal are you looking to rehome?
                     </p>
                     <div className="adwizard-options">
-                        {["dogs", "cats", "rabbits", "birds", "rodents", "reptiles", "fish", "horses", "livestock", "poultry", "invertebrates"].map((cat) => (
+                        {["dogs", "cats"].map((cat) => (
                             <button
                                 key={cat}
                                 className={`adwizard-option-button ${category === cat ? "selected" : ""}`}

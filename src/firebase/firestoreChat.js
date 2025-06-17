@@ -14,36 +14,49 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
-// Generate a consistent conversation ID (sorted alphabetically)
-// includes advertId if provided
-export function getConversationId(userA, userB, advertId) {
-    // include advertId so each ad has its own thread
-    return [userA, userB, advertId].sort().join("_");
+// ✅ FIXED: Generate a consistent conversation ID (sorted alphabetically)
+// Only includes advertId if it's actually provided and not null/undefined
+export function getConversationId(userA, userB, advertId = null) {
+    // ✅ FIXED: Only include advertId if it exists and is not null/undefined
+    if (advertId && advertId !== 'undefined' && advertId !== 'null') {
+        // Advert-specific conversation: user1_user2_advertId
+        return [userA, userB, advertId].sort().join("_");
+    } else {
+        // General conversation: user1_user2
+        return [userA, userB].sort().join("_");
+    }
 }
 
-// Ensure a conversation document exists
+// ✅ FIXED: Ensure a conversation document exists
 // advertId is optional—if passed, the conversation is specific to that advert
-export async function loadOrCreateConversation(currentUserId, otherUserId, advertId) {
-    const conversationId = getConversationId(currentUserId, otherUserId, advertId);
+export async function loadOrCreateConversation(currentUserId, otherUserId, advertId = null) {
+    // Clean up the advertId parameter
+    const cleanAdvertId = advertId && advertId !== 'undefined' && advertId !== 'null' ? advertId : null;
+
+    const conversationId = getConversationId(currentUserId, otherUserId, cleanAdvertId);
     const convRef = doc(db, "conversations", conversationId);
     const snapshot = await getDoc(convRef);
 
     if (!snapshot.exists()) {
-        await setDoc(convRef, {
+        const conversationData = {
             users: [currentUserId, otherUserId],
-            advertId: advertId || null,
             createdAt: serverTimestamp(),
             lastUpdated: serverTimestamp(),
             lastMessage: ""
-        });
+        };
+
+        // ✅ Only add advertId if it's actually provided
+        if (cleanAdvertId) {
+            conversationData.advertId = cleanAdvertId;
+        }
+
+        await setDoc(convRef, conversationData);
     }
 
     return conversationId;
 }
 
-
-// Add this test function to your firestoreChat.js temporarily
-
+// ✅ ENHANCED: Updated sendMessage function with better error handling
 export async function sendMessage(convoId, fromUid, toUid, text, filename = null) {
     try {
         console.log('🚀 Starting sendMessage:', { convoId, fromUid, toUid, filename });
@@ -87,7 +100,7 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
             console.log('Conversation advertId:', advertId);
 
             // If there's an advertId, fetch the advert details
-            if (advertId) {
+            if (advertId && advertId !== 'undefined' && advertId !== 'null') {
                 try {
                     console.log('🐕 Fetching advert details for ID:', advertId);
                     const advertDoc = await getDoc(doc(db, "allListings", advertId));
@@ -104,7 +117,7 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
                     console.error("Error fetching advert details:", err);
                 }
             } else {
-                console.log('ℹ️ No advertId in conversation');
+                console.log('ℹ️ No valid advertId in conversation');
             }
         } else {
             console.log('⚠️ Conversation document does not exist');
@@ -173,11 +186,10 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
             });
 
             const emailData = {
-                // ✅ REQUIRED: Add the missing IDs
-                senderId: fromUid,                    // ✅ ADD THIS LINE
-                recipientId: toUid,                   // ✅ ADD THIS LINE
-                advertId: advertId,                   // ✅ ADD THIS LINE
-
+                // ✅ Required IDs
+                senderId: fromUid,
+                recipientId: toUid,
+                advertId: advertId && advertId !== 'undefined' && advertId !== 'null' ? advertId : null,
 
                 // Required fields matching SendGrid template
                 recipientEmail: recipientData.email,
@@ -186,7 +198,7 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
                 messagePreview: messagePreview || "New message",
                 messageText: messageText || text || "New message",
                 messageTime: messageTime,
-                conversationUrl: `https://mypetconnect.co.uk/messages?c=${convoId}&recipient=${fromUid}${advertId ? `&advert=${advertId}` : ""}`,
+                conversationUrl: `https://mypetconnect.co.uk/messages?c=${convoId}&recipient=${fromUid}${advertId && advertId !== 'undefined' ? `&advert=${advertId}` : ""}`,
                 advertUrl: advertUrl || `https://mypetconnect.co.uk/listings`,
                 allMessagesUrl: `https://mypetconnect.co.uk/messages`,
                 currentYear: new Date().getFullYear(),
@@ -213,7 +225,8 @@ export async function sendMessage(convoId, fromUid, toUid, text, filename = null
 
             console.log('📧 Email data prepared:', emailData);
 
-            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-message-notification', {                method: 'POST',
+            const response = await fetch('https://mypetconnect-api-j6usd.ondigitalocean.app/api/send-message-notification', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ emailData }),
             });
@@ -262,7 +275,7 @@ export async function fetchUserConversations(uid) {
     return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-// 👇 New real-time listener for all conversations a user is in
+// Real-time listener for all conversations a user is in
 export function listenToUserConversations(uid, callback) {
     const q = query(collection(db, "conversations"), where("users", "array-contains", uid));
     return onSnapshot(q, (snapshot) => {

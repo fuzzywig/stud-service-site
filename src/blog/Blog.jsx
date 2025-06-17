@@ -22,6 +22,8 @@ export default function Blog() {
 
     // Function to detect admin posts and set proper author display
     const processPostForDisplay = async (post) => {
+        console.log('🔍 Processing blog listing post:', post.id, 'imageAlt from DB:', post.imageAlt);
+
         let isAdminPost = false;
         let displayAuthor = post.author || 'Unknown Author';
         let displayInitials = getAuthorInitials(post.author);
@@ -91,15 +93,19 @@ export default function Blog() {
                 : 'MPC';
         }
 
-        return {
+        const processedPost = {
             ...post,
             isAdminPost,
             displayAuthor,
             displayInitials,
             companyName,
+            imageAlt: post.imageAlt || '', // ADDED: Include imageAlt from database
             // Preserve the slug that was generated in fetchPosts
             slug: post.slug || post.id
         };
+
+        console.log('✅ Processed blog listing post:', post.id, 'final imageAlt:', processedPost.imageAlt);
+        return processedPost;
     };
 
     useEffect(() => {
@@ -339,8 +345,8 @@ export default function Blog() {
     return (
         <>
             <SEO
-                title="Pet Breeding Blog & Expert Tips"
-                description="Expert insights on pet breeding, care tips, stud selection guides, and advice from experienced breeders. Your trusted resource for responsible breeding practices and pet care."
+                title="Pet Breeding Blog & Expert Tips | My Pet Connect"
+                description="Discover expert insights on pet breeding, care tips, stud selection guides, and connecting with fellow pet enthusiasts. Your trusted resource for responsible breeding practices and expert advice."
             />
             <div className="bloglisting-container">
                 <div className="bloglisting-layout">
@@ -489,7 +495,7 @@ export default function Blog() {
                                                             <div className="bloglisting-featured-image-wrapper">
                                                                 <img
                                                                     src={postImage}
-                                                                    alt={post.title || 'Featured blog post'}
+                                                                    alt={post.imageAlt || post.title || 'Featured blog post'}
                                                                     className="bloglisting-featured-image"
                                                                     onError={(e) => {
                                                                         e.target.src = `https://placehold.co/1200x400?text=${encodeURIComponent('Featured Post')}`;
@@ -591,8 +597,7 @@ export default function Blog() {
                                                             <div className="bloglisting-image-wrapper">
                                                                 <img
                                                                     src={postImage}
-                                                                    alt={post.title || 'Blog post image'}
-                                                                    className="bloglisting-image"
+                                                                    alt={post.imageAlt || post.title || 'Blog post image'}                                                                    className="bloglisting-image"
                                                                     onError={(e) => {
                                                                         e.target.src = `https://placehold.co/800x400?text=${encodeURIComponent('Blog Post')}`;
                                                                     }}

@@ -182,7 +182,7 @@ export const updatedPetCategories = {
       },
       rodents: {
         name: "Rodents",
-        fields: ["title", "description", "dob","availableDate", "gender", "quantity", "price"],
+        fields: ["title", "description", "dob", "gender", "quantity", "price"],
         listingTypes: ["sale", "wanted"],
         fieldsForSale: [],
         types: [
@@ -207,7 +207,7 @@ export const updatedPetCategories = {
       },
       livestock: {
         name: "Livestock",
-        fields: ["title", "description","breed", "age", "gender", "color", "price", "purpose"],
+        fields: ["title", "description","breed", "dob", "gender", "color", "price", "purpose"],
         listingTypes: ["sale", "wanted"],
         types: [
           { id: "alpaca", name: "Alpaca" },
@@ -223,7 +223,7 @@ export const updatedPetCategories = {
       },
       otherMammals: {
         name: "Other Mammals",
-        fields: ["title", "description","petType", "age", "gender", "color", "price", "quantity"],
+        fields: ["title", "description","petType", "dob", "gender", "color", "price", "quantity"],
         listingTypes: ["sale", "wanted"],
         allowCustomType: true
       },
@@ -273,7 +273,6 @@ export const updatedPetCategories = {
       "title",
       "description",
       "dob",
-        "availableDate",
       "gender",
 
 
@@ -567,7 +566,7 @@ export const updatedFieldConfigurations = {
   },
 
   age: {
-    type: "select",
+    type: "date",
     label: "Age",
     placeholder: "Select age",
     required: true,
@@ -748,19 +747,19 @@ export const updatedFieldConfigurations = {
   wormed: {
     type: "checkbox",
     label: "Wormed",
-    required: true
+    required: false
   },
 
   fleaTreated: {
     type: "checkbox",
     label: "Flea Treated",
-    required: true
+    required: false
   },
 
   kcRegistered: {
     type: "checkbox",
     label: "KC Registered",
-    required: true
+    required: false
   },
 
   healthChecked: {

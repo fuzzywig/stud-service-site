@@ -10,8 +10,6 @@ import { Edit3, Trash2, Eye, EyeOff, Search, Calendar, User, Save, X, FileText, 
 import { createSlug, isValidSlug } from '../../utils/blogUtils';
 import './BlogAdmin.css';
 
-
-
 export default function BlogAdmin() {
     const [user, loading, _error] = useAuthState(auth);
     const [activeTab, setActiveTab] = useState('create');
@@ -33,6 +31,7 @@ export default function BlogAdmin() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortBy, setSortBy] = useState('createdAt');
+    const [showBanner, setShowBanner] = useState(false);
 
     const getUserDisplayName = () => {
         if (!user) return 'Admin';
@@ -95,17 +94,6 @@ export default function BlogAdmin() {
         }
     };
 
-    // Helper function to generate suggested alt text
-    const generateSuggestedAltText = (title, filename) => {
-        if (title) {
-            return `Featured image for blog post: ${title}`;
-        }
-        if (filename) {
-            return filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-        }
-        return '';
-    };
-
     const [form, setForm] = useState({
         title: '',
         slug: '',
@@ -114,7 +102,7 @@ export default function BlogAdmin() {
         date: new Date().toLocaleDateString('en-GB'),
         readTime: '3 min read',
         image: '',
-        imageAlt: '', // Added alt text field
+        imageAlt: '', // Alt text field
         excerpt: '',
         content: '',
         categories: [],
@@ -130,7 +118,7 @@ export default function BlogAdmin() {
             date: new Date().toLocaleDateString('en-GB'),
             readTime: '3 min read',
             image: '',
-            imageAlt: '', // Added alt text field
+            imageAlt: '', // Reset alt text field
             excerpt: '',
             content: '',
             categories: [],
@@ -157,15 +145,14 @@ export default function BlogAdmin() {
                 const data = doc.data();
                 const postId = doc.id;
 
-                // Be more explicit about the mapping to avoid ID conflicts
                 return {
-                    id: postId,  // Firestore document ID
+                    id: postId,
                     title: data.title,
                     author: data.author,
                     excerpt: data.excerpt,
                     content: data.content,
                     image: data.image,
-                    imageAlt: data.imageAlt, // Added alt text field
+                    imageAlt: data.imageAlt, // Include alt text field
                     slug: data.slug,
                     status: data.status,
                     categories: data.categories,
@@ -179,14 +166,6 @@ export default function BlogAdmin() {
             });
 
             console.log('📊 Total posts mapped:', postsData.length);
-            console.log('📋 All posts with IDs:', postsData.map(p => ({
-                id: p.id,
-                title: p.title,
-                idType: typeof p.id,
-                idLength: p.id?.length,
-                status: p.status
-            })));
-
             setPosts(postsData);
         } catch (err) {
             console.error('Error fetching posts:', err);
@@ -207,7 +186,7 @@ export default function BlogAdmin() {
                     slug: postData.slug || createSlug(postData.title || ''),
                     date: postData.createdAt ? postData.createdAt.toDate().toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
                     categories: Array.isArray(postData.categories) ? postData.categories : [],
-                    imageAlt: postData.imageAlt || '', // Added alt text field
+                    imageAlt: postData.imageAlt || '', // Load alt text field
                 });
                 setIsEditing(true);
                 setEditingPostId(postId);
@@ -256,7 +235,6 @@ export default function BlogAdmin() {
     useEffect(() => {
         const initEditor = () => {
             if (editorRef.current && window.tinymce && editorMode === 'wysiwyg') {
-                // Remove any existing editor first
                 if (window.tinymce.get('blog-content-editor')) {
                     window.tinymce.get('blog-content-editor').remove();
                 }
@@ -292,7 +270,6 @@ export default function BlogAdmin() {
             }
         };
 
-        // Load TinyMCE if not already loaded
         if (editorMode === 'wysiwyg' && !window.tinymce) {
             const script = document.createElement('script');
             script.src = 'https://cdn.tiny.cloud/1/7uvns8obt1qy17abfvm4kjs0mkygig4lfewbn2kh2z5dqebu/tinymce/6/tinymce.min.js';
@@ -395,7 +372,6 @@ export default function BlogAdmin() {
     };
 
     const filteredPosts = posts.filter(post => {
-        // Handle search matching with proper null checks
         const matchesSearch = searchTerm.trim() === '' ||
             (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (post.author && post.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -561,7 +537,7 @@ export default function BlogAdmin() {
                                     </select>
                                 </div>
 
-                                {/* Featured Image with Alt Text Support */}
+                                {/* Featured Image */}
                                 <div className="admin-blog-form-group">
                                     <label className="admin-blog-form-label">Featured Image</label>
                                     {uploadError && (
@@ -569,23 +545,31 @@ export default function BlogAdmin() {
                                     )}
                                     <ImageUpload
                                         value={form.image}
-                                        onChange={(url) => {
-                                            setForm(prev => ({ ...prev, image: url }));
-                                            // Auto-suggest alt text if none exists
-                                            if (!form.imageAlt && form.title) {
-                                                const suggestedAlt = generateSuggestedAltText(form.title);
-                                                setForm(prev => ({ ...prev, imageAlt: suggestedAlt }));
-                                            }
-                                        }}
+                                        onChange={(url) => setForm(prev => ({ ...prev, image: url }))}
                                         onError={(error) => {
                                             setUploadError(error);
                                             setTimeout(() => setUploadError(''), 5000);
                                         }}
-                                        altText={form.imageAlt}
-                                        onAltTextChange={(altText) => setForm(prev => ({ ...prev, imageAlt: altText }))}
-                                        showAltInput={true}
+                                        showAltInput={false}
                                     />
                                 </div>
+
+                                {/* Image Alt Text Field - Only show if image is uploaded */}
+                                {form.image && (
+                                    <div className="admin-blog-form-group">
+                                        <label className="admin-blog-form-label">Image Alt Text</label>
+                                        <input
+                                            name="imageAlt"
+                                            value={form.imageAlt}
+                                            onChange={handleChange}
+                                            placeholder="Describe the image for accessibility (e.g., 'A golden retriever playing in a park')"
+                                            className="admin-blog-form-input"
+                                        />
+                                        <span className="admin-blog-form-hint">
+                                            Describe what's in the image for accessibility and SEO. Keep it descriptive but concise.
+                                        </span>
+                                    </div>
+                                )}
 
                                 {/* Categories */}
                                 <div className="admin-blog-form-group">

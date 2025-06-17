@@ -857,7 +857,9 @@ export default function BrowseStuds() {
             <SEO
                 title={seoTitle}
                 description={seoDescription}
+                canonical="https://mypetconnect.co.uk/browse"
             />
+
 
             <div className="browse-studs-wrapper">
                 <div className="browse-studs-page">

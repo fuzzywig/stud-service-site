@@ -160,6 +160,7 @@ const BlogCategoryPage = () => {
             }) || 'No date',
             readTime: postData.readTime || '5 min read',
             image: postData.image,
+            imageAlt: postData.imageAlt || '', // ADDED: Include imageAlt from database
             categories: postData.categories || [],
             slug: postData.slug || docId,
             createdAt: postData.createdAt?.toDate() || new Date()
@@ -312,7 +313,7 @@ const BlogCategoryPage = () => {
                                         <div className="blog-category-card-image-container">
                                             <img
                                                 src={post.image || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&auto=format'}
-                                                alt={post.title}
+                                                alt={post.imageAlt || post.title || 'Blog post image'} // FIXED: Use imageAlt from database first, then title as fallback
                                                 className="blog-category-card-image"
                                             />
                                             <div className="blog-category-card-read-time">

@@ -7,6 +7,93 @@ import "./SimilarStuds.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapMarkerAlt, faDog, faPoundSign, faStar, faEye } from "@fortawesome/free-solid-svg-icons";
 
+// Dynamic Alt Text Generator Function
+const generateDynamicAltText = (advert, imageIndex = 0, imageType = 'similar', location = '') => {
+    if (!advert) return 'Pet image';
+
+    const petName = advert.name || advert.title || '';
+    const breed = advert.breedOrType || advert.breed || '';
+    const category = advert.category || '';
+    const intent = advert.intent || '';
+    const color = advert.dogColor || advert.catColor || advert.otherColor || '';
+
+    const descriptiveWords = {
+        beautiful: ['beautiful', 'gorgeous', 'stunning', 'magnificent', 'striking'],
+        adorable: ['adorable', 'cute', 'charming', 'lovely', 'sweet'],
+        healthy: ['healthy', 'robust', 'thriving', 'vibrant', 'strong']
+    };
+
+    const intentDescriptors = {
+        sale: ['for sale', 'available', 'seeking new home', 'ready for adoption'],
+        stud: ['stud dog', 'breeding male', 'stud service'],
+        rescue: ['rescue pet', 'needs home', 'available for adoption', 'seeking family']
+    };
+
+    const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+
+    // Calculate age category
+    let ageCategory = '';
+    if (advert.dob) {
+        const birth = new Date(advert.dob);
+        const now = new Date();
+        const diffDays = Math.floor((now - birth) / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 365) {
+            ageCategory = category === 'dog' ? 'puppy' : category === 'cat' ? 'kitten' : 'young';
+        }
+    }
+
+    const components = [];
+
+    // Add descriptive adjective
+    if (color) {
+        components.push(color);
+    } else {
+        components.push(getRandomItem(descriptiveWords.beautiful));
+    }
+
+    // Add breed
+    if (breed) {
+        components.push(breed);
+    }
+
+    // Add age category
+    if (ageCategory) {
+        components.push(ageCategory);
+    } else if (category) {
+        components.push(category);
+    }
+
+    // Add name if short enough
+    if (petName && petName.length < 15) {
+        components.push(`named ${petName}`);
+    }
+
+    // Add intent
+    if (intent && intentDescriptors[intent]) {
+        components.push(getRandomItem(intentDescriptors[intent]));
+    }
+
+    // Add location
+    if (location && location.length < 20) {
+        components.push(`in ${location}`);
+    }
+
+    // Add image context
+    components.push('- listing photo');
+
+    let altText = components.join(' ').trim();
+
+    // Truncate if too long
+    if (altText.length > 125) {
+        const truncated = altText.substring(0, 122);
+        const lastSpace = truncated.lastIndexOf(' ');
+        altText = truncated.substring(0, lastSpace) + '...';
+    }
+
+    return altText.charAt(0).toUpperCase() + altText.slice(1);
+};
+
 function SimilarStuds({ breedOrType, intent, currentAdvertId }) {
     const [similarAds, setSimilarAds] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -163,7 +250,7 @@ function SimilarStuds({ breedOrType, intent, currentAdvertId }) {
                                 <Link to={`/advert-details/${ad.id}`} className="similar-studs-image-container">
                                     <img
                                         src={mainImage}
-                                        alt={title}
+                                        alt={generateDynamicAltText(ad, 0, 'similar', areaLabel)}
                                         className="similar-studs-image"
                                     />
                                     <div className="similar-studs-overlay">

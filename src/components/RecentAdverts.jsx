@@ -51,6 +51,65 @@ function getMainImageUrl(ad) {
     return "https://placehold.co/400x300";
 }
 
+// Dynamic Alt Text Generator Function for Recent Adverts
+// Updated Dynamic Alt Text Generator Function for Recent Adverts
+const generateAdvertAltText = (advert, userLocation = '') => {
+    if (!advert) return 'Pet listing image';
+
+    const petName = advert.name || advert.title || '';
+    const breed = advert.breedOrType || advert.breed || '';
+    const intent = advert.intent || '';
+    const category = advert.category || '';
+
+    const components = [];
+
+    // Add breed
+    if (breed) {
+        components.push(breed);
+    }
+
+    // Add name for stud ads only
+    if (intent === 'stud' && petName && petName.length < 15) {
+        components.push(petName);
+    }
+
+    // Add intent with special handling for sale
+    if (intent) {
+        if (intent === 'sale') {
+            // Add puppies/kittens for sale intent based on category
+            if (category === 'dogs') {
+                components.push('puppies for sale');
+            } else if (category === 'cats') {
+                components.push('kittens for sale');
+            } else {
+                components.push('for sale');
+            }
+        } else if (intent === 'stud') {
+            components.push('for stud');
+        } else if (intent === 'rescue') {
+            components.push('for adoption');
+        } else {
+            components.push(intent);
+        }
+    }
+
+    // Add location (city, county)
+    if (userLocation && userLocation !== 'N/A') {
+        components.push(`in ${userLocation}`);
+    }
+
+    let altText = components.join(' ').trim();
+
+    // Truncate if too long
+    if (altText.length > 125) {
+        const truncated = altText.substring(0, 122);
+        const lastSpace = truncated.lastIndexOf(' ');
+        altText = truncated.substring(0, lastSpace) + '...';
+    }
+
+    return altText.charAt(0).toUpperCase() + altText.slice(1);
+};
+
 export default function RecentAdverts({ category, intent, title = "Recent Adverts", limitCount = 8 }) {
     const [ads, setAds] = useState([]);
     const [usersMap, setUsersMap] = useState({});
@@ -260,7 +319,8 @@ export default function RecentAdverts({ category, intent, title = "Recent Advert
                                 </div>
                                 <Link to={`/advert-details/${ad.id}`} className="recent-studs-image-container">
                                     <img
-                                        src={getMainImageUrl(ad)}                                        alt={titleText}
+                                        src={getMainImageUrl(ad)}
+                                        alt={generateAdvertAltText(ad, area)}
                                         className="recent-studs-image"
                                     />
                                     <div className="recent-studs-overlay">

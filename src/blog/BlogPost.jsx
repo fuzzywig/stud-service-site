@@ -793,7 +793,7 @@ export default function BlogPost() {
                                             ? `https://placehold.co/800x400?text=${encodeURIComponent(post.title || 'Blog Post')}`
                                             : post.image
                                         }
-                                        alt={post.title}
+                                        alt={post.imageAlt || post.title || 'Blog post image'}  // CHANGED: Use imageAlt from database first, then title as fallback
                                         className="blogpost-featured-image"
                                         onError={(e) => {
                                             console.log('Image failed to load:', e.target.src);
@@ -853,7 +853,7 @@ export default function BlogPost() {
                                                         ? relatedPost.image
                                                         : `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`
                                                     }
-                                                    alt={relatedPost.title}
+                                                    alt={relatedPost.imageAlt || relatedPost.title || 'Related article image'}  // CHANGED: Use imageAlt from database first
                                                     className="blogpost-related-image"
                                                     onError={(e) => {
                                                         e.target.src = `https://placehold.co/300x200?text=${encodeURIComponent(relatedPost.title || 'Article')}`;
