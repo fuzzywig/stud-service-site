@@ -1242,10 +1242,10 @@ const Messages = () => {
                 await uploadBytes(fileRef, selectedFile);
                 const fileURL = await getDownloadURL(fileRef);
 
-                await sendMessageWithStatus(activeConversationId, currentUser.uid, toUid, fileURL, selectedFile.name);
+                await sendMessage(activeConversationId, currentUser.uid, toUid, url, file.name);
                 setSelectedFile(null);
             } else {
-                await sendMessageWithStatus(activeConversationId, currentUser.uid, toUid, newMessage);
+                await sendMessage(activeConversationId, currentUser.uid, toUid, newMessage);
             }
 
             setNewMessage("");
