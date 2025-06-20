@@ -882,3 +882,21 @@ button.icon-link svg {
     }
 
 }
+.navbar-logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Responsive size for mobile */
+@media (max-width: 768px) {
+    .navbar-logo-img {
+        height: 40px;
+    }
+    .hamburger-btn{
+
+        margin-right: 0;
+    }
+}
+

@@ -274,9 +274,13 @@ function Navbar({ onLoginClick }) {
                             <FaBars size={20} />
                         </button>
                         <Link to="/" className="logo" onClick={() => setActiveItem('/')}>
-                            <FaPaw className="logo-icon" />
-                            <span></span>
+                            <img
+                                src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2Fmpc-logo-text.png?alt=media&token=6a2aa38b-30b2-42ba-a106-28029be517ee"
+                                alt="MyPetConnect Logo"
+                                className="navbar-logo-img"
+                            />
                         </Link>
+
                     </div>
 
                     <div className="navbar-right">

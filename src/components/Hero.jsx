@@ -299,7 +299,7 @@ function Hero() {
 
                 {/* RIGHT: Headline Text */}
                 <div className="hero-text">
-                    <h1>Puppies and Kittens for Sale UK – Trusted Pet Marketplace</h1>
+                    <h1>Puppies and Kittens for Sale the UK's Trusted Pet Marketplace</h1>
                     <p>
                         Join the UK’s trusted pet marketplace for puppies and kittens. Connect with local breeders nationwide on our secure platform. Find your new furry family member with ease.
                     </p>
