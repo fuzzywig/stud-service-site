@@ -1,3 +1,4 @@
+@"
 libgconf-2-4
 libxss1
 libxtst6
@@ -18,3 +19,4 @@ libnss3
 lsb-release
 xdg-utils
 wget
+"@ | Out-File -FilePath "Aptfile" -Encoding utf8 -NoNewline
