@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "prebuild": "npm run generate-sitemap",
-    "postbuild": "cp -r public/images dist/ 2>/dev/null || xcopy public\\images dist\\images /E /I /Y 2>nul || true",
+    "postbuild": "node scripts/prerender.js && (cp -r public/images dist/ 2>/dev/null || xcopy public\\images dist\\images /E /I /Y 2>nul || true)",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -49,6 +49,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "puppeteer": "^24.10.2",
     "vite": "^6.2.0"
   }
 }

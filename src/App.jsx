@@ -193,7 +193,6 @@ function App() {
         }
     }, []);
 
-
     // Cookie consent effect with GA4 initialization
     React.useEffect(() => {
         const consent = localStorage.getItem('cookieConsent');
@@ -205,6 +204,15 @@ function App() {
             trackPageView(window.location.pathname, document.title);
             trackEvent('app_loaded', 'navigation', 'initial_load');
         }
+    }, []);
+
+    // Prerender event trigger - tells the prerenderer when page is ready
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            document.dispatchEvent(new Event('render-event'));
+        }, 1000); // Wait 1 second for content to load
+
+        return () => clearTimeout(timer);
     }, []);
 
     return (
