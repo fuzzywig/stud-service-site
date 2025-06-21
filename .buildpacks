@@ -1,4 +1,2 @@
-@"
 https://github.com/heroku/heroku-buildpack-apt
 https://github.com/heroku/heroku-buildpack-nodejs
-"@ | Out-File -FilePath ".buildpacks" -Encoding utf8 -NoNewline
