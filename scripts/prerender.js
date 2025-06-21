@@ -98,9 +98,15 @@ async function prerender() {
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
-        ]
+            '--disable-extensions',
+            '--no-first-run',
+            '--disable-default-apps',
+            '--single-process',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
+        ],
+        executablePath: process.env.GOOGLE_CHROME_BIN || undefined
     });
 
     const page = await browser.newPage();
