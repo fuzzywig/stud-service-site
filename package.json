@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "prebuild": "npm run generate-sitemap",
-    "postbuild": "node scripts/prerender.js && (cp -r public/images dist/ 2>/dev/null || xcopy public\\images dist\\images /E /I /Y 2>nul || true)",
-    "generate-sitemap": "node scripts/generate-sitemap.js",
-    "lint": "eslint .",
+    "postbuild": "node scripts/prerender.js && (cp -r public/images dist/ 2>/dev/null || xcopy public\\images dist\\images /E /I /Y 2>nul || true)",    "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.cjs"
   },
