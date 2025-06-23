@@ -1,17 +1,15 @@
 /*
- * Browse Studs Page - Namespaced CSS
- * This CSS uses prefixing and high specificity to avoid conflicts with messages.css
+ * Browse Studs Page - Cleaned CSS
+ * Removed duplicates and resolved conflicts
  */
 
 /* ─── CSS Reset for Browse Studs Components ─── */
-/* Add this at the beginning to override any conflicting styles */
 .browse-studs-wrapper *,
 .browse-studs-wrapper *::before,
 .browse-studs-wrapper *::after {
     box-sizing: border-box;
 }
 
-/* Apply !important to critical layout properties */
 .browse-studs-wrapper {
     display: block !important;
     width: 100% !important;
@@ -19,6 +17,7 @@
     margin: 0 auto !important;
     padding: 0 !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    background-color: #ffffff !important;
 }
 
 /* ─── Layout ─── */
@@ -28,18 +27,10 @@ body.browse-studs-view .browse-studs-page {
     margin: 0 auto !important;
     padding: 20px !important;
     display: grid !important;
-    grid-template-columns: 300px 1fr !important; /* Sidebar + Content */
+    grid-template-columns: 300px 1fr !important;
     gap: 20px !important;
     box-sizing: border-box !important;
     align-items: start !important;
-}
-
-@media (max-width: 1024px) {
-    .browse-studs-wrapper .browse-studs-page,
-    body.browse-studs-view .browse-studs-page {
-        grid-template-columns: 0fr !important; /* Stack on mobile */
-        gap: 0 !important;
-    }
 }
 
 /* ─── Sidebar ─── */
@@ -55,26 +46,41 @@ body.browse-studs-view .browse-studs-sidebar {
     top: 0 !important;
 }
 
+/* ─── Filter Blocks ─── */
 .browse-studs-wrapper .browse-studs-filter-block,
 body.browse-studs-view .browse-studs-filter-block {
     margin-bottom: 1.5rem !important;
+    display: block !important;
+    width: 100% !important;
 }
 
-.browse-studs-wrapper .browse-studs-filter-title,
-body.browse-studs-view .browse-studs-filter-title {
-    margin: 0 0 8px !important;
+.browse-studs-wrapper .browse-studs-filter-block h3,
+body.browse-studs-view .browse-studs-filter-block h3 {
+    margin: 0 0 8px 0 !important;
     font-size: 1.1rem !important;
     color: #256845 !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+    display: block !important;
 }
 
-.browse-studs-wrapper .browse-studs-filter-select,
+.browse-studs-wrapper .browse-studs-filter-block label,
+body.browse-studs-view .browse-studs-filter-block label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 1rem !important;
+    color: #333 !important;
+    font-weight: 500 !important;
+    width: 100% !important;
+}
+
+/* ─── Form Elements ─── */
 .browse-studs-wrapper .panel-select,
-.browse-studs-wrapper .panel-section select,
-.browse-studs-wrapper .panel-section input[type="number"],
-body.browse-studs-view .browse-studs-filter-select,
+.browse-studs-wrapper .browse-studs-filter-block select,
+.browse-studs-wrapper .browse-studs-filter-block input[type="number"],
 body.browse-studs-view .panel-select,
-body.browse-studs-view .panel-section select,
-body.browse-studs-view .panel-section input[type="number"] {
+body.browse-studs-view .browse-studs-filter-block select,
+body.browse-studs-view .browse-studs-filter-block input[type="number"] {
     width: 100% !important;
     padding: 0.5rem !important;
     border-radius: 8px !important;
@@ -85,20 +91,81 @@ body.browse-studs-view .panel-section input[type="number"] {
     color: #888888 !important;
 }
 
-.browse-studs-wrapper .browse-studs-filter-block select,
+/* Location Search Input - Specific styling */
+.browse-studs-wrapper .browse-studs-filter-block input[type="text"],
+body.browse-studs-view .browse-studs-filter-block input[type="text"] {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    margin-bottom: 8px !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    color: #333 !important;
+    display: block !important;
+}
+
+/* Range Sliders */
 .browse-studs-wrapper .browse-studs-filter-block input[type="range"],
-body.browse-studs-view .browse-studs-filter-block select,
 body.browse-studs-view .browse-studs-filter-block input[type="range"] {
     width: 100% !important;
 }
 
+/* Location Search Button - Single definition with high specificity */
+.browse-studs-wrapper .browse-studs-filter-block button[type="button"],
+body.browse-studs-view .browse-studs-filter-block button[type="button"] {
+    width: 100% !important;
+    padding: 10px 16px !important;
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    cursor: pointer !important;
+    background-color: #256845 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+.browse-studs-wrapper .browse-studs-filter-block button[type="button"]:hover:not(:disabled),
+body.browse-studs-view .browse-studs-filter-block button[type="button"]:hover:not(:disabled) {
+    background-color: #1c5235 !important;
+}
+
+.browse-studs-wrapper .browse-studs-filter-block button[type="button"]:disabled,
+body.browse-studs-view .browse-studs-filter-block button[type="button"]:disabled {
+    background-color: #ccc !important;
+    cursor: wait !important;
+}
+
+/* Location status text */
+.browse-studs-wrapper .browse-studs-filter-block p,
+body.browse-studs-view .browse-studs-filter-block p {
+    font-size: 12px !important;
+    color: #666 !important;
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* ─── Checkbox Groups ─── */
 .browse-studs-wrapper .browse-studs-filter-block.checkbox-group,
 body.browse-studs-view .browse-studs-filter-block.checkbox-group {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.5rem !important;
     padding-top: 0.5rem !important;
-    color: #333 !important; /* FIXED: Changed from #fff to #333 */
+    color: #333 !important;
 }
 
 .browse-studs-wrapper .browse-studs-filter-block.checkbox-group label,
@@ -111,26 +178,17 @@ body.browse-studs-view .browse-studs-filter-block.checkbox-group label {
     cursor: pointer !important;
 }
 
-/* ─── Top Breeds List ─── */
-.browse-studs-wrapper .browse-studs-top-breeds-list,
-body.browse-studs-view .browse-studs-top-breeds-list {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+.browse-studs-wrapper input[type="checkbox"],
+body.browse-studs-view input[type="checkbox"] {
+    accent-color: #256845 !important;
+    background-color: #fff !important;
+    border: 2px solid #256845 !important;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 
-.browse-studs-wrapper .browse-studs-top-breed,
-body.browse-studs-view .browse-studs-top-breed {
-    margin-bottom: 6px !important;
-    font-size: 0.95rem !important;
-    color: #333 !important;
-}
-
-.browse-studs-wrapper .browse-studs-top-breed-count,
-body.browse-studs-view .browse-studs-top-breed-count {
-    color: #666 !important;
-}
-
+/* ─── Popular Breeds ─── */
 .browse-studs-wrapper .popular-breeds,
 body.browse-studs-view .popular-breeds {
     display: flex !important;
@@ -154,6 +212,25 @@ body.browse-studs-view .popular-breed:hover {
     color: #fff !important;
 }
 
+/* ─── Reset Button ─── */
+.browse-studs-wrapper .reset-btn,
+body.browse-studs-view .reset-btn {
+    background: #b83c56 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    transition: background 0.3s ease !important;
+    width: 100% !important;
+}
+
+.browse-studs-wrapper .reset-btn:hover,
+body.browse-studs-view .reset-btn:hover {
+    background: #962e45 !important;
+}
+
 /* ─── Results Column ─── */
 .browse-studs-wrapper .browse-studs-content,
 body.browse-studs-view .browse-studs-content {
@@ -168,67 +245,22 @@ body.browse-studs-view .browse-studs-content {
     top: 0 !important;
 }
 
-/* ─── Active Filters ─── */
-.browse-studs-wrapper .browse-studs-active-filters-text,
-body.browse-studs-view .browse-studs-active-filters-text {
-    grid-column: 1 / -1 !important; /* span both columns */
-    margin: 0 0 1rem !important;
-    font-size: 0.95rem !important;
-    color: #555 !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-}
-
-.browse-studs-wrapper .browse-studs-active-filters-text span,
-body.browse-studs-view .browse-studs-active-filters-text span {
-    background-color: #f2f2f2 !important;
-    padding: 6px 10px !important;
-    border-radius: 20px !important;
-    display: flex !important;
-    align-items: center !important;
-    font-size: 0.9rem !important;
-}
-
-.browse-studs-wrapper .browse-studs-remove-btn,
-body.browse-studs-view .browse-studs-remove-btn {
-    background: none !important;
-    border: none !important;
-    color: #c00 !important;
-    font-size: 1rem !important;
-    margin-left: 6px !important;
-    cursor: pointer !important;
-}
-
-/* ─── Mobile Toolbar - FIXED VERSION ─── */
+/* ─── Mobile Toolbar ─── */
 .browse-studs-wrapper .browse-studs-mobile-toolbar,
 body.browse-studs-view .browse-studs-mobile-toolbar {
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
-    background: transparent !important; /* FIXED: No white background */
-    border: none !important; /* FIXED: No border */
-    position: relative !important; /* FIXED: Not fixed position */
+    background: transparent !important;
+    border: none !important;
+    position: relative !important;
     z-index: 2 !important;
     width: 100% !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
     margin: 0;
-    padding: 0 !important; /* FIXED: No padding */
-    box-shadow: none !important; /* FIXED: No shadow */
-}
-
-.browse-studs-wrapper .browse-studs-mobile-toolbar button,
-body.browse-studs-view .browse-studs-mobile-toolbar button {
-    margin-left: auto !important;
-}
-
-.browse-studs-wrapper .browse-studs-mobile-toolbar .filter-btn,
-body.browse-studs-view .browse-studs-mobile-toolbar .filter-btn {
-    max-width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
 .browse-studs-wrapper .filter-btn,
@@ -270,7 +302,39 @@ body.browse-studs-view .browse-studs-divider {
     margin: 0.75rem 0 !important;
 }
 
-/* ─── Each Advert Card ─── */
+/* ─── Active Filters ─── */
+.browse-studs-wrapper .browse-studs-active-filters-text,
+body.browse-studs-view .browse-studs-active-filters-text {
+    grid-column: 1 / -1 !important;
+    margin: 0 0 1rem !important;
+    font-size: 0.95rem !important;
+    color: #555 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+}
+
+.browse-studs-wrapper .browse-studs-active-filters-text span,
+body.browse-studs-view .browse-studs-active-filters-text span {
+    background-color: #f2f2f2 !important;
+    padding: 6px 10px !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 0.9rem !important;
+}
+
+.browse-studs-wrapper .browse-studs-remove-btn,
+body.browse-studs-view .browse-studs-remove-btn {
+    background: none !important;
+    border: none !important;
+    color: #c00 !important;
+    font-size: 1rem !important;
+    margin-left: 6px !important;
+    cursor: pointer !important;
+}
+
+/* ─── Advert Cards ─── */
 .browse-studs-wrapper .browse-studs-card,
 body.browse-studs-view .browse-studs-card {
     display: flex !important;
@@ -293,11 +357,11 @@ body.browse-studs-view .browse-studs-card:hover {
     z-index: 1 !important;
 }
 
-/* Image side */
+/* Card Image */
 .browse-studs-wrapper .browse-studs-card-image,
 body.browse-studs-view .browse-studs-card-image {
     flex: 0 0 300px !important;
-    background: #eee !important;
+    background: #e8e8e8 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -312,9 +376,10 @@ body.browse-studs-view .browse-studs-card-img {
     height: 100% !important;
     object-fit: contain !important;
     display: block !important;
+    background-color: #e8e8e8 !important;
 }
 
-/* Details side */
+/* Card Details */
 .browse-studs-wrapper .browse-studs-card-details,
 body.browse-studs-view .browse-studs-card-details {
     flex: 1 !important;
@@ -326,43 +391,12 @@ body.browse-studs-view .browse-studs-card-details {
     box-sizing: border-box !important;
 }
 
-.browse-studs-wrapper .browse-studs-card-title,
-body.browse-studs-view .browse-studs-card-title {
-    display: block !important;
-    font-size: 1.4rem !important;
-    font-weight: 600 !important;
-    color: #213547 !important;
-    margin-bottom: 8px !important;
-    white-space: normal !important;
-}
-
 .browse-studs-wrapper .browse-studs-card-name,
 body.browse-studs-view .browse-studs-card-name {
     margin: 0 0 8px !important;
     font-size: 1.2rem !important;
     font-weight: 600 !important;
     color: #213547 !important;
-}
-
-.browse-studs-wrapper .browse-studs-card-dogname,
-body.browse-studs-view .browse-studs-card-dogname {
-    margin: 0 0 12px !important;
-    font-size: 1rem !important;
-    color: #666 !important;
-    font-weight: 500 !important;
-    line-height: 1.4 !important;
-    white-space: normal !important;
-}
-
-.browse-studs-wrapper .browse-studs-card-breed,
-.browse-studs-wrapper .browse-studs-card-age,
-.browse-studs-wrapper .browse-studs-card-fee,
-body.browse-studs-view .browse-studs-card-breed,
-body.browse-studs-view .browse-studs-card-age,
-body.browse-studs-view .browse-studs-card-fee {
-    margin: 2px 0 !important;
-    font-size: 0.95rem !important;
-    color: #555 !important;
 }
 
 .browse-studs-wrapper .browse-studs-card-post-age,
@@ -378,11 +412,11 @@ body.browse-studs-view .browse-studs-card-description {
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
     display: -webkit-box;
-    -webkit-line-clamp: 4; /* limits to 4 lines */
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-height: 6em; /* just in case line clamp fails, fallback height */
+    max-height: 6em;
     font-size: 14px;
     line-height: 1.5;
     margin-top: 10px;
@@ -431,19 +465,18 @@ body.browse-studs-view .browse-studs-card-fee-pill {
     z-index: 1 !important;
 }
 
-/* Distance pill styling */
+/* Special Pills */
 .browse-studs-distance-pill {
     display: inline-flex;
     align-items: center;
-    background-color: #fce8e6; /* light pinkish-red */
-    color: #b83c56;            /* your brand accent red */
+    background-color: #fce8e6;
+    color: #b83c56;
     font-size: 0.85rem;
     font-weight: 500;
     padding: 4px 10px;
     border-radius: 12px;
 }
 
-/* Licensed breeder pill styling */
 .browse-studs-pill.licensed-breeder {
     background-color: #fbbf24;
     color: #78350f;
@@ -457,7 +490,6 @@ body.browse-studs-view .browse-studs-card-fee-pill {
     font-size: 14px;
 }
 
-/* Rescue organization pill styling */
 .browse-studs-pill.rescue-org {
     background-color: #1e3a8a;
     color: white;
@@ -507,24 +539,7 @@ body.browse-studs-view .browse-studs-owner-location {
     color: #777 !important;
 }
 
-/* Favorite Buttons */
-.browse-studs-wrapper .browse-studs-card-fav-btn,
-body.browse-studs-view .browse-studs-card-fav-btn {
-    background: none !important;
-    border: none !important;
-    cursor: pointer !important;
-    font-size: 1.4rem !important;
-    color: #b83c56 !important;
-    transition: transform 0.2s ease, color 0.2s ease !important;
-    padding: 4px !important;
-}
-
-.browse-studs-wrapper .browse-studs-card-fav-btn:hover,
-body.browse-studs-view .browse-studs-card-fav-btn:hover {
-    transform: scale(1.2) !important;
-    color: #e63946 !important;
-}
-
+/* Favorite Button */
 .browse-studs-wrapper .browse-studs-favorite,
 body.browse-studs-view .browse-studs-favorite {
     background-color: white !important;
@@ -557,7 +572,7 @@ body.browse-studs-view .browse-studs-favorite svg {
     font-size: 1.2rem !important;
 }
 
-/* Pagination */
+/* ─── Pagination ─── */
 .browse-studs-wrapper .pagination,
 body.browse-studs-view .pagination {
     display: flex !important;
@@ -578,11 +593,6 @@ body.browse-studs-view .page-btn {
     transition: all 0.2s ease-in-out !important;
 }
 
-.browse-studs-wrapper .page-btn svg,
-body.browse-studs-view .page-btn svg {
-    vertical-align: middle !important;
-}
-
 .browse-studs-wrapper .page-btn:hover:not(:disabled),
 body.browse-studs-view .page-btn:hover:not(:disabled) {
     background-color: #f2f2f2 !important;
@@ -601,37 +611,55 @@ body.browse-studs-view .page-btn.active {
     border-color: #256845 !important;
 }
 
-/* Buttons */
-.browse-studs-wrapper .reset-btn,
-body.browse-studs-view .reset-btn {
-    background: #b83c56 !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 30px !important;
-    padding: 0.6rem 1.5rem !important;
-    font-size: 1rem !important;
-    cursor: pointer !important;
-    transition: background 0.3s ease !important;
-    width: 100% !important;
+/* ─── No Results ─── */
+.browse-studs-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 32px;
+    margin: 32px auto;
+    max-width: 480px;
+    background: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
 }
 
-.browse-studs-wrapper .reset-btn:hover,
-body.browse-studs-view .reset-btn:hover {
-    background: #962e45 !important;
+.browse-studs-no-results h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 8px;
 }
 
-/* Checkboxes */
-.browse-studs-wrapper input[type="checkbox"],
-body.browse-studs-view input[type="checkbox"] {
-    accent-color: #256845 !important;  /* consistent green */
-    background-color: #fff !important; /* ensures white background when not checked */
-    border: 2px solid #256845 !important;
-    width: 18px;
-    height: 18px;
+.browse-studs-no-results p {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 24px;
+    line-height: 1.5;
+    max-width: 320px;
+}
+
+.browse-studs-reset-btn {
+    background: #f8f8f8;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 400;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-/* Responsive Design */
+.browse-studs-reset-btn:hover {
+    background: #f0f0f0;
+    border-color: #ccc;
+    color: #555;
+}
+
+/* ─── Responsive Design ─── */
 .browse-studs-wrapper .mobile-only,
 body.browse-studs-view .mobile-only {
     display: none !important;
@@ -643,6 +671,12 @@ body.browse-studs-view .desktop-only {
 }
 
 @media (max-width: 1024px) {
+    .browse-studs-wrapper .browse-studs-page,
+    body.browse-studs-view .browse-studs-page {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
+
     .browse-studs-wrapper .mobile-only,
     body.browse-studs-view .mobile-only {
         display: block !important;
@@ -669,24 +703,14 @@ body.browse-studs-view .desktop-only {
 
     .browse-studs-wrapper .browse-studs-card-image,
     body.browse-studs-view .browse-studs-card-image {
-        height: 120px !important;
+        height: 200px !important;
     }
 
-    /* Improved card layout for mobile */
-    .browse-studs-card {
-        flex-direction: column;
+    .browse-studs-wrapper .browse-studs-card-details,
+    body.browse-studs-view .browse-studs-card-details {
+        padding: 1rem !important;
     }
 
-    .browse-studs-card-image {
-        width: 100%;
-        height: 200px;
-    }
-
-    .browse-studs-card-details {
-        padding: 1rem;
-    }
-
-    /* Pagination adjustments for mobile */
     .pagination {
         padding: 1rem;
         justify-content: center;
@@ -697,104 +721,3 @@ body.browse-studs-view .desktop-only {
         height: 36px;
     }
 }
-/* Explicitly enforce white backgrounds on mobile rendering chain */
-.browse-studs-wrapper,
-body.browse-studs-view,
-.browse-studs-wrapper .browse-studs-card,
-.browse-studs-wrapper .browse-studs-card-image,
-.browse-studs-wrapper .browse-studs-card-img {
-    background-color: #ffffff !important;
-}
-
-
-/* Subtle No Results Section */
-.browse-studs-no-results {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 48px 32px;
-    margin: 32px auto;
-    max-width: 480px;
-    background: #fafafa;
-    border-radius: 8px;
-    border: 1px solid #e5e5e5;
-}
-
-.browse-studs-no-results-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 16px;
-    background: #f5f5f5;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: #999;
-    border: 1px solid #e5e5e5;
-}
-
-.browse-studs-no-results h3 {
-    font-size: 18px;
-    font-weight: 500;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.browse-studs-no-results p {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 24px;
-    line-height: 1.5;
-    max-width: 320px;
-}
-
-/* Light Reset Button */
-.browse-studs-reset-btn {
-    background: #f8f8f8;
-    color: #666;
-    border: 1px solid #ddd;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.browse-studs-reset-btn:hover {
-    background: #f0f0f0;
-    border-color: #ccc;
-    color: #555;
-}
-
-.browse-studs-reset-btn:active {
-    background: #eaeaea;
-}
-
-.browse-studs-reset-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-}
-/* Apply a solid background to all image containers and the images themselves */
-.advert-card,
-.advert-image-container,
-.advert-image,
-.browse-studs-card,
-.browse-studs-card-image,
-.browse-studs-card-img,
-.favourites-card,
-.favourites-card-img {
-    background-color: #ffffff !important;
-}
-.advert-image-container {
-    background-color: #f6f6f6; /* Light grey */
-}
-.advert-card,
-.advert-image-container,
-.advert-image {
-    background-color: lime !important;
-}
-

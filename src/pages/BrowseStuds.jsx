@@ -984,23 +984,9 @@ export default function BrowseStuds() {
                             />
                             <button
                                 type="button"
+                                className="location-search-btn"
                                 onClick={handlePostcodeSearch}
                                 disabled={isLoadingPostcode}
-                                style={{
-                                    width: '100%',
-                                    padding: '15px 16px',
-                                    marginTop:  '6px',
-                                    cursor: isLoadingPostcode ? 'wait' : 'pointer',
-                                    backgroundColor: '#1c5235',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseEnter={e => !isLoadingPostcode && (e.target.style.backgroundColor = '#8a2a3e')}
-                                onMouseLeave={e => !isLoadingPostcode && (e.target.style.backgroundColor = '#a03248')}
                             >
                                 {isLoadingPostcode ? 'Loading...' : 'Search Location'}
                             </button>
