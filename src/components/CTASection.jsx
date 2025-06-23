@@ -82,7 +82,7 @@ function CTASection({ onLoginClick }) {
         <section className="cta-section">
             <div className="cta-container">
                 <div className="cta-badge">
-                    <FontAwesomeIcon icon={faStar} /> Trusted by Dog Lovers Nationwide
+                    <FontAwesomeIcon icon={faStar} /> Trusted by Pet Lovers Nationwide
                 </div>
 
                 <h2 className="cta-title">

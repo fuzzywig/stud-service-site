@@ -89,8 +89,8 @@ const Footer = ({ onResetCookieConsent }) => {
         <footer className="mpc-footer">
             <div className="mpc-footer-content">
                 <div className="mpc-footer-col">
-                    <img src="https://placehold.co/120x70" alt="Stud Service Hub" className="mpc-footer-logo" />
-                    <p>We connect responsible dog breeders with loving homes. Whether you're searching for a stud dog or planning your next litter, our platform offers verified profiles, real-time messaging, and trusted breeder reviews, all in one place.</p>
+                    <img src="https://placehold.co/120x70" alt="My Pet Connect Logo" className="mpc-footer-logo" />
+                    <p>The UK's trusted pet marketplace connecting families with responsible breeders nationwide. Find puppies, kittens, and pets for sale from verified breeders, or discover rescue animals looking for loving homes. Safe, secure platform with health guarantees and breeder reviews.</p>
                     <div className="mpc-footer-social-icons">
                         <FaFacebookF />
                         <FaInstagram />
@@ -144,7 +144,6 @@ const Footer = ({ onResetCookieConsent }) => {
                                             <span className="mpc-footer-article-title">
                                                 {truncateTitle(article.title)}
                                             </span>
-
                                         </Link>
                                     </li>
                                 ))

@@ -62,81 +62,6 @@ export default function TopStudsPage() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const auth = getAuth();
 
-    // Dynamic SEO function - MOVED INSIDE COMPONENT
-    const getSEOData = () => {
-        // Check if any filters are active
-        const hasFilters = activeCategory || selectedBreed !== 'all';
-
-        if (!hasFilters || (activeCategory === 'dogs' && selectedBreed === 'all')) {
-            // Default title when showing all dogs or no filters
-            return {
-                title: "Elite Stud Dogs & Cats – Top 1% Performers | My Pet Connect",
-                description: "Explore the Elite Hall of Fame on My Pet Connect: the top 1% of stud dogs and cats, ranked by performance, ratings, and reviews. Discover proven sires with exceptional genetics and join the leaders in breeding excellence."
-            };
-        }
-
-        // Build dynamic title based on filters
-        const titleParts = [];
-
-        // Add "Elite" first
-        titleParts.push("Elite");
-
-        // Add breed if selected
-        if (selectedBreed !== 'all') {
-            titleParts.push(selectedBreed);
-        }
-
-        // Add category
-        if (activeCategory === 'dogs') {
-            titleParts.push("Stud Dogs");
-        } else if (activeCategory === 'cats') {
-            titleParts.push("Stud Cats");
-        }
-
-        // Add descriptor
-        titleParts.push("– Top Performers");
-
-        const dynamicTitle = titleParts.join(" ");
-
-        // Build dynamic description
-        let description = "Discover the elite ";
-
-        if (selectedBreed !== 'all') {
-            description += `${selectedBreed.toLowerCase()} `;
-        }
-
-        if (activeCategory === 'dogs') {
-            description += "stud dogs ";
-        } else {
-            description += "stud cats ";
-        }
-
-        description += "ranking in the top 1% for performance, ratings, and breeding success. ";
-
-        // Add specific details based on selection
-        if (selectedBreed !== 'all') {
-            description += `These ${selectedBreed.toLowerCase()} studs have proven genetics, exceptional temperament, and outstanding breeding records. `;
-        }
-
-        // Add result context
-        const currentCount = activeCategory === 'dogs' ? filteredDogStuds.length : filteredCatStuds.length;
-        if (currentCount > 0) {
-            description += `View ${currentCount} elite performer${currentCount === 1 ? '' : 's'} `;
-            if (selectedBreed !== 'all') {
-                description += `in the ${selectedBreed} category. `;
-            } else {
-                description += `in our ${activeCategory} category. `;
-            }
-        }
-
-        description += "Connect with top breeders and proven bloodlines.";
-
-        return { title: dynamicTitle, description };
-    };
-
-    // Get the dynamic SEO data
-    const { title: seoTitle, description: seoDescription } = getSEOData();
-
     // Track auth state
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, u => setUser(u));
@@ -405,8 +330,8 @@ export default function TopStudsPage() {
     return (
         <>
             <SEO
-                title={seoTitle}
-                description={seoDescription}
+                title="Elite Stud Dogs & Cats - Top 1% | My Pet Connect"
+                description="Discover elite stud dogs and cats in the top 1% for performance. Browse proven sires with exceptional genetics, ratings, and breeding success."
             />
             <div className="elite-studs-page">
                 {/* Animated background elements */}
@@ -420,7 +345,7 @@ export default function TopStudsPage() {
                             <FontAwesomeIcon icon={faCrown} className="elite-crown-icon" />
                         </div>
                         <h1 className="elite-title">
-                            <span className="elite-title-accent">Elite</span> Hall of Fame
+                            <span className="elite-title-accent">Elite</span> Stud Dogs & Cats Hall of Fame
                         </h1>
                         <p className="elite-subtitle">
                             Where Excellence Meets Recognition
@@ -499,17 +424,17 @@ export default function TopStudsPage() {
                             <div className="elite-explanation-card">
                                 <FontAwesomeIcon icon={faTrophy} className="elite-explanation-icon" />
                                 <h3>Merit-Based Rankings</h3>
-                                <p>Our sophisticated algorithm combines views, ratings, and reviews to identify truly exceptional studs. This isn't just popularity – it's proven excellence backed by real breeding success.</p>
+                                <p>Our sophisticated algorithm combines views, ratings, and reviews to identify truly exceptional studs. This isn't just popularity – it's proven excellence backed by real breeding success. Welcome to our exclusive Hall of Fame, showcasing elite performers who have earned their place among the top 1% of all studs.</p>
                             </div>
                             <div className="elite-explanation-card">
                                 <FontAwesomeIcon icon={faChartLine} className="elite-explanation-icon" />
                                 <h3>Performance Metrics</h3>
-                                <p>Every stud here has earned their position through consistent high ratings, extensive positive reviews, and genuine interest from the breeding community.</p>
+                                <p>Every stud here has earned their position through consistent high ratings, extensive positive reviews, and genuine interest from the breeding community. Our Hall of Fame celebrates outstanding genetic contributions and proven breeding success.</p>
                             </div>
                             <div className="elite-explanation-card">
                                 <FontAwesomeIcon icon={faGem} className="elite-explanation-icon" />
                                 <h3>Elite Recognition</h3>
-                                <p>Being featured here means standing among the top 1% of all studs. These are proven sires with exceptional genetics, temperament, and breeding success rates.</p>
+                                <p>Being featured in our Hall of Fame means standing among the top 1% of all studs. These are proven sires with exceptional genetics, temperament, and breeding success rates. Elite status represents the pinnacle of breeding excellence.</p>
                             </div>
                         </div>
                     </div>

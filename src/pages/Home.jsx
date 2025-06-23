@@ -10,40 +10,38 @@ import NewsletterSignup from '../components/NewsletterSignup';
 import SEO from '../components/SEO';
 
 function Home() {
-    return (
-        <>
+        return (
+            <>
+                    <SEO
+                        title="Find Puppies & Kittens for Sale UK | My Pet Connect"
+                        description="Find puppies, kittens and pets for sale from trusted UK breeders. Browse thousands of dogs, cats and rabbits. Safe, verified listings with health guarantees."
+                    />
 
+                    <Hero />
 
-            <SEO
-                title="Post a Pet Listing | Puppies, Kittens & Stud Dogs UK"
-                description="Create your free pet listing today. List puppies, kittens or stud dogs for sale. Connect with trusted UK pet lovers. Easy, secure, and breeder-friendly."
-            />
+                    {/* Dogs */}
+                    <RecentAdverts category="dogs" intent="sale" title="Recent Puppies For Sale" limitCount={8} />
+                    <RecentAdverts category="dogs" intent="stud" title="Stud Dogs for Breeding" limitCount={8} />
+                    <RecentAdverts category="dogs" intent="rescue" title="Dog Rescue & Adoption" limitCount={8} />
 
-            <Hero />
+                    {/* Cats */}
+                    <RecentAdverts category="cats" intent="stud" title="Stud Cats for Breeding" limitCount={8} />
+                    <RecentAdverts category="cats" intent="sale" title="Recent Kittens For Sale" limitCount={8} />
+                    <RecentAdverts category="cats" intent="rescue" title="Cat Rescue & Adoption" limitCount={8} />
 
-            {/* Dogs */}
-            <RecentAdverts category="dogs" intent="sale" title="Recent Adverts In Puppies For Sale" limitCount={8} />
-            <RecentAdverts category="dogs" intent="stud" title="Recent Adverts In Dogs For Stud" limitCount={8} />
-            <RecentAdverts category="dogs" intent="rescue" title="Dogs Available for Adoption" limitCount={8} />
+                    {/* Rabbits */}
+                    <RecentAdverts category="rabbits" intent="sale" title="Recent Rabbits For Sale" limitCount={8} />
+                    <RecentAdverts category="rabbits" intent="rescue" title="Rabbit Rescue & Adoption" limitCount={8} />
 
-            {/* Cats */}
-            <RecentAdverts category="cats" intent="stud" title="Recent Adverts In Cats For Stud" limitCount={8} />
-            <RecentAdverts category="cats" intent="sale" title="Recent Adverts In Kittens For Sale" limitCount={8} />
-            <RecentAdverts category="cats" intent="rescue" title="Cats Available for Adoption" limitCount={8} />
+                    {/* All Rescues Section */}
+                    <RecentAdverts intent="rescue" title="All Rescue Animals" limitCount={12} />
 
-            {/* Rabbits */}
-            <RecentAdverts category="rabbits" intent="sale" title="Recent Adverts In Rabbits For Sale" limitCount={8} />
-            <RecentAdverts category="rabbits" intent="rescue" title="Rabbits Available for Adoption" limitCount={8} />
-
-            {/* All Rescues Section */}
-            <RecentAdverts intent="rescue" title="All Animals Available for Adoption" limitCount={12} />
-
-            <PopularBreeds />
-            <RecentBlogPosts />
-            <NewsletterSignup />
-            <CTASection />
-        </>
-    );
+                    <PopularBreeds />
+                    <RecentBlogPosts />
+                    <NewsletterSignup />
+                    <CTASection />
+            </>
+        );
 }
 
 export default Home;

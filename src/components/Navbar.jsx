@@ -274,10 +274,17 @@ function Navbar({ onLoginClick }) {
                             <FaBars size={20} />
                         </button>
                         <Link to="/" className="logo" onClick={() => setActiveItem('/')}>
+                            {/* Desktop logo */}
                             <img
                                 src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2Fmpc-logo-text.png?alt=media&token=6a2aa38b-30b2-42ba-a106-28029be517ee"
-                                alt="MyPetConnect Logo"
-                                className="navbar-logo-img"
+                                alt="My Pet Connect Logo"
+                                className="navbar-logo-img navbar-logo-desktop"
+                            />
+                            {/* Mobile/Tablet logo */}
+                            <img
+                                src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2Flogo-small.png?alt=media&token=f084397f-5902-44ed-aecb-117ebde48b76"
+                                alt="My Pet Connect Logo"
+                                className="navbar-logo-img navbar-logo-mobile"
                             />
                         </Link>
 
@@ -515,7 +522,7 @@ function Navbar({ onLoginClick }) {
                         </div>
                     ) : (
                         <div className="sidebar-guest">
-                            <p>Welcome to Stud Service Hub</p>
+                            <p>Welcome to My Pet Connect</p>
                             <div className="guest-buttons">
                                 {/* LOGIN: keep as <Link> for styling but prevent navigation */}
                                 <Link

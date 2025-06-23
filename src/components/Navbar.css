@@ -883,7 +883,7 @@ button.icon-link svg {
 
 }
 .navbar-logo-img {
-    height: 60px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     display: block;
@@ -899,4 +899,55 @@ button.icon-link svg {
         margin-right: 0;
     }
 }
+/* Add these styles to your Navbar.css file */
 
+/* Base logo styles */
+.navbar-logo-img {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Desktop logo - visible by default */
+.navbar-logo-desktop {
+    display: block;
+}
+
+/* Mobile/tablet logo - hidden by default */
+.navbar-logo-mobile {
+    display: none;
+}
+
+/* Tablet breakpoint (1024px and below) */
+@media (max-width: 1024px) {
+    .navbar-logo-desktop {
+        display: none;
+    }
+
+    .navbar-logo-mobile {
+        display: block;
+        height: 50px; /* Slightly smaller for tablets */
+    }
+}
+
+/* Mobile breakpoint (768px and below) */
+@media (max-width: 768px) {
+    .navbar-logo-mobile {
+        height: 30px; /* Even smaller for mobile */
+    }
+
+    .navbar-inner {
+        height: 40px;
+    }
+
+    .hamburger-btn {
+        margin-right: 0;
+    }
+
+    /* Reduce gap only between icon-link elements on mobile */
+    .navbar-right .icon-link + .dropdown-wrapper,
+    .navbar-right .icon-link + .icon-link {
+        margin-left: -1rem;
+    }
+}

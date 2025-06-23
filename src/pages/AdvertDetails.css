@@ -205,7 +205,6 @@
     overflow: hidden;
     border-radius: 0;
     box-shadow: 0 15px 30px rgba(20, 67, 46, 0.2);
-    margin-bottom: 20px;
     aspect-ratio: 4 / 3;
     background: linear-gradient(135deg, rgba(28, 82, 53, 0.05), rgba(20, 67, 46, 0.1));
     border: none;
@@ -572,7 +571,10 @@
 .info-card {
     background-color: var(--white);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding-top: 24px;
+    padding-right: 14px;
+    padding-left: 24px;
+    padding-bottom: 24px;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-medium);
     margin-bottom: 4px;
@@ -2040,7 +2042,8 @@ body.tooltip-open {
 
     .page-title {
         font-size: 18px;
-        padding-right: 60px; /* Space for favorite button */
+        padding-right: 60px;
+        padding-top: 5px;
     }
 
     /* Gallery adjustments */
