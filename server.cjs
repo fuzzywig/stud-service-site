@@ -76,14 +76,123 @@ app.use((req, res, next) => {
 });
 
 // 2. API ROUTES FIRST
+// Replace your sitemap route with this:
+
 app.get('/sitemap.xml', async (req, res) => {
     try {
-        // Your sitemap logic here
-        res.set('Content-Type', 'application/xml');
-        res.send('<?xml version="1.0" encoding="UTF-8"?><urlset></urlset>');
+        console.log('📍 Sitemap requested');
+
+        // Try to read the generated sitemap file
+        const fs = require('fs');
+        const path = require('path');
+
+        // Check multiple possible locations
+        const possiblePaths = [
+            path.join(__dirname, 'dist', 'sitemap.xml'),
+            path.join(__dirname, 'dist', 'client', 'sitemap.xml'),
+            path.join(__dirname, 'public', 'sitemap.xml'),
+            path.join(__dirname, 'sitemap.xml')
+        ];
+
+        let sitemapContent = null;
+        let foundPath = null;
+
+        for (const sitemapPath of possiblePaths) {
+            try {
+                if (fs.existsSync(sitemapPath)) {
+                    sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
+                    foundPath = sitemapPath;
+                    console.log(`📍 Found sitemap at: ${foundPath}`);
+                    break;
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+
+        if (sitemapContent && sitemapContent.length > 100) {
+            // Serve the generated sitemap
+            console.log(`📍 Serving sitemap (${sitemapContent.length} characters)`);
+            res.set('Content-Type', 'application/xml');
+            res.send(sitemapContent);
+        } else {
+            // Fallback: Generate a basic sitemap
+            console.log('📍 No sitemap file found, generating basic sitemap');
+
+            const basicSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://mypetconnect.co.uk/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/top-studs</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
+
+            res.set('Content-Type', 'application/xml');
+            res.send(basicSitemap);
+        }
+
     } catch (error) {
         console.error('❌ Sitemap error:', error);
         res.status(500).send('Sitemap generation failed');
+    }
+});
+
+// Also add this route for manually triggering sitemap generation
+app.post('/api/generate-sitemap', async (req, res) => {
+    try {
+        console.log('🚀 Manual sitemap generation requested');
+
+        // Dynamic import of your sitemap generator
+        const { spawn } = require('child_process');
+        const scriptPath = path.join(__dirname, 'scripts', 'generate-sitemap.js');
+
+        // Execute the sitemap generator
+        const child = spawn('node', [scriptPath], {
+            cwd: __dirname,
+            stdio: 'pipe'
+        });
+
+        let output = '';
+        child.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        child.on('close', (code) => {
+            if (code === 0) {
+                res.json({
+                    success: true,
+                    message: 'Sitemap generated successfully',
+                    output: output
+                });
+            } else {
+                res.status(500).json({
+                    success: false,
+                    error: 'Sitemap generation failed',
+                    output: output
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Manual sitemap generation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
     }
 });
 

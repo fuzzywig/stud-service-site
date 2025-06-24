@@ -153,7 +153,7 @@ function LoginModal({ isOpen, onClose }) {
 
                 <div className="login-container">
                     <div className="login-logo">
-                        <img src="https://placehold.co/120x120?text=Logo" alt="Logo" />
+                        <img src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2F120-logo.png?alt=media&token=50ac4271-ae63-4553-8f45-f1f557a26707" alt="Logo" />
                     </div>
 
                     <h2 className="login-title">Sign In</h2>

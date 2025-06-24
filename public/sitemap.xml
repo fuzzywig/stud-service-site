@@ -79,6 +79,72 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://mypetconnect.co.uk/browse?category=dogs</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=cats</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=rabbits</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=birds</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=horses</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=livestock</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=reptiles</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?category=fish</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?intent=sale</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?intent=stud</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mypetconnect.co.uk/browse?intent=rescue</loc>
+    <lastmod>2025-06-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://mypetconnect.co.uk/advert-details/4sWXDc4cPPS5i9ga4bWW</loc>
     <lastmod>2025-06-10</lastmod>
     <changefreq>weekly</changefreq>

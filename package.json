@@ -8,8 +8,10 @@
     "build": "npm run generate-sitemap && npm run build:client && npm run build:server && npm run copy-assets",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --outDir dist/server --ssr src/entry-server.jsx",
-    "copy-assets": "cp -r public/images dist/client/ 2>/dev/null || xcopy public\\images dist\\client\\images /E /I /Y 2>nul || true",
+    "copy-assets": "cp -r public/images dist/client/ 2>/dev/null || xcopy public\\images dist\\client\\images /E /I /Y 2>nul || true && cp public/sitemap.xml dist/client/ 2>/dev/null || copy public\\sitemap.xml dist\\client\\ 2>nul || true && cp public/robots.txt dist/client/ 2>/dev/null || copy public\\robots.txt dist\\client\\ 2>nul || true",
     "generate-sitemap": "node scripts/generate-sitemap.js",
+    "sitemap:update": "node scripts/generate-sitemap.js && npm run copy-sitemap",
+    "copy-sitemap": "cp public/sitemap.xml dist/client/ 2>/dev/null || copy public\\sitemap.xml dist\\client\\ 2>nul || true",
     "lint": "eslint .",
     "preview": "node server.cjs",
     "start": "node server.cjs"
