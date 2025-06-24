@@ -13,12 +13,26 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Initialize Firebase Admin
 try {
-    const serviceAccount = require('./path/to/your-service-account-key.json');
-    initializeApp({
-        credential: cert(serviceAccount),
-        storageBucket: 'your-bucket-name.appspot.com'
-    });
-    console.log('✅ Firebase Admin initialized for sitemap access');
+    if (process.env.FIREBASE_PRIVATE_KEY) {
+        // Use environment variables (recommended for production)
+        initializeApp({
+            credential: cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            }),
+            storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+        });
+        console.log('✅ Firebase Admin initialized from environment variables');
+    } else {
+        // Fallback to service account file (development)
+        const serviceAccount = require('./path/to/your-service-account-key.json');
+        initializeApp({
+            credential: cert(serviceAccount),
+            storageBucket: 'your-bucket-name.appspot.com'
+        });
+        console.log('✅ Firebase Admin initialized from service account file');
+    }
 } catch (error) {
     console.warn('⚠️ Firebase Admin not initialized:', error.message);
 }
@@ -41,9 +55,23 @@ app.use((req, res, next) => {
     next();
 });
 
-// Redirect middleware (add your redirect logic here if needed)
+// REDIRECT MIDDLEWARE - Handle domain and HTTPS redirects
 app.use((req, res, next) => {
-    // Your redirect logic here
+    const host = req.get('host');
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+
+    // Force HTTPS in production
+    if (isProduction && protocol !== 'https') {
+        console.log(`🔒 Redirecting HTTP to HTTPS: ${req.url}`);
+        return res.redirect(301, `https://${host}${req.url}`);
+    }
+
+    // Force www subdomain
+    if (host && !host.startsWith('www.') && isProduction) {
+        console.log(`🌐 Redirecting to www: ${req.url}`);
+        return res.redirect(301, `${protocol}://www.${host}${req.url}`);
+    }
+
     next();
 });
 
