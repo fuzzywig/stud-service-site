@@ -163,7 +163,7 @@ export default function AdminSidebar() {
             <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="admin-sidebar-header">
                     <div className="admin-sidebar-logo">
-                        <img src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2F120-logo.png?alt=media&token=50ac4271-ae63-4553-8f45-f1f557a26707" alt="Admin Logo" />
+                        <img src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2Fmpc-logo-full.png?alt=media&token=6662ff5f-f4d7-4730-9f76-7df6b8a2e14f" alt="Admin Logo" />
                     </div>
                     <button className="admin-sidebar-close" onClick={closeSidebar} aria-label="Close menu">
                         <X size={20} strokeWidth={2} />

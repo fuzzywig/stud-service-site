@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Footer.css';
-import { FaFacebookF, FaInstagram, FaTwitter, FaChevronUp } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaChevronUp } from 'react-icons/fa';
 import { Link } from "react-router-dom";
 import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
@@ -92,9 +92,12 @@ const Footer = ({ onResetCookieConsent }) => {
                     <img src="https://placehold.co/120x70" alt="My Pet Connect Logo" className="mpc-footer-logo" />
                     <p>The UK's trusted pet marketplace connecting families with responsible breeders nationwide. Find puppies, kittens, and pets for sale from verified breeders, or discover rescue animals looking for loving homes. Safe, secure platform with health guarantees and breeder reviews.</p>
                     <div className="mpc-footer-social-icons">
-                        <FaFacebookF />
-                        <FaInstagram />
-                        <FaTwitter />
+                        <a href="https://www.facebook.com/mypetconnectuk" target="_blank" rel="noopener noreferrer">
+                            <FaFacebookF />
+                        </a>
+                        <a href="https://www.instagram.com/mypetconnectuk/" target="_blank" rel="noopener noreferrer">
+                            <FaInstagram />
+                        </a>
                     </div>
                 </div>
 

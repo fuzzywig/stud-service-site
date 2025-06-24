@@ -34,6 +34,191 @@ const OPTIONAL_CHECKBOXES = [
     'healthChecked'
 ];
 
+// Watermarking utility functions
+const createWatermarkLogo = () => {
+    return new Promise((resolve) => {
+        console.log('🎨 Loading local My Pet Connect logo...');
+
+        const logoImg = new Image();
+
+        logoImg.onload = () => {
+            console.log('✅ Local logo loaded successfully!', logoImg.width, 'x', logoImg.height);
+            resolve(logoImg);
+        };
+
+        logoImg.onerror = (error) => {
+            console.error('❌ Local logo failed to load:', error);
+            console.log('🔄 Using text watermark fallback...');
+            createFallbackWatermark().then(resolve);
+        };
+
+        // Load from public folder - no CORS issues!
+        logoImg.src = '/watermark-logo.png';
+    });
+};
+
+// Fallback text watermark in case Firebase logo fails to load
+const createFallbackWatermark = () => {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 200;
+        canvas.height = 60;
+
+        // Create gradient background
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, '#1c5235');
+        gradient.addColorStop(1, '#10b981');
+
+        // Draw rounded rectangle background
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, canvas.width, canvas.height, 10);
+        ctx.fill();
+
+        // Add text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('MY PET CONNECT', canvas.width / 2, canvas.height / 2 + 5);
+
+        // Convert to image
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = canvas.toDataURL();
+    });
+};
+
+// Optimized watermark settings for your logo
+const watermarkImage = async (imageFile, options = {}) => {
+    const {
+        opacity = 0.7,          // Good opacity for your logo style
+        size = 0.12,            // 12% of image width - adjust if needed
+        position = 'bottom-right',
+        margin = 20,            // Good margin for professional look
+        quality = 0.92          // High quality to preserve logo sharpness
+    } = options;
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            const mainImg = new Image();
+            mainImg.crossOrigin = 'anonymous';
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                mainImg.src = e.target.result;
+            };
+            reader.readAsDataURL(imageFile);
+
+            mainImg.onload = async () => {
+                try {
+                    const logoImg = await createWatermarkLogo();
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    canvas.width = mainImg.width;
+                    canvas.height = mainImg.height;
+
+                    // Draw main image
+                    ctx.drawImage(mainImg, 0, 0);
+
+                    // Calculate logo dimensions maintaining aspect ratio
+                    const logoAspectRatio = logoImg.width / logoImg.height;
+
+                    // Ensure watermark isn't too small on mobile images or too large on desktop
+                    const minLogoWidth = 80;   // Minimum width for readability
+                    const maxLogoWidth = 300;  // Maximum width to avoid being intrusive
+
+                    let logoWidth = mainImg.width * size;
+                    logoWidth = Math.max(minLogoWidth, Math.min(maxLogoWidth, logoWidth));
+
+                    const logoHeight = logoWidth / logoAspectRatio;
+
+                    // Position calculation
+                    let x, y;
+                    switch (position) {
+                        case 'top-left':
+                            x = margin;
+                            y = margin;
+                            break;
+                        case 'top-right':
+                            x = canvas.width - logoWidth - margin;
+                            y = margin;
+                            break;
+                        case 'bottom-left':
+                            x = margin;
+                            y = canvas.height - logoHeight - margin;
+                            break;
+                        case 'bottom-right':
+                        default:
+                            x = canvas.width - logoWidth - margin;
+                            y = canvas.height - logoHeight - margin;
+                            break;
+                        case 'center':
+                            x = (canvas.width - logoWidth) / 2;
+                            y = (canvas.height - logoHeight) / 2;
+                            break;
+                    }
+
+                    // Apply watermark with high quality rendering
+                    ctx.globalAlpha = opacity;
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    // Optional: Add subtle drop shadow for better visibility
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                    ctx.shadowBlur = 3;
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+
+                    ctx.drawImage(logoImg, x, y, logoWidth, logoHeight);
+
+                    // Reset shadow and alpha
+                    ctx.shadowColor = 'transparent';
+                    ctx.globalAlpha = 1.0;
+
+                    // Convert to blob with high quality
+                    canvas.toBlob(resolve, 'image/jpeg', quality);
+
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            mainImg.onerror = () => reject(new Error('Failed to load image'));
+
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+// For more subtle watermarking:
+const moderateWatermarkOptions = {
+    opacity: 0.8,
+    size: 0.18,        // Increased from 0.12 to 0.18 (50% bigger)
+    position: 'bottom-right',
+    margin: 25,        // Slightly more margin for bigger logo
+    quality: 0.92
+};
+
+// For more prominent watermarking:
+const prominentWatermarkOptions = {
+    opacity: 0.8,
+    size: 0.15,
+    position: 'bottom-right',
+    margin: 25
+};
+
+// For center watermarking (good for preventing theft):
+const centerWatermarkOptions = {
+    opacity: 0.4,
+    size: 0.20,
+    position: 'center',
+    margin: 0
+};
+
 export default function AdWizard({ mode }) {
     const { adId } = useParams();
     const [step, setStep] = useState(1);
@@ -52,6 +237,10 @@ export default function AdWizard({ mode }) {
 
     // Add state for field validation
     const [fieldErrors, setFieldErrors] = useState({});
+
+    // Add watermarking state
+    const [isWatermarking, setIsWatermarking] = useState(false);
+    const [watermarkProgress, setWatermarkProgress] = useState({ current: 0, total: 0 });
 
     const navigate = useNavigate();
 
@@ -80,14 +269,63 @@ export default function AdWizard({ mode }) {
         }
     };
 
-    // Helper function for image management
-    const handleImageChange = (e) => {
+    // Updated image handling with watermarking
+    const handleImageChange = async (e) => {
         const files = Array.from(e.target.files);
-        const previews = files.slice(0, 10 - images.length).map((file) => ({
-            file,
-            url: URL.createObjectURL(file)
-        }));
-        setImages((prev) => [...prev, ...previews]);
+
+        if (files.length === 0) return;
+
+        setIsWatermarking(true);
+
+        try {
+            const watermarkedImages = [];
+
+            for (let i = 0; i < files.length && (images.length + watermarkedImages.length) < 10; i++) {
+                const file = files[i];
+
+                setWatermarkProgress({ current: i + 1, total: files.length });
+                console.log(`🎨 Watermarking image ${i + 1} of ${files.length}`);
+
+                try {
+                    // Watermark the image
+                    const watermarkedBlob = await watermarkImage(file, {
+                        opacity: 0.6,
+                        size: 0.15,
+                        position: 'bottom-right',
+                        margin: 20
+                    });
+
+                    // Create new file from watermarked blob
+                    const watermarkedFile = new File(
+                        [watermarkedBlob],
+                        `watermarked_${file.name}`,
+                        { type: 'image/jpeg' }
+                    );
+
+                    watermarkedImages.push({
+                        file: watermarkedFile,
+                        url: URL.createObjectURL(watermarkedBlob)
+                    });
+                } catch (error) {
+                    console.error(`Failed to watermark image ${i + 1}:`, error);
+                    // Keep original image if watermarking fails
+                    watermarkedImages.push({
+                        file,
+                        url: URL.createObjectURL(file)
+                    });
+                }
+            }
+
+            // Add watermarked images to state
+            setImages((prev) => [...prev, ...watermarkedImages]);
+
+        } catch (error) {
+            console.error('Error processing images:', error);
+            alert('There was an error processing your images. Please try again.');
+        } finally {
+            setIsWatermarking(false);
+            setWatermarkProgress({ current: 0, total: 0 });
+        }
     };
 
     const handleImageRemove = (idx) => {
@@ -125,6 +363,8 @@ export default function AdWizard({ mode }) {
             setMainImageIndex(null);
             setLitterWithMotherIndex(null);
             setFieldErrors({});
+            setIsWatermarking(false);
+            setWatermarkProgress({ current: 0, total: 0 });
         }
     };
 
@@ -325,7 +565,7 @@ export default function AdWizard({ mode }) {
                         : Array(10).fill("")
                 );
 
-                // 4) Preload images into your state
+                // 4) Preload images into your state (these are already watermarked)
                 setImages(data.images.map(url => ({ url, file: null })));
 
                 // 5) Set main image if available
@@ -759,7 +999,7 @@ export default function AdWizard({ mode }) {
         return `${outward} ${inward}`;
     }
 
-    // Handle form submission
+    // Handle form submission - images are already watermarked
     const handleSubmit = async () => {
         const user = auth.currentUser;
         if (!user) {
@@ -785,9 +1025,10 @@ export default function AdWizard({ mode }) {
 
             const toUpload = images.filter(img => img.file);
 
-            // 2) Upload only the new files
+            // 2) Upload the watermarked files (they're already watermarked from handleImageChange)
             const uploaded = [];
             for (let { file } of toUpload) {
+                setWatermarkProgress({ current: uploaded.length + 1, total: toUpload.length });
                 const imageRef = ref(storage, `adverts/${user.uid}/${Date.now()}_${file.name}`);
                 const snap = await uploadBytes(imageRef, file);
                 uploaded.push(await getDownloadURL(snap.ref));
@@ -895,6 +1136,7 @@ export default function AdWizard({ mode }) {
             alert("There was an error submitting your advert.");
         } finally {
             setIsSubmitting(false);
+            setWatermarkProgress({ current: 0, total: 0 });
         }
     };
 
@@ -1255,6 +1497,7 @@ export default function AdWizard({ mode }) {
                                 {shouldShowWithMumOption && (
                                     <span><br />• Click the <strong>👩‍👧‍👦 family icon</strong> to mark an image showing the litter with mum</span>
                                 )}
+                                <br />• <strong>🎨 All images are automatically watermarked with your site logo</strong>
                             </p>
                             <div>
                                 <input
@@ -1262,9 +1505,44 @@ export default function AdWizard({ mode }) {
                                     accept="image/*"
                                     multiple
                                     onChange={handleImageChange}
-                                    disabled={images.length >= 10}
+                                    disabled={images.length >= 10 || isWatermarking}
                                 />
                             </div>
+
+                            {/* Progress indicator for watermarking */}
+                            {isWatermarking && (
+                                <div style={{
+                                    marginTop: '12px',
+                                    padding: '12px',
+                                    background: '#f0f9ff',
+                                    border: '1px solid #bfdbfe',
+                                    borderRadius: '6px',
+                                    textAlign: 'center'
+                                }}>
+                                    <div style={{ marginBottom: '8px', color: '#1e40af', fontWeight: 'bold' }}>
+                                        🎨 Adding watermarks to your images... ({watermarkProgress.current}/{watermarkProgress.total})
+                                    </div>
+                                    <div style={{
+                                        width: '100%',
+                                        height: '8px',
+                                        background: '#e5e7eb',
+                                        borderRadius: '4px',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            height: '100%',
+                                            background: 'linear-gradient(90deg, #10b981, #1c5235)',
+                                            borderRadius: '4px',
+                                            transition: 'width 0.3s ease',
+                                            width: watermarkProgress.total > 0 ? `${(watermarkProgress.current / watermarkProgress.total) * 100}%` : '0%'
+                                        }} />
+                                    </div>
+                                    <div style={{ marginTop: '4px', fontSize: '12px', color: '#64748b' }}>
+                                        This helps protect your images and promotes your listing
+                                    </div>
+                                </div>
+                            )}
+
                             {images.length > 0 && (
                                 <div className="adwizard-preview-grid">
                                     {images.map((img, idx) => (
@@ -1517,6 +1795,22 @@ export default function AdWizard({ mode }) {
                                 </div>
                             </li>
                         </ul>
+
+                        {/* Progress during submission */}
+                        {isSubmitting && watermarkProgress.total > 0 && (
+                            <div style={{
+                                marginTop: '12px',
+                                padding: '12px',
+                                background: '#f0f9ff',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: '6px',
+                                textAlign: 'center'
+                            }}>
+                                <div style={{ marginBottom: '8px', color: '#1e40af', fontWeight: 'bold' }}>
+                                    Uploading images... ({watermarkProgress.current}/{watermarkProgress.total})
+                                </div>
+                            </div>
+                        )}
 
                         <div className="adwizard-summary-actions">
                             <button className="adwizard-btn adwizard-btn-outline" onClick={() => setStep(4)}>
