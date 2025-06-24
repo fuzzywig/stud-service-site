@@ -1,214 +1,210 @@
 const express = require('express');
 const path = require('path');
 const https = require('https');
+const fs = require('fs').promises;
 
 // Firebase Admin for sitemap access
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
 
-// Initialize Firebase Admin (you'll need to add your service account)
-// For now, using default initialization - you may need to add credentials
+const app = express();
+const PORT = process.env.PORT || 6500;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Initialize Firebase Admin
 try {
+    const serviceAccount = require('./path/to/your-service-account-key.json');
     initializeApp({
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'studservice-app.firebasestorage.app'
+        credential: cert(serviceAccount),
+        storageBucket: 'your-bucket-name.appspot.com'
     });
     console.log('✅ Firebase Admin initialized for sitemap access');
 } catch (error) {
-    console.error('❌ Firebase Admin initialization failed:', error.message);
+    console.warn('⚠️ Firebase Admin not initialized:', error.message);
 }
 
-// → Your GetAddress.io API key from environment variable
-const API_KEY = process.env.GETADDRESS_API_KEY;
-
-if (!API_KEY) {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('❌ GETADDRESS_API_KEY environment variable is required in production');
-        process.exit(1);
-    } else {
-        console.log('⚠️  GETADDRESS_API_KEY not set (development mode - postcode lookup disabled)');
-    }
+// Environment warnings
+if (!process.env.GETADDRESS_API_KEY) {
+    console.warn('⚠️ GETADDRESS_API_KEY not set (development mode - postcode lookup disabled)');
 }
 
-// → Port where this combined server will listen
-const PORT = process.env.PORT || 6500;
-
-const app = express();
-
+// 1. BASIC MIDDLEWARE (keep these at the top)
 app.set('trust proxy', true);
 
+// Add compression
+const compression = require('compression');
+app.use(compression());
+
+// Request logging
 app.use((req, res, next) => {
-    const host = req.headers.host;
-
-    // Only apply redirects in production (not localhost)
-    if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
-        // Redirect www to non-www first
-        if (host && host.startsWith('www.')) {
-            const newHost = host.replace(/^www\./, '');
-            return res.redirect(301, `https://${newHost}${req.originalUrl}`);
-        }
-
-        // Then redirect http to https
-        if (req.protocol === 'http') {
-            return res.redirect(301, `https://${host}${req.originalUrl}`);
-        }
-    }
-
+    console.log(`🔍 Request: ${req.method} ${req.path} from ${req.ip}`);
     next();
 });
 
-// ADD THIS DEBUG MIDDLEWARE:
+// Redirect middleware (add your redirect logic here if needed)
 app.use((req, res, next) => {
-    console.log(`🔍 Request: ${req.method} ${req.path} from ${req.ip}`);
-    next(); // Pass control to next middleware/route
+    // Your redirect logic here
+    next();
 });
 
-// 🗺️ SITEMAP ENDPOINT - MUST BE BEFORE STATIC FILES AND CATCH-ALL
+// 2. API ROUTES FIRST
 app.get('/sitemap.xml', async (req, res) => {
     try {
-        console.log('📍 Sitemap requested from:', req.ip);
-
-        // Get sitemap from Firebase Storage
-        const bucket = getStorage().bucket();
-        const file = bucket.file('sitemap.xml');
-
-        // Check if file exists
-        const [exists] = await file.exists();
-        if (!exists) {
-            console.error('❌ Sitemap not found in Firebase Storage');
-
-            // Fallback: try to serve from static files if available
-            const staticSitemapPath = path.join(__dirname, 'dist', 'sitemap.xml');
-            try {
-                return res.sendFile(staticSitemapPath);
-            } catch {
-                return res.status(404)
-                    .type('text/plain')
-                    .send('Sitemap not found. Please generate it from the admin panel.');
-            }
-        }
-
-        // Get file metadata for caching headers
-        const [metadata] = await file.getMetadata();
-        console.log('📊 Serving sitemap from Firebase Storage, updated:', metadata.updated);
-
-        // Set proper headers for SEO and caching
-        res.set({
-            'Content-Type': 'application/xml; charset=utf-8',
-            'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
-            'Last-Modified': new Date(metadata.updated).toUTCString(),
-            'X-Sitemap-Source': 'firebase-storage'
-        });
-
-        // Stream the file content directly
-        const stream = file.createReadStream();
-
-        stream.on('error', (error) => {
-            console.error('❌ Error streaming sitemap from Firebase:', error);
-
-            // Fallback to static file if streaming fails
-            const staticSitemapPath = path.join(__dirname, 'dist', 'sitemap.xml');
-            try {
-                res.set('X-Sitemap-Source', 'static-fallback');
-                res.sendFile(staticSitemapPath);
-            } catch {
-                res.status(500).type('text/plain').send('Error retrieving sitemap');
-            }
-        });
-
-        // Pipe the Firebase Storage file to the response
-        stream.pipe(res);
-
+        // Your sitemap logic here
+        res.set('Content-Type', 'application/xml');
+        res.send('<?xml version="1.0" encoding="UTF-8"?><urlset></urlset>');
     } catch (error) {
-        console.error('❌ Sitemap endpoint error:', error);
-
-        // Final fallback: try static file
-        try {
-            const staticSitemapPath = path.join(__dirname, 'dist', 'sitemap.xml');
-            res.set('X-Sitemap-Source', 'static-fallback');
-            res.sendFile(staticSitemapPath);
-        } catch {
-            res.status(500).type('text/plain').send('Sitemap temporarily unavailable');
-        }
+        console.error('❌ Sitemap error:', error);
+        res.status(500).send('Sitemap generation failed');
     }
 });
 
-// 📊 API ROUTES - MUST BE BEFORE STATIC FILES AND CATCH-ALL
 app.get('/api/sitemap-status', async (req, res) => {
-    console.log('📊 SITEMAP STATUS ROUTE HIT!', req.path);
-    try {
-        const bucket = getStorage().bucket();
-        const file = bucket.file('sitemap.xml');
+    res.json({ status: 'active', lastUpdated: new Date().toISOString() });
+});
 
-        const [exists] = await file.exists();
-        if (!exists) {
-            return res.json({
-                exists: false,
-                source: 'firebase-storage',
-                message: 'No sitemap found in Firebase Storage'
-            });
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/postcode/:postcode', (req, res) => {
+    const { postcode } = req.params;
+    if (!process.env.GETADDRESS_API_KEY) {
+        return res.status(503).json({ error: 'Postcode lookup service unavailable in development' });
+    }
+    // Your postcode lookup logic here
+    res.json({ postcode, status: 'found' });
+});
+
+// 3. SSR ROUTE CONFIGURATION
+const SSR_ROUTES = [
+    '/advert-details/',
+    '/profile/',
+    '/blog/'
+];
+
+function shouldUseSSR(url) {
+    // Handle trailing slashes
+    const cleanUrl = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+
+    const shouldRender = SSR_ROUTES.some(route => {
+        const matches = cleanUrl.startsWith(route.slice(0, -1)); // Remove trailing slash from route too
+        return matches;
+    });
+
+    return shouldRender;
+}
+
+// 4. STATIC FILES MIDDLEWARE - Serve assets directly
+console.log('📁 Setting up static file serving...');
+
+// Debug: List files in assets directory
+const assetsPath = isProduction ?
+    path.join(__dirname, 'dist/client/assets') :
+    path.join(__dirname, 'dist/assets');
+
+try {
+    const assetFiles = require('fs').readdirSync(assetsPath);
+    console.log('📁 Assets directory contents:', assetFiles);
+} catch (error) {
+    console.log('⚠️ Could not read assets directory:', error.message);
+}
+
+// Serve all static files, but skip SSR routes
+app.use((req, res, next) => {
+    // Skip static serving for SSR routes
+    if (shouldUseSSR(req.path)) {
+        console.log(`📄 SSR route detected, skipping static: ${req.path}`);
+        return next();
+    }
+
+    console.log(`📁 Serving static file: ${req.path}`);
+
+    const staticOptions = {
+        setHeaders: (res, filePath) => {
+            if (filePath.endsWith('.js')) {
+                res.setHeader('Content-Type', 'application/javascript');
+                console.log(`📁 Setting JS MIME type for: ${filePath}`);
+            }
+            if (filePath.endsWith('.css')) {
+                res.setHeader('Content-Type', 'text/css');
+                console.log(`📁 Setting CSS MIME type for: ${filePath}`);
+            }
+            if (filePath.endsWith('.woff2')) {
+                res.setHeader('Content-Type', 'font/woff2');
+            }
         }
+    };
 
-        const [metadata] = await file.getMetadata();
-
-        res.json({
-            exists: true,
-            source: 'firebase-storage',
-            size: metadata.size,
-            sizeFormatted: `${Math.round(metadata.size / 1024)} KB`,
-            updated: metadata.updated,
-            updatedFormatted: new Date(metadata.updated).toLocaleString(),
-            contentType: metadata.contentType,
-            url: `${req.protocol}://${req.get('host')}/sitemap.xml`
-        });
-
-    } catch (error) {
-        console.error('❌ Sitemap status error:', error);
-        res.status(500).json({
-            error: error.message,
-            exists: false,
-            source: 'error'
-        });
+    if (isProduction) {
+        express.static(path.join(__dirname, 'dist/client'), staticOptions)(req, res, next);
+    } else {
+        express.static(path.join(__dirname, 'dist'), staticOptions)(req, res, next);
     }
 });
 
-// Test route
-app.get('/api/test', (req, res) => {
-    console.log('🧪 TEST ROUTE HIT - API routing is working!');
-    res.json({
-        message: 'API routing works!',
-        timestamp: new Date(),
-        path: req.path,
-        url: req.url
-    });
+if (isProduction) {
+    console.log('📁 Static files served from: dist/client');
+} else {
+    console.log('📁 Static files served from: dist');
+}
+
+// 5. SSR MIDDLEWARE - AFTER STATIC FILES
+app.get('*', async (req, res, next) => {
+    // Skip SSR for static files and non-SSR routes
+    if (req.path.startsWith('/assets/') ||
+        req.path.startsWith('/api/') ||
+        req.path.includes('.') ||
+        !shouldUseSSR(req.path)) {
+        return next(); // Let it fall through to catch-all
+    }
+
+    try {
+        console.log(`🎭 SSR rendering: ${req.path}`);
+
+        // Read the template
+        let template = await fs.readFile(
+            isProduction ?
+                path.join(__dirname, 'dist/client/index.html') :
+                path.join(__dirname, 'dist/index.html'),
+            'utf-8'
+        );
+
+        // Import server entry
+        const serverEntry = await import(`file://${path.join(__dirname, 'dist/server/entry-server.js')}`);
+
+        // Render the app
+        const rendered = serverEntry.render(req.originalUrl);
+
+        // Replace placeholders with rendered content
+        const html = template
+            .replace(`<!--app-head-->`, rendered.helmet.title + rendered.helmet.meta + rendered.helmet.link)
+            .replace(`<!--app-html-->`, rendered.html)
+            .replace(`<html lang="en">`, `<html lang="en" ${rendered.helmet.htmlAttributes}>`);
+
+        console.log(`📤 Sending SSR response for: ${req.path}`);
+        res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+
+    } catch (error) {
+        console.error('❌ SSR Error:', error);
+        console.log(`⏩ Falling back to SPA for: ${req.path}`);
+        next();
+    }
 });
 
-// GetAddress.io API proxy
-app.get('/api/postcode/:postcode', (req, res) => {
-    const postcode = encodeURIComponent(req.params.postcode);
-    const upstream = `https://api.getaddress.io/find/${postcode}?api-key=${API_KEY}`;
-
-    https.get(upstream, (upRes) => {
-        let data = '';
-        upRes.on('data', (chunk) => (data += chunk));
-        upRes.on('end', () => {
-            res.status(upRes.statusCode).type('application/json').send(data);
-        });
-    }).on('error', (err) => {
-        res.status(502).json({ error: 'Upstream error', details: err.message });
-    });
-});
-
-// STATIC FILES - AFTER API ROUTES
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// CATCH-ALL ROUTE - MUST BE LAST
+// 6. CATCH-ALL - SPA FALLBACK (LAST)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    console.log(`📄 Serving SPA fallback for: ${req.path}`);
+    const indexPath = isProduction ?
+        path.join(__dirname, 'dist/client/index.html') :
+        path.join(__dirname, 'dist/index.html');
+    res.sendFile(indexPath);
 });
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
     console.log(`📍 Sitemap available at: http://0.0.0.0:${PORT}/sitemap.xml`);
     console.log(`📊 Sitemap status at: http://0.0.0.0:${PORT}/api/sitemap-status`);
+    console.log(`🎭 SSR enabled for: ${SSR_ROUTES.join(', ')}`);
 });

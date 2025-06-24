@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "prebuild": "npm run generate-sitemap",
+    "build": "npm run generate-sitemap && npm run build:client && npm run build:server && npm run copy-assets",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --outDir dist/server --ssr src/entry-server.jsx",
+    "copy-assets": "cp -r public/images dist/client/ 2>/dev/null || xcopy public\\images dist\\client\\images /E /I /Y 2>nul || true",
     "generate-sitemap": "node scripts/generate-sitemap.js",
-    "postbuild": "node scripts/prerender.js && (cp -r public/images dist/ 2>/dev/null || xcopy public\\images dist\\images /E /I /Y 2>nul || true)",    "lint": "eslint .",
-    "preview": "vite preview",
+    "lint": "eslint .",
+    "preview": "node server.cjs",
     "start": "node server.cjs"
   },
   "dependencies": {
@@ -19,6 +21,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@sendgrid/mail": "^8.1.5",
+    "compression": "^1.8.0",
+    "cross-env": "^7.0.3",
     "express": "^4.21.2",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
@@ -36,6 +40,7 @@
     "react-router-dom": "^7.5.0",
     "react-select": "^5.10.1",
     "react-slick": "^0.30.3",
+    "sirv": "^3.0.1",
     "slick-carousel": "^1.8.1",
     "uuid": "^11.1.0"
   },
@@ -48,7 +53,6 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "puppeteer": "^24.10.2",
     "vite": "^6.2.0"
   }
 }

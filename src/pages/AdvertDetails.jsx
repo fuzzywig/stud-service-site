@@ -298,6 +298,7 @@ function AdvertDetails() {
     // MOVE getSEOData FUNCTION HERE - BEFORE IT'S USED
     const getSEOData = useCallback(() => {
         if (!advert) {
+            console.log('No advert data - using fallback SEO');
             return {
                 title: "Pet Advert",
                 description: "View this pet advert on My Pet Connect"

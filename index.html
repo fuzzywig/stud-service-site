@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Ensures correct colour for both light and dark mode users -->
+  <!-- Theme colors for both light and dark mode -->
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: dark)">
-
   <meta name="theme-color" content="#ffffff">
+
   <!-- Google Analytics - Detection Only -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N966Z6R5QJ"></script>
   <script>
@@ -14,15 +14,25 @@
     gtag('js', new Date());
     // Don't call gtag('config') here - let React handle consent
   </script>
+
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 
+  <!-- Default meta tags (will be replaced by SSR for dynamic pages) -->
+  <title>My Pet Connect - Find Puppies & Kittens for Sale UK</title>
+  <meta name="description" content="Find puppies, kittens and pets for sale from trusted UK breeders. Browse thousands of dogs, cats and rabbits. Safe, verified listings with health guarantees." />
+
+  <!-- SSR head content will be injected here -->
+  <!--app-head-->
 </head>
 <body>
-<div id="root"></div>
+<!-- SSR rendered content will be injected here -->
+<div id="root"><!--app-html--></div>
+
+<!-- Client-side JavaScript -->
 <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
