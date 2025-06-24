@@ -79,7 +79,6 @@ const generateDynamicAltText = (advert, imageIndex, imageType = 'gallery', owner
         healthy: ['healthy', 'robust', 'thriving', 'vibrant', 'strong']
     };
 
-    const canonicalUrl = `https://mypetconnect.co.uk${location.pathname}${location.search}`;
 
     const intentDescriptors = {
         sale: ['for sale', 'available', 'seeking new home', 'ready for adoption'],
@@ -337,7 +336,13 @@ function AdvertDetails() {
         // Build dynamic title: "Colour Breed Puppies/Kittens for Sale" or "Colour Breed for Stud"
         const titleParts = [];
 
-        // Add colour first if available
+        // Add name first for stud listings
+        if (intent === 'stud' && (advert.name || advert.title)) {
+            const studName = advert.name || advert.title;
+            titleParts.push(studName);
+        }
+
+        // Add colour if available
         if (colour) {
             titleParts.push(colour);
         }

@@ -1,6 +1,13 @@
 User-agent: *
 Allow: /
 
+# Block utility/legal pages
+Disallow: /cookie-policy
+Disallow: /login
+Disallow: /register
+Disallow: /privacy-policy
+Disallow: /terms-of-service
+
 # Sitemap location
 Sitemap: https://mypetconnect.co.uk/sitemap.xml
 
