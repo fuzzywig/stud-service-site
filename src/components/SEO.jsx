@@ -10,8 +10,7 @@ import PropTypes from 'prop-types';
  * @param {string} [canonical] - Canonical URL to help avoid duplicate content
  */
 export default function SEO({ title, description, lang = 'en', canonical }) {
-    const siteName = 'My Pet Connect';
-    const fullTitle = `${title} | ${siteName}`;
+    const fullTitle = `${title}`;
 
     return (
         <Helmet htmlAttributes={{ lang }}>
