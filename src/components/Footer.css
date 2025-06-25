@@ -333,3 +333,26 @@
 
 
 }
+/* Tablet and smaller screens */
+@media (max-width: 768px) {
+    .mpc-footer-logo {
+        max-width: 480px; /* Reduce logo size on tablets */
+        margin: 0 auto 20px;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .mpc-footer-logo {
+        max-width: 320px; /* Further reduce logo size on mobile */
+        margin: 0 auto 15px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    .mpc-footer-logo {
+        max-width: 220px; /* Even smaller for very small screens */
+        margin: 0 auto 15px;
+    }
+}

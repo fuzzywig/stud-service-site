@@ -89,7 +89,7 @@ const Footer = ({ onResetCookieConsent }) => {
         <footer className="mpc-footer">
             <div className="mpc-footer-content">
                 <div className="mpc-footer-col">
-                    <img src="https://placehold.co/120x70" alt="My Pet Connect Logo" className="mpc-footer-logo" />
+                    <img src="https://firebasestorage.googleapis.com/v0/b/studservice-app.firebasestorage.app/o/images%2Flogo%2Flogo-small.png?alt=media&token=f084397f-5902-44ed-aecb-117ebde48b76" alt="My Pet Connect Logo" className="mpc-footer-logo" />
                     <p>The UK's trusted pet marketplace connecting families with responsible breeders nationwide. Find puppies, kittens, and pets for sale from verified breeders, or discover rescue animals looking for loving homes. Safe, secure platform with health guarantees and breeder reviews.</p>
                     <div className="mpc-footer-social-icons">
                         <a href="https://www.facebook.com/mypetconnectuk" target="_blank" rel="noopener noreferrer">
