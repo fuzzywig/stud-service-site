@@ -289,8 +289,68 @@ function shouldUseSSR(url) {
     return shouldRender;
 }
 
-// 4. STATIC FILES MIDDLEWARE - Serve assets directly
-console.log('📁 Setting up static file serving...');
+// 4. STATIC FILES MIDDLEWARE - Serve assets directly (SSR-aware)
+console.log('📁 Setting up static file serving for SSR...');
+
+const staticPath = isProduction ?
+    path.join(__dirname, 'dist/client') :
+    path.join(__dirname, 'dist');
+
+console.log(`📁 Static files served from: ${staticPath}`);
+
+// Define what should be treated as static files
+const isStaticFile = (path) => {
+    return path.startsWith('/assets/') ||
+        path.startsWith('/favicon') ||
+        path.endsWith('.ico') ||
+        path.endsWith('.png') ||
+        path.endsWith('.jpg') ||
+        path.endsWith('.jpeg') ||
+        path.endsWith('.gif') ||
+        path.endsWith('.svg') ||
+        path.endsWith('.webp') ||
+        path.endsWith('.js') ||
+        path.endsWith('.css') ||
+        path.endsWith('.woff') ||
+        path.endsWith('.woff2') ||
+        path.endsWith('.ttf') ||
+        path.endsWith('.eot') ||
+        path.includes('manifest.json') ||
+        path.includes('sitemap.xml') ||
+        path.includes('robots.txt');
+};
+
+const staticOptions = {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+        if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+        if (filePath.endsWith('.ico')) {
+            res.setHeader('Content-Type', 'image/x-icon');
+            console.log(`📁 Serving favicon: ${filePath}`);
+        }
+        if (filePath.endsWith('.png')) {
+            res.setHeader('Content-Type', 'image/png');
+            console.log(`📁 Serving PNG icon: ${filePath}`);
+        }
+        if (filePath.endsWith('.woff2')) {
+            res.setHeader('Content-Type', 'font/woff2');
+        }
+    }
+};
+
+// Priority static file serving - BEFORE SSR check
+app.use((req, res, next) => {
+    // Always serve static files immediately, don't wait for SSR
+    if (isStaticFile(req.path)) {
+        console.log(`📁 Static file request: ${req.path}`);
+        return express.static(staticPath, staticOptions)(req, res, next);
+    }
+    next();
+});
 
 // Debug: List files in assets directory
 const assetsPath = isProduction ?
@@ -302,45 +362,6 @@ try {
     console.log('📁 Assets directory contents:', assetFiles);
 } catch (error) {
     console.log('⚠️ Could not read assets directory:', error.message);
-}
-
-// Serve all static files, but skip SSR routes
-app.use((req, res, next) => {
-    // Skip static serving for SSR routes
-    if (shouldUseSSR(req.path)) {
-        console.log(`📄 SSR route detected, skipping static: ${req.path}`);
-        return next();
-    }
-
-    console.log(`📁 Serving static file: ${req.path}`);
-
-    const staticOptions = {
-        setHeaders: (res, filePath) => {
-            if (filePath.endsWith('.js')) {
-                res.setHeader('Content-Type', 'application/javascript');
-                console.log(`📁 Setting JS MIME type for: ${filePath}`);
-            }
-            if (filePath.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-                console.log(`📁 Setting CSS MIME type for: ${filePath}`);
-            }
-            if (filePath.endsWith('.woff2')) {
-                res.setHeader('Content-Type', 'font/woff2');
-            }
-        }
-    };
-
-    if (isProduction) {
-        express.static(path.join(__dirname, 'dist/client'), staticOptions)(req, res, next);
-    } else {
-        express.static(path.join(__dirname, 'dist'), staticOptions)(req, res, next);
-    }
-});
-
-if (isProduction) {
-    console.log('📁 Static files served from: dist/client');
-} else {
-    console.log('📁 Static files served from: dist');
 }
 
 // 5. SSR MIDDLEWARE - AFTER STATIC FILES
