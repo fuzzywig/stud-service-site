@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const https = require('https');
@@ -6,12 +7,14 @@ const fs = require('fs').promises;
 // Firebase Admin for sitemap access
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getStorage } = require('firebase-admin/storage');
+const { getFirestore } = require('firebase-admin/firestore');
 
 const app = express();
 const PORT = process.env.PORT || 6500;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Initialize Firebase Admin
+let adminDb;
 try {
     if (process.env.FIREBASE_PRIVATE_KEY) {
         // Use environment variables (recommended for production)
@@ -33,8 +36,62 @@ try {
         });
         console.log('✅ Firebase Admin initialized from service account file');
     }
+    adminDb = getFirestore();
 } catch (error) {
     console.warn('⚠️ Firebase Admin not initialized:', error.message);
+}
+
+// Function to fetch blog post data server-side
+async function fetchBlogPostBySlug(slug) {
+    if (!adminDb) {
+        console.warn('⚠️ Firebase Admin not available, skipping blog post fetch');
+        return null;
+    }
+
+    try {
+        console.log(`🔍 Server: Fetching blog post for slug: ${slug}`);
+
+        // First try to find by slug
+        const slugQuery = adminDb.collection('blogPosts')
+            .where('slug', '==', slug)
+            .where('status', '==', 'published')
+            .limit(1);
+
+        const slugSnapshot = await slugQuery.get();
+
+        if (!slugSnapshot.empty) {
+            const doc = slugSnapshot.docs[0];
+            const data = doc.data();
+            console.log(`✅ Server: Found blog post by slug: ${data.title}`);
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate() || new Date()
+            };
+        }
+
+        // Fallback: try to find by document ID
+        console.log(`🔄 Server: Slug not found, trying as document ID: ${slug}`);
+        const docRef = adminDb.collection('blogPosts').doc(slug);
+        const docSnap = await docRef.get();
+
+        if (docSnap.exists && docSnap.data().status === 'published') {
+            const data = docSnap.data();
+            console.log(`✅ Server: Found blog post by ID: ${data.title}`);
+            return {
+                id: docSnap.id,
+                ...data,
+                createdAt: data.createdAt?.toDate() || new Date()
+            };
+        }
+
+        console.log(`❌ Server: Blog post not found for slug: ${slug}`);
+        return null;
+
+    } catch (error) {
+        console.error(`❌ Server: Error fetching blog post for slug ${slug}:`, error.message);
+        return null;
+    }
 }
 
 // Environment warnings
@@ -60,7 +117,7 @@ app.use((req, res, next) => {
     const host = req.get('host');
     const protocol = req.get('x-forwarded-proto') || req.protocol;
 
-    // Force HTTPS in production
+// Force HTTPS in production
     if (isProduction && protocol !== 'https') {
         console.log(`🔒 Redirecting HTTP to HTTPS: ${req.url}`);
         return res.redirect(301, `https://${host}${req.url}`);
@@ -299,6 +356,21 @@ app.get('*', async (req, res, next) => {
     try {
         console.log(`🎭 SSR rendering: ${req.path}`);
 
+        let blogPost = null;
+
+        // Check if this is a blog post URL and fetch data
+        const blogMatch = req.path.match(/\/blog\/([^\/\?]+)/);
+        if (blogMatch) {
+            const slug = blogMatch[1];
+            console.log(`🔍 Server: Detected blog post URL, fetching data for slug: ${slug}`);
+            blogPost = await fetchBlogPostBySlug(slug);
+            if (blogPost) {
+                console.log(`✅ Server: Successfully fetched blog post: ${blogPost.title}`);
+            } else {
+                console.log(`❌ Server: Blog post not found for slug: ${slug}`);
+            }
+        }
+
         // Read the template
         let template = await fs.readFile(
             isProduction ?
@@ -310,8 +382,8 @@ app.get('*', async (req, res, next) => {
         // Import server entry
         const serverEntry = await import(`file://${path.join(__dirname, 'dist/server/entry-server.js')}`);
 
-        // Render the app
-        const rendered = serverEntry.render(req.originalUrl);
+        // Render the app with blog post data
+        const rendered = await serverEntry.render(req.originalUrl, { blogPost });
 
         // Replace placeholders with rendered content
         const html = template
